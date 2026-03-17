@@ -1,0 +1,34 @@
+services:
+  pln-pipeline:
+    container_name: pln_pipeline
+    build:
+      context: ./services/pln_pipeline
+      dockerfile: Dockerfile
+    ports:
+      - "8001:8001"
+    networks:
+      - assistente-whatsapp-net
+
+  service-manager:
+    container_name: service_manager
+    build:
+      context: ./services/service_manager
+      dockerfile: Dockerfile
+    ports:
+      - "8002:8002"
+    networks:
+      - assistente-whatsapp-net
+
+  whatsapp-bot:
+    container_name: whatsapp_bot
+    build:
+      context: ./services/whatsapp_bot
+      dockerfile: Dockerfile
+    ports:
+      - "8003:8003"
+    networks:
+      - assistente-whatsapp-net
+
+networks:
+  assistente-whatsapp-net:
+    driver: bridge
