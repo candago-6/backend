@@ -85,6 +85,6 @@ backend/
 				└── app/main.py
 ```
 
-## Proximo passo sugerido
+## Proximo passo
 
 Implementar os endpoints reais de negocio em cada servico e ajustar variaveis de ambiente no `docker-compose.yml` para comunicacao entre eles.
