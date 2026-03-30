@@ -1,0 +1,48 @@
+item;classe;texto
+1;cobrancas_indevidas_servicos_nao_contratados;Estao cobrando um seguro em meu cartao de credito que eu nao contratei
+2;cobrancas_indevidas_servicos_nao_contratados;Estao descontando um emprestimo ja quitado na minha folha de pagamento
+3;cobrancas_indevidas_servicos_nao_contratados;Estao descontando do meu beneficio um valor referente a um emprestimo nao contratado
+4;triagem_inicial_encaminhamento;Nao querem entregar meu contrato
+5;triagem_inicial_encaminhamento;Tenho um plano de telefone e quero cancelar e nao estou conseguindo
+6;cobrancas_indevidas_servicos_nao_contratados;Estao cobrando no meu beneficio um valor referente a RMC e RCC que eu nao reconheco
+7;triagem_inicial_encaminhamento;Comprei um produto por uma plataforma online e houve problema, devo acionar a plataforma tambem
+8;triagem_inicial_encaminhamento;Fiz uma reclamacao no Procon online e nao resolveu, posso abrir no posto presencial
+9;contratos_rescisao_arrependimento;Fui cancelar o contrato e foi cobrada multa
+10;contratos_rescisao_arrependimento;Um contrato pode ter fidelidade
+11;contratos_rescisao_arrependimento;Direito de arrependimento de 7 dias
+12;contratos_rescisao_arrependimento;Direito de arrependimento vale para compra em loja fisica
+13;contratos_rescisao_arrependimento;Quem paga o frete de devolucao
+14;contratos_rescisao_arrependimento;Abri a embalagem e usei o produto, ainda posso devolver
+15;vicios_troca_garantia_pratica;O prazo de entrega nao foi respeitado, e agora
+16;vicios_troca_garantia_pratica;O que e vicio aparente
+17;vicios_troca_garantia_pratica;O que e vicio oculto
+18;vicios_troca_garantia_pratica;Como contar o prazo no vicio oculto
+19;vicios_troca_garantia_pratica;Prazos para reclamacao
+20;vicios_troca_garantia_pratica;Diferenca entre vicio e defeito
+21;vicios_troca_garantia_pratica;Ao receber produto novo por garantia, como fica a garantia do novo produto
+22;vicios_troca_garantia_pratica;Se nao houver disponibilidade do mesmo produto, tenho direito a outro similar
+23;vicios_troca_garantia_pratica;Lojas tem obrigacao de trocar produtos sem defeito
+24;atendimento_procon_procedimentos;Posso realizar a portabilidade do meu beneficio a qualquer momento
+25;atendimento_procon_procedimentos;A divida prescreve apos cinco anos
+26;atendimento_procon_procedimentos;Qual e o prazo de resposta apos abrir reclamacao no Procon
+27;atendimento_procon_procedimentos;Quais documentos sao necessarios para abrir uma reclamacao
+28;garantias_conceitos_tipos;Quais sao os tipos de garantia existentes
+29;garantias_conceitos_tipos;O que e garantia legal
+30;garantias_conceitos_tipos;Quando comeca a contar a garantia legal
+31;garantias_conceitos_tipos;O que e garantia contratual
+32;garantias_conceitos_tipos;O que e garantia estendida
+33;garantias_conceitos_tipos;O fornecedor pode negar atendimento na garantia
+34;vicios_troca_garantia_pratica;O que acontece se o problema nao for resolvido em 30 dias
+35;vicios_troca_garantia_pratica;Preciso da nota fiscal para acionar a garantia
+36;vicios_troca_garantia_pratica;Produtos usados tem garantia
+37;vicios_troca_garantia_pratica;Servicos tambem tem garantia
+38;cumprimento_oferta_preco;O fornecedor e obrigado a cumprir o preco anunciado
+39;cumprimento_oferta_preco;Se o preco da prateleira e diferente do caixa, qual vale
+40;cumprimento_oferta_preco;Se a loja nao quiser vender pelo preco anunciado, o que fazer
+41;cumprimento_oferta_preco;A loja pode alegar erro do sistema e nao cumprir a oferta
+42;cumprimento_oferta_preco;Sem aviso de estoque limitado, a loja pode negar venda por falta de estoque
+43;casos_presenciais_especificos;Comprei presencialmente e pedi troca ou cancelamento em menos de 24h, a loja pode recusar
+44;casos_presenciais_especificos;Comprei veiculo usado e em menos de 90 dias apresentou vicio oculto, posso trocar ou cancelar
+45;casos_presenciais_especificos;Comprei veiculo novo e apos 40 dias apresentou vicio oculto, quais medidas posso tomar
+46;casos_presenciais_especificos;A loja nao enviou nota fiscal e se recusou a emitir, que medidas posso tomar
+47;fora_escopo_procon;Direito imobiliario nao amparado pelo Procon e CDC
