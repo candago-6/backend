@@ -16,7 +16,7 @@ class FastTextPipeline(BasePreprocessingPipeline):
 		self.model: FastText | None = None
 
 	def fit(self, texts: Iterable[str]) -> None:
-		tokenized_corpus = [self.tokenize(text) for text in texts]
+		tokenized_corpus = [self.preprocess_tokens(text) for text in texts]
 		tokenized_corpus = [tokens for tokens in tokenized_corpus if tokens]
 		if not tokenized_corpus:
 			raise ValueError("Training corpus is empty after preprocessing.")
@@ -38,7 +38,7 @@ class FastTextPipeline(BasePreprocessingPipeline):
 
 	def text_to_vector(self, text: str) -> np.ndarray:
 		model = self._require_model()
-		tokens = self.tokenize(text)
+		tokens = self.preprocess_tokens(text)
 
 		vectors = [model.wv[token] for token in tokens]
 		if not vectors:
