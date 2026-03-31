@@ -142,7 +142,7 @@ def main() -> int:
 
         vectorize_csv(input_csv, fasttext_output, base_url, "/api/fasttext", timeout)
         print(f"FastText concluido: {fasttext_output}")
-    except Exception as exc:  # noqa: BLE001
+    except Exception as exc:
         print(f"Erro: {exc}", file=sys.stderr)
         return 1
 

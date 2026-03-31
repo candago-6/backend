@@ -8,13 +8,83 @@ from typing import Iterable
 import numpy as np
 
 
+PORTUGUESE_STOPWORDS = {
+	"a",
+	"ao",
+	"aos",
+	"as",
+	"com",
+	"como",
+	"da",
+	"das",
+	"de",
+	"dela",
+	"dele",
+	"deles",
+	"do",
+	"dos",
+	"e",
+	"ela",
+	"ele",
+	"eles",
+	"em",
+	"entre",
+	"era",
+	"essa",
+	"esse",
+	"esta",
+	"este",
+	"eu",
+	"foi",
+	"ha",
+	"isso",
+	"isto",
+	"ja",
+	"la",
+	"lhe",
+	"mais",
+	"mas",
+	"me",
+	"meu",
+	"minha",
+	"na",
+	"nao",
+	"nas",
+	"nem",
+	"no",
+	"nos",
+	"o",
+	"os",
+	"ou",
+	"para",
+	"pela",
+	"pelo",
+	"por",
+	"que",
+	"se",
+	"sem",
+	"ser",
+	"seu",
+	"sua",
+	"tambem",
+	"te",
+	"tem",
+	"tenho",
+	"ter",
+	"um",
+	"uma",
+	"voce",
+	"voces",
+}
+
+
 @dataclass
 class PipelineConfig:
-	vector_size: int = 100
-	window: int = 5
-	min_count: int = 1
+	vector_size: int = 200
+	window: int = 3
+	min_count: int = 2
 	workers: int = 1
-	epochs: int = 20
+	epochs: int = 8
 	seed: int = 42
 
 
@@ -38,6 +108,13 @@ class BasePreprocessingPipeline:
 		if not normalized:
 			return []
 		return normalized.split(" ")
+
+	def remove_stopwords(self, tokens: Iterable[str]) -> list[str]:
+		return [token for token in tokens if token and token not in PORTUGUESE_STOPWORDS]
+
+	def preprocess_tokens(self, text: str) -> list[str]:
+		tokens = self.tokenize(text)
+		return self.remove_stopwords(tokens)
 
 	def batch_to_vectors(self, texts: Iterable[str]) -> np.ndarray:
 		return np.vstack([self.text_to_vector(text) for text in texts])
