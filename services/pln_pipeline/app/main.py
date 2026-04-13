@@ -7,7 +7,7 @@ import numpy as np
 
 from app.models.fastText_pipe import FastTextPipeline
 from app.models.w2vec_pipe import W2VPipeline
-from app.models.schemas import ItemSimilarity, PreprocessingRequest, PreprocessingResponse
+from app.models.schemas import ClassResponseOnly, ItemSimilarity, PreprocessingRequest
 
 app = FastAPI(title="PLN Pipeline Service", version="0.1.0")
 
@@ -19,6 +19,9 @@ DEFAULT_W2VEC_VECTORIZED_PATH = (
 )
 DEFAULT_FASTTEXT_VECTORIZED_PATH = (
     Path(__file__).resolve().parent / "utils" / "duvidas_frequentes_vetorizado_fasttext.csv"
+)
+DEFAULT_ITEM_RESPONSES_PATH = (
+    Path(__file__).resolve().parent / "utils" / "item_responses.json"
 )
 
 
@@ -73,6 +76,21 @@ def load_item_reference_vectors(
     return item_vectors
 
 
+def load_item_responses() -> dict[str, str]:
+    if not DEFAULT_ITEM_RESPONSES_PATH.exists():
+        raise ValueError("Item responses file not found.")
+
+    try:
+        data = json.loads(DEFAULT_ITEM_RESPONSES_PATH.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        raise ValueError("Invalid item responses JSON file.") from exc
+
+    if not isinstance(data, dict):
+        raise ValueError("Item responses JSON must be an object.")
+
+    return {str(key): str(value) for key, value in data.items()}
+
+
 def calculate_class_similarities(
     pipeline: W2VPipeline | FastTextPipeline,
     user_vector: np.ndarray,
@@ -90,13 +108,30 @@ def calculate_class_similarities(
     return similarities
 
 
+def resolve_top_item_response(
+    item_similarities: list[ItemSimilarity],
+    item_responses: dict[str, str],
+) -> str:
+    if not item_similarities:
+        return item_responses.get(
+            "default",
+            "Nao foi possivel identificar um item com confianca.",
+        )
+
+    top_item = str(item_similarities[0].item)
+    return item_responses.get(top_item) or item_responses.get(
+        "default",
+        "Nao foi possivel identificar um item com confianca.",
+    )
+
+
 @app.get("/api/health")
 def health_check() -> dict[str, str]:
     return {"status": "ok", "service": "pln-pipeline"}
 
 
-@app.post("/api/w2vec", response_model=PreprocessingResponse)
-def preprocessing_w2vec(payload: PreprocessingRequest) -> PreprocessingResponse:
+@app.post("/api/w2vec", response_model=ClassResponseOnly)
+def preprocessing_w2vec(payload: PreprocessingRequest) -> ClassResponseOnly:
     pipeline = W2VPipeline()
 
     try:
@@ -114,20 +149,21 @@ def preprocessing_w2vec(payload: PreprocessingRequest) -> PreprocessingResponse:
             vector,
             item_reference_vectors,
         )
+        item_responses = load_item_responses()
+        class_response = resolve_top_item_response(
+            item_similarities,
+            item_responses,
+        )
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
-    return PreprocessingResponse(
-        normalized_text=pipeline.normalize_text(payload.raw_text),
-        tokens=pipeline.tokenize(payload.raw_text),
-        vector_size=len(vector),
-        vector=vector.tolist(),
-        item_similarities=item_similarities,
+    return ClassResponseOnly(
+        class_response=class_response,
     )
 
 
-@app.post("/api/fasttext", response_model=PreprocessingResponse)
-def preprocessing_fasttext(payload: PreprocessingRequest) -> PreprocessingResponse:
+@app.post("/api/fasttext", response_model=ClassResponseOnly)
+def preprocessing_fasttext(payload: PreprocessingRequest) -> ClassResponseOnly:
     pipeline = FastTextPipeline()
 
     try:
@@ -145,13 +181,14 @@ def preprocessing_fasttext(payload: PreprocessingRequest) -> PreprocessingRespon
             vector,
             item_reference_vectors,
         )
+        item_responses = load_item_responses()
+        class_response = resolve_top_item_response(
+            item_similarities,
+            item_responses,
+        )
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
-    return PreprocessingResponse(
-        normalized_text=pipeline.normalize_text(payload.raw_text),
-        tokens=pipeline.tokenize(payload.raw_text),
-        vector_size=len(vector),
-        vector=vector.tolist(),
-        item_similarities=item_similarities,
+    return ClassResponseOnly(
+        class_response=class_response,
     )

@@ -17,3 +17,9 @@ class PreprocessingResponse(BaseModel):
     vector_size: int
     vector: list[float]
     item_similarities: list[ItemSimilarity]
+    predicted_class: str | None
+    class_response: str
+
+
+class ClassResponseOnly(BaseModel):
+    class_response: str
