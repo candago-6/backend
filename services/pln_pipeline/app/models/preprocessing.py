@@ -48,7 +48,6 @@ PORTUGUESE_STOPWORDS = {
 	"meu",
 	"minha",
 	"na",
-	"nao",
 	"nas",
 	"nem",
 	"no",
@@ -146,3 +145,42 @@ class BasePreprocessingPipeline:
 		if norm_a == 0.0 or norm_b == 0.0:
 			return 0.0
 		return float(np.dot(vector_a, vector_b) / (norm_a * norm_b))
+
+	@staticmethod
+	def knn(
+		user_vector: np.ndarray,
+		item_reference_vectors: Iterable[tuple[int, str, np.ndarray]],
+		k: int = 3,
+	) -> tuple[str | None, list[tuple[int, str, float]]]:
+		if k < 1:
+			raise ValueError("k must be >= 1.")
+
+		scored: list[tuple[int, str, float]] = []
+		for item_id, class_name, item_vector in item_reference_vectors:
+			similarity = BasePreprocessingPipeline.cosine_similarity(
+				user_vector,
+				item_vector,
+			)
+			scored.append((item_id, class_name, similarity))
+
+		scored.sort(key=lambda entry: entry[2], reverse=True)
+		if not scored:
+			return None, []
+
+		neighbors = scored[: min(k, len(scored))]
+		class_stats: dict[str, dict[str, float | int]] = {}
+		for _, class_name, similarity in neighbors:
+			stats = class_stats.setdefault(
+				class_name,
+				{"count": 0, "sum": 0.0, "best": -1.0},
+			)
+			stats["count"] += 1
+			stats["sum"] += similarity
+			if similarity > stats["best"]:
+				stats["best"] = similarity
+
+		predicted_class = max(
+			class_stats.items(),
+			key=lambda entry: (entry[1]["count"], entry[1]["sum"], entry[1]["best"]),
+		)[0]
+		return predicted_class, neighbors

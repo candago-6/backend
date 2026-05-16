@@ -1,18 +1,32 @@
 import csv
 import json
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Query
 from pathlib import Path
+
+from dotenv import load_dotenv
 
 import numpy as np
 
 from app.models.fastText_pipe import FastTextPipeline
+from app.models.rag_pipeline import RAGConfig, RAGPipeline
+from app.models.rag_remote import RemoteRAGConfig, RemoteRAGPipeline
 from app.models.w2vec_pipe import W2VPipeline
-from app.models.schemas import ClassResponseOnly, ItemSimilarity, PreprocessingRequest
+from app.models.schemas import (
+    ItemSimilarity,
+    PreprocessingRequest,
+    PreprocessingResponse,
+    PreprocessingSummaryResponse,
+    RAGRequest,
+    RAGResponse,
+    RAGSource,
+)
 
 app = FastAPI(title="PLN Pipeline Service", version="0.1.0")
 
+load_dotenv()
+
 DEFAULT_TRAINING_CORPUS_PATH = (
-    Path(__file__).resolve().parent / "utils" / "duvidas_frequentes.txt"
+    Path(__file__).resolve().parent / "utils" / "duvidas_frequentes_clean.txt"
 )
 DEFAULT_W2VEC_VECTORIZED_PATH = (
     Path(__file__).resolve().parent / "utils" / "duvidas_frequentes_vetorizado_w2vec.csv"
@@ -23,6 +37,16 @@ DEFAULT_FASTTEXT_VECTORIZED_PATH = (
 DEFAULT_ITEM_RESPONSES_PATH = (
     Path(__file__).resolve().parent / "utils" / "item_responses.json"
 )
+DEFAULT_FAQ_PDF_PATH = Path(__file__).resolve().parent / "utils" / "faq_fonte.pdf"
+DEFAULT_RAG_CACHE_DIR = (
+    Path(__file__).resolve().parent / "utils" / "faq_fonte_rag_index"
+)
+DEFAULT_REMOTE_RAG_CACHE_DIR = (
+    Path(__file__).resolve().parent / "utils" / "faq_fonte_rag_remote_index"
+)
+
+RAG_PIPELINE: RAGPipeline | None = None
+REMOTE_RAG_PIPELINE: RemoteRAGPipeline | None = None
 
 
 def load_default_training_corpus() -> list[str]:
@@ -125,13 +149,69 @@ def resolve_top_item_response(
     )
 
 
+def resolve_knn_item_response(
+    neighbors: list[tuple[int, str, float]],
+    predicted_class: str | None,
+    item_responses: dict[str, str],
+) -> str:
+    if not neighbors or predicted_class is None:
+        return item_responses.get(
+            "default",
+            "Nao foi possivel identificar um item com confianca.",
+        )
+
+    for item_id, class_name, _ in neighbors:
+        if class_name == predicted_class:
+            return item_responses.get(str(item_id)) or item_responses.get(
+                "default",
+                "Nao foi possivel identificar um item com confianca.",
+            )
+
+    return item_responses.get(
+        "default",
+        "Nao foi possivel identificar um item com confianca.",
+    )
+
+
+def truncate_snippet(text: str, max_chars: int = 300) -> str:
+    snippet = " ".join(text.split())
+    if len(snippet) <= max_chars:
+        return snippet
+    trimmed = snippet[:max_chars].rsplit(" ", 1)[0]
+    if not trimmed:
+        trimmed = snippet[:max_chars]
+    return trimmed + "..."
+
+
+def get_rag_pipeline() -> RAGPipeline:
+    global RAG_PIPELINE
+    if RAG_PIPELINE is None:
+        config = RAGConfig(
+            pdf_path=DEFAULT_FAQ_PDF_PATH,
+            cache_dir=DEFAULT_RAG_CACHE_DIR,
+        )
+        RAG_PIPELINE = RAGPipeline(config)
+    return RAG_PIPELINE
+
+
+def get_rag_remote_pipeline() -> RemoteRAGPipeline:
+    global REMOTE_RAG_PIPELINE
+    if REMOTE_RAG_PIPELINE is None:
+        config = RemoteRAGConfig(
+            pdf_path=DEFAULT_FAQ_PDF_PATH,
+            cache_dir=DEFAULT_REMOTE_RAG_CACHE_DIR,
+        )
+        REMOTE_RAG_PIPELINE = RemoteRAGPipeline(config)
+    return REMOTE_RAG_PIPELINE
+
+
 @app.get("/api/health")
 def health_check() -> dict[str, str]:
     return {"status": "ok", "service": "pln-pipeline"}
 
 
-@app.post("/api/w2vec", response_model=ClassResponseOnly)
-def preprocessing_w2vec(payload: PreprocessingRequest) -> ClassResponseOnly:
+@app.post("/api/w2vec", response_model=PreprocessingResponse)
+def preprocessing_w2vec(payload: PreprocessingRequest) -> PreprocessingResponse:
     pipeline = W2VPipeline()
 
     try:
@@ -154,16 +234,71 @@ def preprocessing_w2vec(payload: PreprocessingRequest) -> ClassResponseOnly:
             item_similarities,
             item_responses,
         )
+        predicted_class = item_similarities[0].classe if item_similarities else None
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
-    return ClassResponseOnly(
+    return PreprocessingResponse(
+        normalized_text=pipeline.normalize_text(payload.raw_text),
+        tokens=pipeline.preprocess_tokens(payload.raw_text),
+        vector_size=pipeline.config.vector_size,
+        vector=vector.tolist(),
+        item_similarities=item_similarities,
+        predicted_class=predicted_class,
         class_response=class_response,
     )
 
 
-@app.post("/api/fasttext", response_model=ClassResponseOnly)
-def preprocessing_fasttext(payload: PreprocessingRequest) -> ClassResponseOnly:
+@app.post("/api/w2vec/knn", response_model=PreprocessingSummaryResponse)
+def preprocessing_w2vec_knn(
+    payload: PreprocessingRequest,
+    k: int = Query(3, ge=1, le=20),
+) -> PreprocessingSummaryResponse:
+    pipeline = W2VPipeline()
+
+    try:
+        pipeline.fit(load_default_training_corpus())
+        vector = pipeline.text_to_vector(payload.raw_text)
+        if DEFAULT_W2VEC_VECTORIZED_PATH.exists():
+            item_reference_vectors = load_item_reference_vectors(
+                DEFAULT_W2VEC_VECTORIZED_PATH,
+                pipeline.config.vector_size,
+            )
+        else:
+            item_reference_vectors = []
+        predicted_class, neighbors = pipeline.knn(
+            vector,
+            item_reference_vectors,
+            k=k,
+        )
+        item_similarities = [
+            ItemSimilarity(
+                item=item_id,
+                classe=class_name,
+                similarity=similarity,
+                rank=rank,
+            )
+            for rank, (item_id, class_name, similarity) in enumerate(neighbors, start=1)
+        ]
+        item_responses = load_item_responses()
+        class_response = resolve_knn_item_response(
+            neighbors,
+            predicted_class,
+            item_responses,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    return PreprocessingSummaryResponse(
+        normalized_text=pipeline.normalize_text(payload.raw_text),
+        item_similarities=item_similarities,
+        predicted_class=predicted_class,
+        class_response=class_response,
+    )
+
+
+@app.post("/api/fasttext", response_model=PreprocessingResponse)
+def preprocessing_fasttext(payload: PreprocessingRequest) -> PreprocessingResponse:
     pipeline = FastTextPipeline()
 
     try:
@@ -186,9 +321,114 @@ def preprocessing_fasttext(payload: PreprocessingRequest) -> ClassResponseOnly:
             item_similarities,
             item_responses,
         )
+        predicted_class = item_similarities[0].classe if item_similarities else None
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
-    return ClassResponseOnly(
+    return PreprocessingResponse(
+        normalized_text=pipeline.normalize_text(payload.raw_text),
+        tokens=pipeline.preprocess_tokens(payload.raw_text),
+        vector_size=pipeline.config.vector_size,
+        vector=vector.tolist(),
+        item_similarities=item_similarities,
+        predicted_class=predicted_class,
         class_response=class_response,
     )
+
+
+@app.post("/api/fasttext/knn", response_model=PreprocessingSummaryResponse)
+def preprocessing_fasttext_knn(
+    payload: PreprocessingRequest,
+    k: int = Query(3, ge=1, le=20),
+) -> PreprocessingSummaryResponse:
+    pipeline = FastTextPipeline()
+
+    try:
+        pipeline.fit(load_default_training_corpus())
+        vector = pipeline.text_to_vector(payload.raw_text)
+        if DEFAULT_FASTTEXT_VECTORIZED_PATH.exists():
+            item_reference_vectors = load_item_reference_vectors(
+                DEFAULT_FASTTEXT_VECTORIZED_PATH,
+                pipeline.config.vector_size,
+            )
+        else:
+            item_reference_vectors = []
+        predicted_class, neighbors = pipeline.knn(
+            vector,
+            item_reference_vectors,
+            k=k,
+        )
+        item_similarities = [
+            ItemSimilarity(
+                item=item_id,
+                classe=class_name,
+                similarity=similarity,
+                rank=rank,
+            )
+            for rank, (item_id, class_name, similarity) in enumerate(neighbors, start=1)
+        ]
+        item_responses = load_item_responses()
+        class_response = resolve_knn_item_response(
+            neighbors,
+            predicted_class,
+            item_responses,
+        )
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    return PreprocessingSummaryResponse(
+        normalized_text=pipeline.normalize_text(payload.raw_text),
+        item_similarities=item_similarities,
+        predicted_class=predicted_class,
+        class_response=class_response,
+    )
+
+
+@app.post("/api/rag", response_model=RAGResponse)
+def rag_answer(payload: RAGRequest) -> RAGResponse:
+    if not payload.question.strip():
+        raise HTTPException(status_code=400, detail="Question is empty.")
+
+    try:
+        pipeline = get_rag_pipeline()
+        answer, hits = pipeline.ask(payload.question, top_k=payload.top_k)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+
+    sources = [
+        RAGSource(
+            source=hit.chunk.source,
+            page=hit.chunk.page,
+            score=hit.score,
+            snippet=truncate_snippet(hit.chunk.text),
+        )
+        for hit in hits
+    ]
+
+    return RAGResponse(answer=answer, sources=sources)
+
+
+@app.post("/api/rag_remote", response_model=RAGResponse)
+def rag_remote_answer(payload: RAGRequest) -> RAGResponse:
+    if not payload.question.strip():
+        raise HTTPException(status_code=400, detail="Question is empty.")
+
+    try:
+        pipeline = get_rag_remote_pipeline()
+        answer, hits = pipeline.ask(payload.question, top_k=payload.top_k)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+
+    sources = [
+        RAGSource(
+            source=hit.chunk.source,
+            page=hit.chunk.page,
+            score=hit.score,
+            snippet=truncate_snippet(hit.chunk.text),
+        )
+        for hit in hits
+    ]
+
+    return RAGResponse(answer=answer, sources=sources)
