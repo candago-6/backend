@@ -9,6 +9,7 @@ class ItemSimilarity(BaseModel):
     item: int
     classe: str
     similarity: float
+    rank: int | None = None
 
 
 class PreprocessingResponse(BaseModel):
@@ -21,5 +22,34 @@ class PreprocessingResponse(BaseModel):
     class_response: str
 
 
+class PreprocessingSummaryResponse(BaseModel):
+    normalized_text: str
+    item_similarities: list[ItemSimilarity]
+    predicted_class: str | None
+    class_response: str
+
+
 class ClassResponseOnly(BaseModel):
     class_response: str
+
+
+class RAGRequest(BaseModel):
+    question: str = Field(..., min_length=1, description="User question")
+    top_k: int | None = Field(
+        None,
+        ge=1,
+        le=10,
+        description="Number of chunks to retrieve",
+    )
+
+
+class RAGSource(BaseModel):
+    source: str
+    page: int
+    score: float
+    snippet: str
+
+
+class RAGResponse(BaseModel):
+    answer: str
+    sources: list[RAGSource]
