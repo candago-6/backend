@@ -1,0 +1,13 @@
+{
+  "cobrancas_indevidas_servicos_nao_contratados": "Voce pode abrir reclamacao no Procon para solicitar cancelamento da cobranca, interrupcao dos descontos e devolucao em dobro quando cabivel. Leve documento pessoal, comprovantes de cobranca/pagamento e dados do fornecedor.",
+  "triagem_inicial_encaminhamento": "Recomendamos triagem inicial do caso e abertura de reclamacao no Procon com documentos basicos (documento pessoal, comprovantes, protocolos e dados do fornecedor). Em alguns casos e necessario atendimento presencial.",
+  "contratos_rescisao_arrependimento": "Em contratos, avalie direito de arrependimento (compras fora do estabelecimento em ate 7 dias), clausula de fidelidade e eventual multa. Quando houver abusividade ou falha do fornecedor, e possivel pedir revisao/cancelamento.",
+  "vicios_troca_garantia_pratica": "Para vicios de produto ou servico, aplique os prazos legais (30 ou 90 dias, conforme o caso). Se nao houver solucao em ate 30 dias, o consumidor pode escolher entre substituicao, devolucao do valor ou abatimento proporcional.",
+  "atendimento_procon_procedimentos": "Para atendimento no Procon, apresente documento pessoal, comprovantes do problema e identificacao do fornecedor. O prazo de resposta do fornecedor na CIP e de ate 10 dias corridos.",
+  "garantias_conceitos_tipos": "Existem garantia legal, contratual e estendida. A garantia legal e de 30 dias para nao duraveis e 90 dias para duraveis, com contagem a partir da entrega ou da descoberta do vicio oculto.",
+  "cumprimento_oferta_preco": "A oferta vincula o fornecedor: preco anunciado deve ser cumprido e, em divergencia entre prateleira e caixa, vale o menor preco. Se houver recusa, o consumidor pode exigir cumprimento, aceitar equivalente ou rescindir com reembolso.",
+  "casos_presenciais_especificos": "Em compras presenciais, nao ha direito geral de arrependimento por motivo pessoal. Em casos especificos (ex.: veiculos com vicio, recusa de nota fiscal), pode haver medidas de garantia e reclamacao no Procon conforme a situacao.",
+  "fora_escopo_procon": "Demandas de direito imobiliario geralmente seguem legislacao especifica (Lei do Inquilinato) e podem ficar fora do escopo de atuacao do Procon/CDC.",
+  "default": "Nao foi possivel identificar uma classe com confianca. Recomendamos triagem no Procon com documento pessoal, comprovantes e dados do fornecedor para analise detalhada.",
+  "saudacao": "Olá! Sou o Assistente de Atendimento ao Consumidor. Em que posso ajudar hoje?"
+}
