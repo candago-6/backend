@@ -26,6 +26,9 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8003:8003"
+    environment:
+      - GATEWAY_URL=http://service_manager:8002/api/v1/process-message
+      - FILTER_KEYWORD=Procon
     networks:
       - assistente-whatsapp-net
 
