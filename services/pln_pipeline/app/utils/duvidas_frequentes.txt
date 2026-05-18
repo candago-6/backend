@@ -312,3 +312,19 @@ R: O recebimento da nota fiscal é um direito do consumidor, sendo um direito à
 
 47- Direito imobiliário não amparado pelo PROCON/CDC
 R: Em casos que envolvam o direito imobiliário, o mesmo será regido pela LEI No 8.245, DE 18  DE OUTUBRO DE 1991., conhecida como Lei do Inquilinato. Neste caso, o PROCON não poderá intervir ou orientar o consumidor, pois o mesmo deverá ser orientado pela legislação específica.
+
+
+48- Olá
+R: Olá, tudo bem?
+
+49- Oi
+R: Olá, tudo bem?
+
+50- Bom dia
+R: Olá, tudo bem?
+
+51- Boa tarde
+R: Olá, tudo bem?
+
+52- Boa noite
+R: Olá, tudo bem?

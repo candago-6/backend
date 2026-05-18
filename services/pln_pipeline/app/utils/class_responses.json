@@ -8,5 +8,6 @@
   "cumprimento_oferta_preco": "A oferta vincula o fornecedor: preco anunciado deve ser cumprido e, em divergencia entre prateleira e caixa, vale o menor preco. Se houver recusa, o consumidor pode exigir cumprimento, aceitar equivalente ou rescindir com reembolso.",
   "casos_presenciais_especificos": "Em compras presenciais, nao ha direito geral de arrependimento por motivo pessoal. Em casos especificos (ex.: veiculos com vicio, recusa de nota fiscal), pode haver medidas de garantia e reclamacao no Procon conforme a situacao.",
   "fora_escopo_procon": "Demandas de direito imobiliario geralmente seguem legislacao especifica (Lei do Inquilinato) e podem ficar fora do escopo de atuacao do Procon/CDC.",
-  "default": "Nao foi possivel identificar uma classe com confianca. Recomendamos triagem no Procon com documento pessoal, comprovantes e dados do fornecedor para analise detalhada."
+  "default": "Nao foi possivel identificar uma classe com confianca. Recomendamos triagem no Procon com documento pessoal, comprovantes e dados do fornecedor para analise detalhada.",
+  "saudacao": "Olá! Sou o Assistente de Atendimento ao Consumidor. Em que posso ajudar hoje?"
 }
