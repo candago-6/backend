@@ -1,16 +1,16 @@
 # Backend
 
-Setup inicial dos servicos do assistente de WhatsApp (fase base de containers).
+Setup inicial dos serviços do assistente de WhatsApp (fase base de containers).
 
-## Servicos base criados
+## Serviços base criados
 
-Atualmente o backend possui 3 servicos com estrutura minima para subir em container:
+Atualmente o backend possui 3 serviços com estrutura mínima para subir em container:
 
 1. `pln-pipeline` (`services/pln_pipeline`)
 2. `service-manager` (`services/service_manager`)
 3. `whatsapp-bot` (`services/whatsapp_bot`)
 
-Cada servico tem:
+Cada serviço tem:
 
 - `Dockerfile` com Python 3.12 slim
 - `requirements.txt` com FastAPI e Uvicorn
@@ -22,11 +22,11 @@ Arquivo: `docker-compose.yml`
 
 Esse compose define:
 
-- build local para os 3 servicos
-- publicacao de portas:
-	- `8001` para `pln-pipeline`
-	- `8002` para `service-manager`
-	- `8003` para `whatsapp-bot`
+- build local para os 3 serviços
+- publicação de portas:
+    - `8001` para `pln-pipeline`
+    - `8002` para `service-manager`
+    - `8003` para `whatsapp-bot`
 - rede compartilhada `assistente-whatsapp-net`
 
 ## Como subir
@@ -49,18 +49,23 @@ Para parar:
 docker compose down
 ```
 
-## Health checks disponiveis
+---
 
-- `http://localhost:8001/api/v1/health` -> PLN Pipeline
-- `http://localhost:8002/api/v1/health` -> Service Manager
-- `http://localhost:8003/api/v1/health` -> WhatsApp Bot
+## Pipeline de PLN
 
-Exemplo de resposta:
+A pipeline de PLN é responsável por transformar uma mensagem não estruturada em informação processável. Ela pode ser executada como parte do Web Service de Orquestração ou como um serviço separado.
+
+### Saída esperada (exemplo)
+
+Em alto nível, a saída deve incluir **intenção/classe** e um nível de **confiança**, para orientar o roteamento (resposta automática vs. pedir esclarecimento vs. humano).
 
 ```json
 {
-	"status": "ok",
-	"service": "pln-pipeline"
+	"mensagemOriginal": "Quero saber o andamento da minha reclamação 4589",
+	"intencao": "consultar_reclamacao",
+	"classePrevista": "consulta_andamento_processo",
+	"confianca": 0.94,
+	"acaoSugerida": "consultar_api_protocolos"
 }
 ```
 
@@ -71,20 +76,20 @@ backend/
 ├── docker-compose.yml
 ├── README.md
 └── services/
-		├── pln_pipeline/
-		│   ├── Dockerfile
-		│   ├── requirements.txt
-		│   └── app/main.py
-		├── service_manager/
-		│   ├── Dockerfile
-		│   ├── requirements.txt
-		│   └── app/main.py
-		└── whatsapp_bot/
-				├── Dockerfile
-				├── requirements.txt
-				└── app/main.py
+    ├── pln_pipeline/
+    │   ├── Dockerfile
+    │   ├── requirements.txt
+    │   └── app/main.py
+    ├── service_manager/
+    │   ├── Dockerfile
+    │   ├── requirements.txt
+    │   └── app/main.py
+    └── whatsapp_bot/
+        ├── Dockerfile
+        ├── requirements.txt
+        └── app/main.py
 ```
 
-## Proximo passo
+## Próximo passo
 
-Implementar os endpoints reais de negocio em cada servico e ajustar variaveis de ambiente no `docker-compose.yml` para comunicacao entre eles.
+Implementar os endpoints reais de negócio em cada serviço e ajustar variáveis de ambiente no `docker-compose.yml` para comunicação entre eles.
