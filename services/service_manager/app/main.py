@@ -1,46 +1,18 @@
-from fastapi import FastAPI
-from fastapi.middleware.cors import CORSMiddleware
+from contextlib import asynccontextmanager
+from fastapi import FastAPI, Depends, HTTPException
+from sqlmodel import Session, select
+from .database import create_db_and_tables, get_session
+from .models.entities import User, Conversation, Message, Feedback
+from .utils.security import decrypt_data
 
-from app.database import Base, SessionLocal, engine
-from app.routers import auth
-from app.seed import seed_default_admin
-
-Base.metadata.create_all(bind=engine)
-import httpx
-from fastapi import FastAPI, HTTPException, Query, Response
-from pydantic import BaseModel
-from typing import Any
-
-
-app = FastAPI(title="Gateway Service (Service Manager)", version="0.1.0")
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Initialize database tables with retries
+    create_db_and_tables()
+    yield
 
 
-class GatewayRequest(BaseModel):
-    from_number: str
-    text: str
-
-
-class GatewayResponse(BaseModel):
-    class_response: str
-
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
-app.include_router(auth.router)
-
-
-@app.on_event("startup")
-def on_startup() -> None:
-    db = SessionLocal()
-    try:
-        seed_default_admin(db)
-    finally:
-        db.close()
+app = FastAPI(title="Service Manager", version="0.1.0", lifespan=lifespan)
 
 
 @app.get("/api/v1/health")
@@ -48,33 +20,107 @@ def health_check() -> dict[str, str]:
     return {"status": "ok", "service": "service-manager"}
 
 
-@app.post("/api/v1/process-message", response_model=GatewayResponse)
-async def process_message(
-    payload: GatewayRequest,
-    keyword: str = Query(..., description="Keyword que a mensagem deve conter para ser processada"),
-) -> Any:
-    # Filtro por keyword: ignora mensagens que não contenham a keyword configurada
-    if keyword.lower() not in payload.text.lower():
-        return Response(status_code=204)
+# User Endpoints
+@app.post("/api/v1/users", response_model=User)
+def create_user(user: User, session: Session = Depends(get_session)):
+    session.add(user)
+    session.commit()
+    session.refresh(user)
+    return user
 
-    # Encaminha ao PLN Pipeline
-    pln_url = "http://pln-pipeline:8001/api/fasttext"
 
-    try:
-        async with httpx.AsyncClient() as client:
-            response = await client.post(
-                pln_url,
-                json={"raw_text": payload.text},
-                timeout=10.0,
-            )
-            response.raise_for_status()
-            pln_data = response.json()
-    except httpx.RequestError as exc:
-        raise HTTPException(status_code=503, detail=f"Erro ao contatar o serviço de PLN: {exc}")
-    except httpx.HTTPStatusError as exc:
-        raise HTTPException(
-            status_code=exc.response.status_code,
-            detail=f"Erro do serviço de PLN: {exc.response.text}",
-        )
+@app.get("/api/v1/users", response_model=list[User])
+def list_users(session: Session = Depends(get_session)):
+    users = session.exec(select(User)).all()
+    for user in users:
+        user.cpf = decrypt_data(user.cpf)
+    return users
 
-    return GatewayResponse(class_response=pln_data["class_response"])
+
+@app.get("/api/v1/users/{user_id}", response_model=User)
+def get_user(user_id: int, session: Session = Depends(get_session)):
+    user = session.get(User, user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    
+    # Decrypt CPF for the response
+    user.cpf = decrypt_data(user.cpf)
+    return user
+
+
+@app.get("/api/v1/users/phone/{phone}", response_model=User)
+def get_user_by_phone(phone: str, session: Session = Depends(get_session)):
+    statement = select(User).where(User.phone == phone)
+    user = session.exec(statement).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return user
+
+
+# Conversation Endpoints
+@app.post("/api/v1/conversations", response_model=Conversation)
+def create_conversation(conversation: Conversation, session: Session = Depends(get_session)):
+    session.add(conversation)
+    session.commit()
+    session.refresh(conversation)
+    return conversation
+
+
+@app.get("/api/v1/conversations", response_model=list[Conversation])
+def list_conversations(session: Session = Depends(get_session)):
+    return session.exec(select(Conversation)).all()
+
+
+@app.get("/api/v1/conversations/active/{user_id}", response_model=Conversation)
+def get_active_conversation(user_id: int, session: Session = Depends(get_session)):
+    statement = select(Conversation).where(Conversation.user_id == user_id, Conversation.status == "open")
+    conversation = session.exec(statement).first()
+    if not conversation:
+        raise HTTPException(status_code=404, detail="No active conversation found")
+    return conversation
+
+
+@app.get("/api/v1/messages", response_model=list[Message])
+def list_messages(session: Session = Depends(get_session)):
+    return session.exec(select(Message)).all()
+
+
+@app.post("/api/v1/messages", response_model=Message)
+def create_message(message: Message, session: Session = Depends(get_session)):
+    session.add(message)
+    session.commit()
+    session.refresh(message)
+    return message
+
+
+# Feedback Endpoints (Task 08.1)
+@app.get("/api/v1/feedback", response_model=list[Feedback])
+def list_feedback(session: Session = Depends(get_session)):
+    return session.exec(select(Feedback)).all()
+
+@app.post("/api/v1/feedback", response_model=Feedback)
+def create_feedback(feedback: Feedback, session: Session = Depends(get_session)):
+    # 1. Verificar se a conversa existe
+    conversation = session.get(Conversation, feedback.conversation_id)
+    if not conversation:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+    
+    # 2. Tentar encontrar feedback existente para esta conversa
+    statement = select(Feedback).where(Feedback.conversation_id == feedback.conversation_id)
+    existing_feedback = session.exec(statement).first()
+    
+    if existing_feedback:
+        # Atualizar registro existente
+        existing_feedback.rating = feedback.rating
+        existing_feedback.comment = feedback.comment
+        existing_feedback.is_best_answer = feedback.is_best_answer
+        session.add(existing_feedback)
+        session.commit()
+        session.refresh(existing_feedback)
+        return existing_feedback
+    else:
+        # Criar novo registro
+        session.add(feedback)
+        session.commit()
+        session.refresh(feedback)
+        return feedback

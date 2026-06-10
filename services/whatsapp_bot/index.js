@@ -7,8 +7,8 @@ const axios = require('axios');
 // Iniciando um servidor express simples para healthcheck e exibição do QR Code
 const app = express();
 const PORT = 8003;
-const GATEWAY_URL = process.env.GATEWAY_URL || 'http://service_manager:8002/api/v1/process-message';
-const FILTER_KEYWORD = process.env.FILTER_KEYWORD || 'Procon';
+const PLN_URL = process.env.PLN_URL || 'http://pln-pipeline:8001/api/fasttext';
+const MANAGER_URL = process.env.MANAGER_URL || 'http://service-manager:8002/api/v1';
 
 // Armazena o último QR Code recebido para servir via HTTP
 let latestQR = null;
@@ -36,7 +36,74 @@ app.listen(PORT, () => {
     console.log(`QR Code disponível em: http://localhost:${PORT}/qr`);
 });
 
-// Iniciando o Client do WhatsApp
+// Funções auxiliares para persistência
+async function getOrCreateUser(phone) {
+    try {
+        const response = await axios.get(`${MANAGER_URL}/users/phone/${phone}`);
+        return response.data;
+    } catch (error) {
+        if (error.response && error.response.status === 404) {
+            const createResponse = await axios.post(`${MANAGER_URL}/users`, {
+                name: "Cliente WhatsApp",
+                phone: phone,
+                cpf: "" // Ficará vazio por enquanto
+            });
+            return createResponse.data;
+        }
+        throw error;
+    }
+}
+
+async function getOrCreateConversation(userId) {
+    try {
+        const response = await axios.get(`${MANAGER_URL}/conversations/active/${userId}`);
+        return response.data;
+    } catch (error) {
+        if (error.response && error.response.status === 404) {
+            const protocol = `PROCON-${Date.now()}`;
+            const createResponse = await axios.post(`${MANAGER_URL}/conversations`, {
+                user_id: userId,
+                protocol: protocol,
+                status: "open"
+            });
+            return createResponse.data;
+        }
+        throw error;
+    }
+}
+
+// Variável para armazenar o ID da conversa ativa (opcional, já que buscamos do banco)
+let currentConversationId = null;
+
+async function saveMessage(conversationId, role, content) {
+    try {
+        const response = await axios.post(`${MANAGER_URL}/messages`, {
+            conversation_id: conversationId,
+            role: role,
+            content: content
+        });
+        return response.data.id;
+    } catch (error) {
+        console.error('Erro ao salvar mensagem:', error.message);
+        return null;
+    }
+}
+
+async function saveFeedback(conversationId, rating) {
+    try {
+        await axios.post(`${MANAGER_URL}/feedback`, {
+            conversation_id: conversationId,
+            rating: rating,
+            is_best_answer: rating >= 4
+        });
+        return true;
+    } catch (error) {
+        console.error('Erro ao salvar feedback:', error.message);
+        return false;
+    }
+}
+
+// ... (Client initialization)
 const client = new Client({
     authStrategy: new LocalAuth(),
     puppeteer: {
@@ -49,8 +116,6 @@ client.on('qr', (qr) => {
     // Salva o QR Code para servir via HTTP
     latestQR = qr;
     console.log('Novo QR Code gerado. Acesse http://localhost:8003/qr no seu browser para escanear.');
-
-    // Também exibe no terminal como fallback (pode ficar corrompido no Docker, mas está disponível via browser)
     qrcode.generate(qr, { small: true });
 });
 
@@ -61,32 +126,61 @@ client.on('ready', () => {
 });
 
 client.on('message', async (msg) => {
+    // 1. Lógica de Feedback (agora por conversa)
+    if (msg.body.toLowerCase().startsWith('feedback ')) {
+        const rating = parseInt(msg.body.split(' ')[1]);
+        
+        // Obter usuário e conversa para ter o ID da conversa atual
+        const phone = msg.from.split('@')[0];
+        const user = await getOrCreateUser(phone);
+        const conversation = await getOrCreateConversation(user.id);
+        
+        if (rating >= 1 && rating <= 5) {
+            const success = await saveFeedback(conversation.id, rating);
+            if (success) {
+                await msg.reply('Obrigado pelo seu feedback sobre este atendimento!');
+            } else {
+                await msg.reply('Erro ao salvar feedback.');
+            }
+        } else {
+            await msg.reply('Por favor, envie "feedback" seguido de uma nota de 1 a 5.');
+        }
+        return;
+    }
+
+    // Trava de segurança: só responde se a mensagem contiver "procon" (case insensitive)
+    if (!msg.body.toLowerCase().includes('procon')) {
+        return;
+    }
+
     console.log(`Mensagem recebida de ${msg.from}: ${msg.body}`);
 
     try {
-        // Envia a mensagem para o Gateway, que aplica o filtro e consulta o PLN
-        const response = await axios.post(
-            `${GATEWAY_URL}?keyword=${encodeURIComponent(FILTER_KEYWORD)}`,
-            {
-                from_number: msg.from,
-                text: msg.body,
-            }
-        );
+        // 1. Persistência: Identificar usuário e conversa
+        const contact = await msg.getContact();
+        const phone = contact.id.user; // O número real está aqui
+        const user = await getOrCreateUser(phone);
+        const conversation = await getOrCreateConversation(user.id);
 
-        // Gateway retornou 204: mensagem não passou no filtro, ignora
-        if (response.status === 204) {
-            console.log(`Mensagem de ${msg.from} ignorada (não contém keyword: "${FILTER_KEYWORD}")`);
-            return;
-        }
+        // 2. Salvar mensagem do usuário no banco
+        await saveMessage(conversation.id, 'user', msg.body);
 
-        const reply = response.data.class_response;
+        // 3. Obter resposta do PLN
+        const plnResponse = await axios.post(PLN_URL, {
+            raw_text: msg.body
+        });
 
-        // Responde ao usuário no WhatsApp
-        await msg.reply(reply);
+        const reply = plnResponse.data.class_response;
+        
+        // 4. Salvar resposta do bot no banco
+        await saveMessage(conversation.id, 'bot', reply);
+
+        // 5. Responder no WhatsApp
+        await msg.reply(reply + '\n\nAo finalizar, avalie este atendimento enviando "feedback 1 a 5"');
         console.log(`Resposta enviada para ${msg.from}`);
 
     } catch (error) {
-        console.error('Erro ao processar mensagem no Gateway:', error.message);
+        console.error('Erro no processamento da mensagem:', error.message);
     }
 });
 
