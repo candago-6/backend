@@ -94,14 +94,33 @@ def create_message(message: Message, session: Session = Depends(get_session)):
 
 
 # Feedback Endpoints (Task 08.1)
+@app.get("/api/v1/feedback", response_model=list[Feedback])
+def list_feedback(session: Session = Depends(get_session)):
+    return session.exec(select(Feedback)).all()
+
 @app.post("/api/v1/feedback", response_model=Feedback)
 def create_feedback(feedback: Feedback, session: Session = Depends(get_session)):
-    # Verify if message exists
-    message = session.get(Message, feedback.message_id)
-    if not message:
-        raise HTTPException(status_code=404, detail="Message not found")
+    # 1. Verificar se a conversa existe
+    conversation = session.get(Conversation, feedback.conversation_id)
+    if not conversation:
+        raise HTTPException(status_code=404, detail="Conversation not found")
     
-    session.add(feedback)
-    session.commit()
-    session.refresh(feedback)
-    return feedback
+    # 2. Tentar encontrar feedback existente para esta conversa
+    statement = select(Feedback).where(Feedback.conversation_id == feedback.conversation_id)
+    existing_feedback = session.exec(statement).first()
+    
+    if existing_feedback:
+        # Atualizar registro existente
+        existing_feedback.rating = feedback.rating
+        existing_feedback.comment = feedback.comment
+        existing_feedback.is_best_answer = feedback.is_best_answer
+        session.add(existing_feedback)
+        session.commit()
+        session.refresh(existing_feedback)
+        return existing_feedback
+    else:
+        # Criar novo registro
+        session.add(feedback)
+        session.commit()
+        session.refresh(feedback)
+        return feedback

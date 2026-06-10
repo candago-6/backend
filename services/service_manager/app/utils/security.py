@@ -4,15 +4,12 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-# In a real production environment, the key should be provided via environment variable
-# If not present, we can generate one for local development, but it's not persistent.
-# Ideally: ENCRYPTION_KEY=...
+# In a real production environment, the key should be provided via environment variable.
+# It MUST be present.
 SECRET_KEY = os.getenv("ENCRYPTION_KEY")
 
 if not SECRET_KEY:
-    # Generate a key if none is provided (only for dev/testing)
-    SECRET_KEY = Fernet.generate_key().decode()
-    print(f"WARNING: ENCRYPTION_KEY not found. Generated temporary key: {SECRET_KEY}")
+    raise ValueError("CRITICAL: ENCRYPTION_KEY environment variable not set.")
 
 fernet = Fernet(SECRET_KEY.encode())
 

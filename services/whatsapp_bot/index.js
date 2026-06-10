@@ -53,19 +53,38 @@ async function getOrCreateConversation(userId) {
     }
 }
 
+// Variável para armazenar o ID da conversa ativa (opcional, já que buscamos do banco)
+let currentConversationId = null;
+
 async function saveMessage(conversationId, role, content) {
     try {
-        await axios.post(`${MANAGER_URL}/messages`, {
+        const response = await axios.post(`${MANAGER_URL}/messages`, {
             conversation_id: conversationId,
             role: role,
             content: content
         });
+        return response.data.id;
     } catch (error) {
         console.error('Erro ao salvar mensagem:', error.message);
+        return null;
     }
 }
 
-// Iniciando o Client do WhatsApp
+async function saveFeedback(conversationId, rating) {
+    try {
+        await axios.post(`${MANAGER_URL}/feedback`, {
+            conversation_id: conversationId,
+            rating: rating,
+            is_best_answer: rating >= 4
+        });
+        return true;
+    } catch (error) {
+        console.error('Erro ao salvar feedback:', error.message);
+        return false;
+    }
+}
+
+// ... (Client initialization)
 const client = new Client({
     authStrategy: new LocalAuth(),
     puppeteer: {
@@ -83,6 +102,28 @@ client.on('ready', () => {
 });
 
 client.on('message', async (msg) => {
+    // 1. Lógica de Feedback (agora por conversa)
+    if (msg.body.toLowerCase().startsWith('feedback ')) {
+        const rating = parseInt(msg.body.split(' ')[1]);
+        
+        // Obter usuário e conversa para ter o ID da conversa atual
+        const phone = msg.from.split('@')[0];
+        const user = await getOrCreateUser(phone);
+        const conversation = await getOrCreateConversation(user.id);
+        
+        if (rating >= 1 && rating <= 5) {
+            const success = await saveFeedback(conversation.id, rating);
+            if (success) {
+                await msg.reply('Obrigado pelo seu feedback sobre este atendimento!');
+            } else {
+                await msg.reply('Erro ao salvar feedback.');
+            }
+        } else {
+            await msg.reply('Por favor, envie "feedback" seguido de uma nota de 1 a 5.');
+        }
+        return;
+    }
+
     // Trava de segurança: só responde se a mensagem contiver "procon" (case insensitive)
     if (!msg.body.toLowerCase().includes('procon')) {
         return;
@@ -92,7 +133,8 @@ client.on('message', async (msg) => {
 
     try {
         // 1. Persistência: Identificar usuário e conversa
-        const phone = msg.from.split('@')[0];
+        const contact = await msg.getContact();
+        const phone = contact.id.user; // O número real está aqui
         const user = await getOrCreateUser(phone);
         const conversation = await getOrCreateConversation(user.id);
 
@@ -110,7 +152,7 @@ client.on('message', async (msg) => {
         await saveMessage(conversation.id, 'bot', reply);
 
         // 5. Responder no WhatsApp
-        await msg.reply(reply);
+        await msg.reply(reply + '\n\nAo finalizar, avalie este atendimento enviando "feedback 1 a 5"');
         console.log(`Resposta enviada para ${msg.from}`);
 
     } catch (error) {
