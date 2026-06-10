@@ -1,4 +1,16 @@
 services:
+  db:
+    image: postgres:16-alpine
+    container_name: assistente_db
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-admin}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-admin123}
+      POSTGRES_DB: ${POSTGRES_DB:-assistente_whatsapp}
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - assistente-whatsapp-net
+
   pln-pipeline:
     container_name: pln_pipeline
     build:
@@ -17,11 +29,10 @@ services:
     ports:
       - "8002:8002"
     environment:
-      - JWT_SECRET=${JWT_SECRET:-dev-secret-change-me}
-      - ADMIN_EMAIL=${ADMIN_EMAIL:-admin@procon.sp.gov.br}
-      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin123}
-    volumes:
-      - ./services/service_manager/data:/app/data
+      DATABASE_URL: postgresql://${POSTGRES_USER:-admin}:${POSTGRES_PASSWORD:-admin123}@db:5432/${POSTGRES_DB:-assistente_whatsapp}
+      ENCRYPTION_KEY: ${ENCRYPTION_KEY:-v6u6W5q7U5p4S3Y2X1W0V9U8T7S6R5Q4P3O2N1M0L8k=} # Chave Fernet de 32 bytes (44 chars base64)
+    depends_on:
+      - db
     networks:
       - assistente-whatsapp-net
 
@@ -33,11 +44,14 @@ services:
     ports:
       - "8003:8003"
     environment:
-      - GATEWAY_URL=http://service_manager:8002/api/v1/process-message
-      - FILTER_KEYWORD=Procon
+      PLN_URL: http://pln-pipeline:8001/api/fasttext
+      MANAGER_URL: http://service-manager:8002/api/v1
     networks:
       - assistente-whatsapp-net
 
 networks:
   assistente-whatsapp-net:
     driver: bridge
+
+volumes:
+  postgres_data:

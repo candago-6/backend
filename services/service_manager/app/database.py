@@ -1,25 +1,39 @@
 import os
+import time
+from sqlmodel import create_engine, SQLModel, Session
+from sqlalchemy.exc import OperationalError
+from dotenv import load_dotenv
 
-from sqlalchemy import create_engine
-from sqlalchemy.orm import declarative_base, sessionmaker
+load_dotenv()
 
-DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./data/service_manager.db")
+DATABASE_URL = os.getenv("DATABASE_URL", "postgresql://admin:admin123@db:5432/assistente_whatsapp")
 
-if DATABASE_URL.startswith("sqlite:///"):
-    db_path = DATABASE_URL.removeprefix("sqlite:///")
-    db_dir = os.path.dirname(db_path)
-    if db_dir:
-        os.makedirs(db_dir, exist_ok=True)
-
-connect_args = {"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {}
-engine = create_engine(DATABASE_URL, connect_args=connect_args)
-SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
-Base = declarative_base()
+engine = create_engine(DATABASE_URL, echo=True)
 
 
-def get_db():
-    db = SessionLocal()
-    try:
-        yield db
-    finally:
-        db.close()
+def create_db_and_tables():
+    from .models.entities import User, Conversation, Message, Feedback  # Import to ensure they are registered
+    
+    max_retries = 5
+    retry_interval = 5
+    
+    for i in range(max_retries):
+        try:
+            SQLModel.metadata.create_all(engine)
+            print("Database tables created successfully!")
+            break
+        except OperationalError as e:
+            if i < max_retries - 1:
+                print(f"Database not ready (attempt {i+1}/{max_retries}). Retrying in {retry_interval}s...")
+                time.sleep(retry_interval)
+            else:
+                print("Max retries reached. Could not connect to the database.")
+                raise e
+
+
+def get_session():
+    with Session(engine) as session:
+        yield session
+
+# Alias para compatibilidade com modelos que usam SQLAlchemy puro (vindos da main)
+Base = SQLModel
