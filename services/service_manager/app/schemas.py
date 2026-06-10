@@ -17,6 +17,19 @@ class UserOut(BaseModel):
     role: Role
 
 
+class UserCreate(BaseModel):
+    name: str
+    email: EmailStr
+    password: str
+    role: Role
+
+
+class UserUpdate(BaseModel):
+    name: str
+    email: EmailStr
+    role: Role
+
+
 class TokenResponse(BaseModel):
     token: str
     user: UserOut
