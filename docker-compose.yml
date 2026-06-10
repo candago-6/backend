@@ -16,6 +16,12 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8002:8002"
+    environment:
+      - JWT_SECRET=${JWT_SECRET:-dev-secret-change-me}
+      - ADMIN_EMAIL=${ADMIN_EMAIL:-admin@procon.sp.gov.br}
+      - ADMIN_PASSWORD=${ADMIN_PASSWORD:-admin123}
+    volumes:
+      - ./services/service_manager/data:/app/data
     networks:
       - assistente-whatsapp-net
 
