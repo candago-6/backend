@@ -1,33 +1,37 @@
-# Backend
+# Backend — Assistente de WhatsApp (Procon)
 
-Setup inicial dos serviços do assistente de WhatsApp (fase base de containers).
+Pipeline de PLN orquestrado por um Gateway para responder dúvidas de consumidores via WhatsApp.
 
-## Serviços base criados
+## Arquitetura
 
-Atualmente o backend possui 3 serviços com estrutura mínima para subir em container:
+```
+[Usuário WhatsApp]
+       ↓ mensagem
+[whatsapp-bot]  — observa mensagens via whatsapp-web.js
+       ↓ POST /api/v1/process-message?keyword=<FILTER_KEYWORD>
+[service-manager]  — Gateway: aplica filtro de keyword e orquestra
+       ↓ POST /api/fasttext  (somente se mensagem contiver a keyword)
+[pln-pipeline]  — processa o texto com FastText e retorna class_response
+       ↑ class_response
+[service-manager]
+       ↑ { class_response }
+[whatsapp-bot]
+       ↑ msg.reply(class_response)
+[Usuário WhatsApp]
+```
 
-1. `pln-pipeline` (`services/pln_pipeline`)
-2. `service-manager` (`services/service_manager`)
-3. `whatsapp-bot` (`services/whatsapp_bot`)
+## Serviços
 
-Cada serviço tem:
+| Serviço | Diretório | Porta | Tecnologia |
+|---|---|---|---|
+| `pln-pipeline` | `services/pln_pipeline` | `8001` | Python / FastAPI |
+| `service-manager` | `services/service_manager` | `8002` | Python / FastAPI |
+| `whatsapp-bot` | `services/whatsapp_bot` | `8003` | Node.js / Express |
 
-- `Dockerfile` com Python 3.12 slim
-- `requirements.txt` com FastAPI e Uvicorn
-- `app/main.py` com endpoint de health check
+## Pré-requisitos
 
-## Docker Compose
-
-Arquivo: `docker-compose.yml`
-
-Esse compose define:
-
-- build local para os 3 serviços
-- publicação de portas:
-    - `8001` para `pln-pipeline`
-    - `8002` para `service-manager`
-    - `8003` para `whatsapp-bot`
-- rede compartilhada `assistente-whatsapp-net`
+- [Docker](https://www.docker.com/) e Docker Compose instalados
+- Acesso a um número de WhatsApp para escanear o QR Code
 
 ## Como subir
 
@@ -49,27 +53,82 @@ Para parar:
 docker compose down
 ```
 
----
+## Primeiro uso (QR Code)
 
-## Pipeline de PLN
+Ao subir pela primeira vez, o `whatsapp-bot` exibirá um QR Code no terminal. Escaneie-o com o WhatsApp do número que será o assistente:
 
-A pipeline de PLN é responsável por transformar uma mensagem não estruturada em informação processável. Ela pode ser executada como parte do Web Service de Orquestração ou como um serviço separado.
+1. Abra o WhatsApp no celular
+2. Vá em **Dispositivos conectados → Conectar dispositivo**
+3. Escaneie o QR Code exibido no log do container `whatsapp_bot`
 
-### Saída esperada (exemplo)
+A sessão é salva localmente em `services/whatsapp_bot/.wwebjs_auth` e não precisa ser re-autenticada nas próximas subidas.
 
-Em alto nível, a saída deve incluir **intenção/classe** e um nível de **confiança**, para orientar o roteamento (resposta automática vs. pedir esclarecimento vs. humano).
+## Variáveis de ambiente
+
+As variáveis são configuradas no `docker-compose.yml`, no serviço `whatsapp-bot`:
+
+| Variável | Padrão | Descrição |
+|---|---|---|
+| `GATEWAY_URL` | `http://service_manager:8002/api/v1/process-message` | URL do Gateway (service-manager) |
+| `FILTER_KEYWORD` | `Procon` | Keyword que a mensagem deve conter para ser processada. Mensagens sem essa keyword são ignoradas. |
+
+Para alterar a keyword sem rebuild, edite o `docker-compose.yml`:
+
+```yaml
+environment:
+  - FILTER_KEYWORD=SuaKeywordAqui
+```
+
+## Health checks
+
+- `http://localhost:8001/api/health` → PLN Pipeline
+- `http://localhost:8002/api/v1/health` → Service Manager (Gateway)
+- `http://localhost:8003/api/v1/health` → WhatsApp Bot
+
+Exemplo de resposta:
 
 ```json
 {
-	"mensagemOriginal": "Quero saber o andamento da minha reclamação 4589",
-	"intencao": "consultar_reclamacao",
-	"classePrevista": "consulta_andamento_processo",
-	"confianca": 0.94,
-	"acaoSugerida": "consultar_api_protocolos"
+    "status": "ok",
+    "service": "pln-pipeline"
 }
 ```
 
-## Estrutura atual
+## Endpoints do Gateway (service-manager)
+
+### `POST /api/v1/process-message?keyword={keyword}`
+
+Recebe uma mensagem do WhatsApp, aplica o filtro de keyword e orquestra o processamento pelo PLN.
+
+**Request body:**
+```json
+{
+    "from_number": "5511999999999@c.us",
+    "text": "Procon como faço para reclamar de um produto com defeito?"
+}
+```
+
+**Respostas:**
+- `200 OK` — mensagem passou no filtro e foi processada:
+```json
+{
+    "class_response": "Texto da resposta gerado pelo PLN..."
+}
+```
+- `204 No Content` — mensagem não continha a keyword, ignorada sem resposta ao usuário.
+
+## Endpoints do PLN Pipeline
+
+| Método | Endpoint | Descrição |
+|---|---|---|
+| `POST` | `/api/fasttext` | Vetorização FastText + similaridade + resposta |
+| `POST` | `/api/fasttext/knn` | FastText com KNN |
+| `POST` | `/api/w2vec` | Vetorização Word2Vec + similaridade + resposta |
+| `POST` | `/api/w2vec/knn` | Word2Vec com KNN |
+| `POST` | `/api/rag` | Resposta via RAG local (PDF) |
+| `POST` | `/api/rag_remote` | Resposta via RAG remoto |
+
+## Estrutura do projeto
 
 ```text
 backend/
@@ -79,17 +138,28 @@ backend/
     ├── pln_pipeline/
     │   ├── Dockerfile
     │   ├── requirements.txt
-    │   └── app/main.py
-    ├── service_manager/
+    │   └── app/
+    │       ├── main.py
+    │       ├── models/
+    │       │   ├── schemas.py
+    │       │   ├── fastText_pipe.py
+    │       │   ├── w2vec_pipe.py
+    │       │   ├── rag_pipeline.py
+    │       │   └── rag_remote.py
+    │       └── utils/
+    │           ├── duvidas_frequentes.txt
+    │           ├── duvidas_frequentes_clean.txt
+    │           ├── item_responses.json
+    │           ├── class_responses.json
+    │           └── faq_fonte.pdf
+    ├── service_manager/           ← Gateway
     │   ├── Dockerfile
     │   ├── requirements.txt
     │   └── app/main.py
     └── whatsapp_bot/
         ├── Dockerfile
-        ├── requirements.txt
-        └── app/main.py
+        ├── package.json
+        ├── index.js
+        └── app/
+            └── models/schemas.py
 ```
-
-## Próximo passo
-
-Implementar os endpoints reais de negócio em cada serviço e ajustar variáveis de ambiente no `docker-compose.yml` para comunicação entre eles.
