@@ -34,3 +34,6 @@ def create_db_and_tables():
 def get_session():
     with Session(engine) as session:
         yield session
+
+# Alias para compatibilidade com modelos que usam SQLAlchemy puro (vindos da main)
+Base = SQLModel
