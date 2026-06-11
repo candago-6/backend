@@ -47,7 +47,7 @@ services:
     ports:
       - "8003:8003"
     environment:
-      PLN_URL: http://pln-pipeline:8001/api/fasttext
+      PLN_URL: http://pln-pipeline:8001/api/fasttext/knn
       MANAGER_URL: http://service-manager:8002/api/v1
     networks:
       - assistente-whatsapp-net
