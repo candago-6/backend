@@ -13,7 +13,8 @@ engine = create_engine(DATABASE_URL, echo=True)
 
 def create_db_and_tables():
     from .models.entities import User, Conversation, Message, Feedback  # Import to ensure they are registered
-    
+    from .models.admin import AdminUser  # Import to ensure it is registered
+
     max_retries = 5
     retry_interval = 5
     
@@ -34,6 +35,3 @@ def create_db_and_tables():
 def get_session():
     with Session(engine) as session:
         yield session
-
-# Alias para compatibilidade com modelos que usam SQLAlchemy puro (vindos da main)
-Base = SQLModel

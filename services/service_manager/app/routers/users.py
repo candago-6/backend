@@ -1,39 +1,40 @@
 from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
+from sqlmodel import Session, select
 
-from app import models, schemas, security
-from app.database import get_db
+from app import schemas, security
+from app.database import get_session
 from app.deps import get_current_user
+from app.models.admin import AdminUser
 
 router = APIRouter(prefix="/api/v1/admin-users", tags=["admin-users"])
 
 
 @router.get("", response_model=list[schemas.UserOut])
 def list_users(
-    db: Session = Depends(get_db),
-    _: models.User = Depends(get_current_user),
-) -> list[models.User]:
-    return db.query(models.User).all()
+    session: Session = Depends(get_session),
+    _: AdminUser = Depends(get_current_user),
+) -> list[AdminUser]:
+    return session.exec(select(AdminUser)).all()
 
 
 @router.post("", response_model=schemas.UserOut, status_code=status.HTTP_201_CREATED)
 def create_user(
     payload: schemas.UserCreate,
-    db: Session = Depends(get_db),
-    _: models.User = Depends(get_current_user),
-) -> models.User:
-    if db.query(models.User).filter(models.User.email == payload.email).first():
+    session: Session = Depends(get_session),
+    _: AdminUser = Depends(get_current_user),
+) -> AdminUser:
+    if session.exec(select(AdminUser).where(AdminUser.email == payload.email)).first():
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="E-mail já cadastrado")
 
-    user = models.User(
+    user = AdminUser(
         name=payload.name,
         email=payload.email,
         hashed_password=security.hash_password(payload.password),
         role=payload.role,
     )
-    db.add(user)
-    db.commit()
-    db.refresh(user)
+    session.add(user)
+    session.commit()
+    session.refresh(user)
     return user
 
 
@@ -41,38 +42,37 @@ def create_user(
 def update_user(
     user_id: str,
     payload: schemas.UserUpdate,
-    db: Session = Depends(get_db),
-    _: models.User = Depends(get_current_user),
-) -> models.User:
-    user = db.query(models.User).filter(models.User.id == user_id).first()
+    session: Session = Depends(get_session),
+    _: AdminUser = Depends(get_current_user),
+) -> AdminUser:
+    user = session.get(AdminUser, user_id)
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Usuário não encontrado")
 
-    existing = (
-        db.query(models.User)
-        .filter(models.User.email == payload.email, models.User.id != user_id)
-        .first()
-    )
+    existing = session.exec(
+        select(AdminUser).where(AdminUser.email == payload.email, AdminUser.id != user_id)
+    ).first()
     if existing:
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="E-mail já cadastrado")
 
     user.name = payload.name
     user.email = payload.email
     user.role = payload.role
-    db.commit()
-    db.refresh(user)
+    session.add(user)
+    session.commit()
+    session.refresh(user)
     return user
 
 
 @router.delete("/{user_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_user(
     user_id: str,
-    db: Session = Depends(get_db),
-    _: models.User = Depends(get_current_user),
+    session: Session = Depends(get_session),
+    _: AdminUser = Depends(get_current_user),
 ) -> None:
-    user = db.query(models.User).filter(models.User.id == user_id).first()
+    user = session.get(AdminUser, user_id)
     if not user:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Usuário não encontrado")
 
-    db.delete(user)
-    db.commit()
+    session.delete(user)
+    session.commit()

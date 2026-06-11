@@ -7,7 +7,7 @@ const axios = require('axios');
 // Iniciando um servidor express simples para healthcheck e exibição do QR Code
 const app = express();
 const PORT = 8003;
-const PLN_URL = process.env.PLN_URL || 'http://pln-pipeline:8001/api/fasttext';
+const PLN_URL = process.env.PLN_URL || 'http://pln-pipeline:8001/api/fasttext/knn';
 const MANAGER_URL = process.env.MANAGER_URL || 'http://service-manager:8002/api/v1';
 
 // Armazena o último QR Code recebido para servir via HTTP
