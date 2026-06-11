@@ -329,37 +329,13 @@
     ]
   },
   {
-    "intent": "ola",
-    "answer": "Olá, tudo bem?",
+    "intent": "saudacao",
+    "answer": "Olá, tudo bem? Sou o assistente virtual do PROCON, estou aqui para ajudar a esclarecer suas dúvidas sobre direitos do consumidor. Por favor, me informe qual é a sua dúvida ou questão relacionada ao consumo, e farei o meu melhor para fornecer uma resposta clara e precisa com base na legislação vigente. Lembre-se de que, para questões mais complexas ou específicas, é sempre recomendável procurar atendimento presencial no PROCON para uma análise detalhada do seu caso.",
     "questions": [
-      "Olá"
-    ]
-  },
-  {
-    "intent": "oi",
-    "answer": "Olá, tudo bem?",
-    "questions": [
-      "Oi"
-    ]
-  },
-  {
-    "intent": "bom_dia",
-    "answer": "Olá, tudo bem?",
-    "questions": [
-      "Bom dia"
-    ]
-  },
-  {
-    "intent": "boa_tarde",
-    "answer": "Olá, tudo bem?",
-    "questions": [
-      "Boa tarde"
-    ]
-  },
-  {
-    "intent": "boa_noite",
-    "answer": "Olá, tudo bem?",
-    "questions": [
+      "Olá",
+      "Oi",
+      "Bom dia",
+      "Boa tarde",
       "Boa noite"
     ]
   }
