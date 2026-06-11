@@ -55,3 +55,13 @@ class Feedback(SQLModel, table=True):
 
     conversation: Conversation = Relationship(back_populates="feedback")
 
+
+class MessageEvaluation(SQLModel, table=True):
+    __tablename__ = "message_evaluations"
+
+    id: Optional[int] = Field(default=None, primary_key=True, description="Unique identifier for the evaluation")
+    message_id: int = Field(foreign_key="message.id", unique=True, index=True, description="ID of the evaluated bot message")
+    admin_user_id: str = Field(foreign_key="admin_users.id", description="ID of the admin who evaluated the message")
+    rating: str = Field(description="Evaluation result: positive or negative")
+    created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc), description="Timestamp of the evaluation")
+
