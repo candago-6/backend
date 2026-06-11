@@ -1,18 +1,36 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Depends, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from sqlmodel import Session, select
-from .database import create_db_and_tables, get_session
+from .database import create_db_and_tables, engine, get_session
 from .models.entities import User, Conversation, Message, Feedback
+from .routers import auth, users
+from .seed import seed_default_admin
 from .utils.security import decrypt_data
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Initialize database tables with retries
     create_db_and_tables()
+
+    with Session(engine) as session:
+        seed_default_admin(session)
+
     yield
 
 
 app = FastAPI(title="Service Manager", version="0.1.0", lifespan=lifespan)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+app.include_router(auth.router)
+app.include_router(users.router)
 
 
 @app.get("/api/v1/health")

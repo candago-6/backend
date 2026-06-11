@@ -1,22 +1,23 @@
 import os
 
-from sqlalchemy.orm import Session
+from sqlmodel import Session, select
 
-from app import models, security
+from app import security
+from app.models.admin import AdminUser, Role
 
 
-def seed_default_admin(db: Session) -> None:
-    if db.query(models.User).count() > 0:
+def seed_default_admin(session: Session) -> None:
+    if session.exec(select(AdminUser)).first():
         return
 
     email = os.getenv("ADMIN_EMAIL", "admin@procon.sp.gov.br")
     password = os.getenv("ADMIN_PASSWORD", "admin123")
 
-    admin = models.User(
+    admin = AdminUser(
         name="Administrador",
         email=email,
         hashed_password=security.hash_password(password),
-        role=models.Role.gestor_gerencia,
+        role=Role.gestor_gerencia,
     )
-    db.add(admin)
-    db.commit()
+    session.add(admin)
+    session.commit()

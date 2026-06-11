@@ -1,6 +1,6 @@
 from pydantic import BaseModel, ConfigDict, EmailStr
 
-from app.models import Role
+from app.models.admin import Role
 
 
 class LoginRequest(BaseModel):
