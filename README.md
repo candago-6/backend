@@ -125,8 +125,8 @@ Recebe uma mensagem do WhatsApp, aplica o filtro de keyword e orquestra o proces
 | `POST` | `/api/fasttext/knn` | FastText com KNN |
 | `POST` | `/api/w2vec` | Vetorização Word2Vec + similaridade + resposta |
 | `POST` | `/api/w2vec/knn` | Word2Vec com KNN |
-| `POST` | `/api/rag` | Resposta via RAG local (PDF) |
-| `POST` | `/api/rag_remote` | Resposta via RAG remoto |
+| `POST` | `/api/rag` | Resposta via LLM com RAG local (PDF) |
+| `POST` | `/api/rag_remote` | Resposta via LLM com RAG remoto |
 
 ## Estrutura do projeto
 

@@ -1,18 +1,50 @@
 from contextlib import asynccontextmanager
+from typing import Literal, Optional
+
 from fastapi import FastAPI, Depends, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 from sqlmodel import Session, select
-from .database import create_db_and_tables, get_session
-from .models.entities import User, Conversation, Message, Feedback
-from .utils.security import decrypt_data
+from .database import create_db_and_tables, engine, get_session
+from .deps import get_current_user
+from .models.admin import AdminUser
+from .models.entities import User, Conversation, Message, Feedback, MessageEvaluation
+from .routers import auth, users
+from .seed import seed_default_admin
+from .utils.security import decrypt_data, encrypt_data
+
+
+class UserUpdate(BaseModel):
+    name: Optional[str] = None
+    cpf: Optional[str] = None
+
+
+class MessageEvaluationInput(BaseModel):
+    rating: Literal["positive", "negative"]
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Initialize database tables with retries
     create_db_and_tables()
+
+    with Session(engine) as session:
+        seed_default_admin(session)
+
     yield
 
 
 app = FastAPI(title="Service Manager", version="0.1.0", lifespan=lifespan)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
+app.include_router(auth.router)
+app.include_router(users.router)
 
 
 @app.get("/api/v1/health")
@@ -54,6 +86,25 @@ def get_user_by_phone(phone: str, session: Session = Depends(get_session)):
     user = session.exec(statement).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
+    return user
+
+
+@app.put("/api/v1/users/{user_id}", response_model=User)
+def update_user(user_id: int, payload: UserUpdate, session: Session = Depends(get_session)):
+    user = session.get(User, user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    if payload.name is not None:
+        user.name = payload.name
+    if payload.cpf is not None:
+        user.cpf = encrypt_data(payload.cpf)
+
+    session.add(user)
+    session.commit()
+    session.refresh(user)
+
+    user.cpf = decrypt_data(user.cpf)
     return user
 
 
@@ -124,3 +175,42 @@ def create_feedback(feedback: Feedback, session: Session = Depends(get_session))
         session.commit()
         session.refresh(feedback)
         return feedback
+
+
+# Message Evaluation Endpoints (avaliação de respostas da LLM por gestores/analistas)
+@app.get("/api/v1/message-evaluations", response_model=list[MessageEvaluation])
+def list_message_evaluations(
+    session: Session = Depends(get_session),
+    _: AdminUser = Depends(get_current_user),
+):
+    return session.exec(select(MessageEvaluation)).all()
+
+
+@app.put("/api/v1/messages/{message_id}/evaluation", response_model=MessageEvaluation)
+def evaluate_message(
+    message_id: int,
+    payload: MessageEvaluationInput,
+    session: Session = Depends(get_session),
+    current_user: AdminUser = Depends(get_current_user),
+):
+    message = session.get(Message, message_id)
+    if not message:
+        raise HTTPException(status_code=404, detail="Message not found")
+
+    statement = select(MessageEvaluation).where(MessageEvaluation.message_id == message_id)
+    evaluation = session.exec(statement).first()
+
+    if evaluation:
+        evaluation.rating = payload.rating
+        evaluation.admin_user_id = current_user.id
+    else:
+        evaluation = MessageEvaluation(
+            message_id=message_id,
+            admin_user_id=current_user.id,
+            rating=payload.rating,
+        )
+
+    session.add(evaluation)
+    session.commit()
+    session.refresh(evaluation)
+    return evaluation

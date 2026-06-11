@@ -7,7 +7,7 @@ const axios = require('axios');
 // Iniciando um servidor express simples para healthcheck e exibição do QR Code
 const app = express();
 const PORT = 8003;
-const PLN_URL = process.env.PLN_URL || 'http://pln-pipeline:8001/api/fasttext';
+const PLN_URL = process.env.PLN_URL || 'http://pln-pipeline:8001/api/fasttext/knn';
 const MANAGER_URL = process.env.MANAGER_URL || 'http://service-manager:8002/api/v1';
 
 // Armazena o último QR Code recebido para servir via HTTP
@@ -103,6 +103,23 @@ async function saveFeedback(conversationId, rating) {
     }
 }
 
+// Coleta de dados reais do cliente (nome/CPF), substituindo o placeholder inicial
+const onboardingState = new Map(); // phone -> { step: 'name' | 'cpf', name?: string }
+
+function isValidCpf(value) {
+    return value.replace(/\D/g, '').length === 11;
+}
+
+async function updateUserData(userId, data) {
+    try {
+        await axios.put(`${MANAGER_URL}/users/${userId}`, data);
+        return true;
+    } catch (error) {
+        console.error('Erro ao atualizar dados do cliente:', error.message);
+        return false;
+    }
+}
+
 // ... (Client initialization)
 const client = new Client({
     authStrategy: new LocalAuth(),
@@ -148,6 +165,33 @@ client.on('message', async (msg) => {
         return;
     }
 
+    // 2. Continuação da coleta de dados (nome/CPF), se já iniciada para este número
+    const onboardingPhone = msg.from.split('@')[0];
+    const onboarding = onboardingState.get(onboardingPhone);
+
+    if (onboarding) {
+        if (onboarding.step === 'name') {
+            onboarding.name = msg.body.trim();
+            onboarding.step = 'cpf';
+            await msg.reply('Obrigado! Agora informe seu CPF (apenas números).');
+            return;
+        }
+
+        if (onboarding.step === 'cpf') {
+            if (!isValidCpf(msg.body)) {
+                await msg.reply('CPF inválido. Por favor, envie os 11 números do seu CPF.');
+                return;
+            }
+
+            const user = await getOrCreateUser(onboardingPhone);
+            await updateUserData(user.id, { name: onboarding.name, cpf: msg.body.replace(/\D/g, '') });
+            onboardingState.delete(onboardingPhone);
+
+            await msg.reply('Dados confirmados! Agora me conte como posso te ajudar (mencione "procon" na sua mensagem).');
+            return;
+        }
+    }
+
     // Trava de segurança: só responde se a mensagem contiver "procon" (case insensitive)
     if (!msg.body.toLowerCase().includes('procon')) {
         return;
@@ -160,6 +204,14 @@ client.on('message', async (msg) => {
         const contact = await msg.getContact();
         const phone = contact.id.user; // O número real está aqui
         const user = await getOrCreateUser(phone);
+
+        // Inicia a coleta de nome/CPF reais antes de seguir com o atendimento
+        if (!user.cpf) {
+            onboardingState.set(phone, { step: 'name' });
+            await msg.reply('Olá! Sou o assistente virtual do Procon Jacareí. Antes de continuar, preciso confirmar alguns dados.\n\nQual o seu nome completo?');
+            return;
+        }
+
         const conversation = await getOrCreateConversation(user.id);
 
         // 2. Salvar mensagem do usuário no banco
