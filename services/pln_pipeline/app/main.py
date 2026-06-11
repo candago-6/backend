@@ -490,5 +490,8 @@ def rag_remote_answer(payload: RAGRequest) -> RAGResponse:
         )
         for hit in hits
     ]
+    
+@app.post("/api/distilbert", response_model=RAGResponse)
+def distilbert_answer()
 
     return RAGResponse(answer=answer, sources=sources)
