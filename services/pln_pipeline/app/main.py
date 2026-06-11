@@ -45,6 +45,10 @@ DEFAULT_REMOTE_RAG_CACHE_DIR = (
     Path(__file__).resolve().parent / "utils" / "faq_fonte_rag_remote_index"
 )
 
+KNN_MIN_TOP_SIMILARITY = 0.18
+KNN_MIN_TOP_MARGIN = 0.001
+KNN_MIN_CLASS_VOTE_RATIO = 1.0 / 3.0
+
 RAG_PIPELINE: RAGPipeline | None = None
 REMOTE_RAG_PIPELINE: RemoteRAGPipeline | None = None
 
@@ -173,6 +177,62 @@ def resolve_knn_item_response(
     )
 
 
+def normalize_knn_similarities(
+    neighbors: list[tuple[int, str, float]],
+) -> list[ItemSimilarity]:
+    if not neighbors:
+        return []
+
+    weights = [max(similarity, 0.0) for _, _, similarity in neighbors]
+    total_weight = sum(weights)
+    if total_weight <= 0.0:
+        normalized_weight = 100.0 / len(neighbors)
+        return [
+            ItemSimilarity(
+                item=item_id,
+                classe=class_name,
+                similarity=normalized_weight,
+                rank=rank,
+            )
+            for rank, (item_id, class_name, _) in enumerate(neighbors, start=1)
+        ]
+
+    return [
+        ItemSimilarity(
+            item=item_id,
+            classe=class_name,
+            similarity=(weight / total_weight) * 100.0,
+            rank=rank,
+        )
+        for rank, ((item_id, class_name, _), weight) in enumerate(
+            zip(neighbors, weights),
+            start=1,
+        )
+    ]
+
+
+def is_knn_match_eligible(
+    neighbors: list[tuple[int, str, float]],
+    predicted_class: str | None,
+    normalized_similarities: list[ItemSimilarity],
+) -> bool:
+    if not neighbors or not normalized_similarities or predicted_class is None:
+        return False
+
+    top_similarity = neighbors[0][2]
+    second_similarity = neighbors[1][2] if len(neighbors) > 1 else -1.0
+    predicted_votes = sum(
+        1 for _, class_name, _ in neighbors if class_name == predicted_class
+    )
+    vote_ratio = predicted_votes / len(neighbors)
+
+    return (
+        top_similarity >= KNN_MIN_TOP_SIMILARITY
+        and (top_similarity - second_similarity) >= KNN_MIN_TOP_MARGIN
+        and vote_ratio >= KNN_MIN_CLASS_VOTE_RATIO
+    )
+
+
 def truncate_snippet(text: str, max_chars: int = 300) -> str:
     snippet = " ".join(text.split())
     if len(snippet) <= max_chars:
@@ -271,21 +331,21 @@ def preprocessing_w2vec_knn(
             item_reference_vectors,
             k=k,
         )
-        item_similarities = [
-            ItemSimilarity(
-                item=item_id,
-                classe=class_name,
-                similarity=similarity,
-                rank=rank,
-            )
-            for rank, (item_id, class_name, similarity) in enumerate(neighbors, start=1)
-        ]
+        item_similarities = normalize_knn_similarities(neighbors)
         item_responses = load_item_responses()
-        class_response = resolve_knn_item_response(
-            neighbors,
-            predicted_class,
-            item_responses,
-        )
+        if not is_knn_match_eligible(neighbors, predicted_class, item_similarities):
+            predicted_class = None
+            item_similarities = []
+            class_response = item_responses.get(
+                "default",
+                "Nao foi possivel identificar um item com confianca.",
+            )
+        else:
+            class_response = resolve_knn_item_response(
+                neighbors,
+                predicted_class,
+                item_responses,
+            )
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
@@ -358,21 +418,21 @@ def preprocessing_fasttext_knn(
             item_reference_vectors,
             k=k,
         )
-        item_similarities = [
-            ItemSimilarity(
-                item=item_id,
-                classe=class_name,
-                similarity=similarity,
-                rank=rank,
-            )
-            for rank, (item_id, class_name, similarity) in enumerate(neighbors, start=1)
-        ]
+        item_similarities = normalize_knn_similarities(neighbors)
         item_responses = load_item_responses()
-        class_response = resolve_knn_item_response(
-            neighbors,
-            predicted_class,
-            item_responses,
-        )
+        if not is_knn_match_eligible(neighbors, predicted_class, item_similarities):
+            predicted_class = None
+            item_similarities = []
+            class_response = item_responses.get(
+                "default",
+                "Nao foi possivel identificar um item com confianca.",
+            )
+        else:
+            class_response = resolve_knn_item_response(
+                neighbors,
+                predicted_class,
+                item_responses,
+            )
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
