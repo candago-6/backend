@@ -1,12 +1,14 @@
 from contextlib import asynccontextmanager
-from typing import Optional
+from typing import Literal, Optional
 
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from sqlmodel import Session, select
 from .database import create_db_and_tables, engine, get_session
-from .models.entities import User, Conversation, Message, Feedback
+from .deps import get_current_user
+from .models.admin import AdminUser
+from .models.entities import User, Conversation, Message, Feedback, MessageEvaluation
 from .routers import auth, users
 from .seed import seed_default_admin
 from .utils.security import decrypt_data, encrypt_data
@@ -15,6 +17,10 @@ from .utils.security import decrypt_data, encrypt_data
 class UserUpdate(BaseModel):
     name: Optional[str] = None
     cpf: Optional[str] = None
+
+
+class MessageEvaluationInput(BaseModel):
+    rating: Literal["positive", "negative"]
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -169,3 +175,42 @@ def create_feedback(feedback: Feedback, session: Session = Depends(get_session))
         session.commit()
         session.refresh(feedback)
         return feedback
+
+
+# Message Evaluation Endpoints (avaliação de respostas da LLM por gestores/analistas)
+@app.get("/api/v1/message-evaluations", response_model=list[MessageEvaluation])
+def list_message_evaluations(
+    session: Session = Depends(get_session),
+    _: AdminUser = Depends(get_current_user),
+):
+    return session.exec(select(MessageEvaluation)).all()
+
+
+@app.put("/api/v1/messages/{message_id}/evaluation", response_model=MessageEvaluation)
+def evaluate_message(
+    message_id: int,
+    payload: MessageEvaluationInput,
+    session: Session = Depends(get_session),
+    current_user: AdminUser = Depends(get_current_user),
+):
+    message = session.get(Message, message_id)
+    if not message:
+        raise HTTPException(status_code=404, detail="Message not found")
+
+    statement = select(MessageEvaluation).where(MessageEvaluation.message_id == message_id)
+    evaluation = session.exec(statement).first()
+
+    if evaluation:
+        evaluation.rating = payload.rating
+        evaluation.admin_user_id = current_user.id
+    else:
+        evaluation = MessageEvaluation(
+            message_id=message_id,
+            admin_user_id=current_user.id,
+            rating=payload.rating,
+        )
+
+    session.add(evaluation)
+    session.commit()
+    session.refresh(evaluation)
+    return evaluation

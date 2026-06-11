@@ -12,7 +12,7 @@ engine = create_engine(DATABASE_URL, echo=True)
 
 
 def create_db_and_tables():
-    from .models.entities import User, Conversation, Message, Feedback  # Import to ensure they are registered
+    from .models.entities import User, Conversation, Message, Feedback, MessageEvaluation  # Import to ensure they are registered
     from .models.admin import AdminUser  # Import to ensure it is registered
 
     max_retries = 5
