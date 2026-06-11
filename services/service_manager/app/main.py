@@ -1,12 +1,20 @@
 from contextlib import asynccontextmanager
+from typing import Optional
+
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel
 from sqlmodel import Session, select
 from .database import create_db_and_tables, engine, get_session
 from .models.entities import User, Conversation, Message, Feedback
 from .routers import auth, users
 from .seed import seed_default_admin
-from .utils.security import decrypt_data
+from .utils.security import decrypt_data, encrypt_data
+
+
+class UserUpdate(BaseModel):
+    name: Optional[str] = None
+    cpf: Optional[str] = None
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -72,6 +80,25 @@ def get_user_by_phone(phone: str, session: Session = Depends(get_session)):
     user = session.exec(statement).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
+    return user
+
+
+@app.put("/api/v1/users/{user_id}", response_model=User)
+def update_user(user_id: int, payload: UserUpdate, session: Session = Depends(get_session)):
+    user = session.get(User, user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+
+    if payload.name is not None:
+        user.name = payload.name
+    if payload.cpf is not None:
+        user.cpf = encrypt_data(payload.cpf)
+
+    session.add(user)
+    session.commit()
+    session.refresh(user)
+
+    user.cpf = decrypt_data(user.cpf)
     return user
 
 
