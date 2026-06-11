@@ -3,7 +3,7 @@ from sqlmodel import Session, select
 
 from app import schemas, security
 from app.database import get_session
-from app.deps import get_current_user
+from app.deps import require_gestor
 from app.models.admin import AdminUser
 
 router = APIRouter(prefix="/api/v1/admin-users", tags=["admin-users"])
@@ -12,7 +12,7 @@ router = APIRouter(prefix="/api/v1/admin-users", tags=["admin-users"])
 @router.get("", response_model=list[schemas.UserOut])
 def list_users(
     session: Session = Depends(get_session),
-    _: AdminUser = Depends(get_current_user),
+    _: AdminUser = Depends(require_gestor),
 ) -> list[AdminUser]:
     return session.exec(select(AdminUser)).all()
 
@@ -21,7 +21,7 @@ def list_users(
 def create_user(
     payload: schemas.UserCreate,
     session: Session = Depends(get_session),
-    _: AdminUser = Depends(get_current_user),
+    _: AdminUser = Depends(require_gestor),
 ) -> AdminUser:
     if session.exec(select(AdminUser).where(AdminUser.email == payload.email)).first():
         raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="E-mail já cadastrado")
@@ -43,7 +43,7 @@ def update_user(
     user_id: str,
     payload: schemas.UserUpdate,
     session: Session = Depends(get_session),
-    _: AdminUser = Depends(get_current_user),
+    _: AdminUser = Depends(require_gestor),
 ) -> AdminUser:
     user = session.get(AdminUser, user_id)
     if not user:
@@ -68,7 +68,7 @@ def update_user(
 def delete_user(
     user_id: str,
     session: Session = Depends(get_session),
-    _: AdminUser = Depends(get_current_user),
+    _: AdminUser = Depends(require_gestor),
 ) -> None:
     user = session.get(AdminUser, user_id)
     if not user:
