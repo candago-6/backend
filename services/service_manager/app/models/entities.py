@@ -27,7 +27,8 @@ class Conversation(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True, description="Unique identifier for the conversation")
     user_id: int = Field(foreign_key="user.id", description="ID of the user associated with this conversation")
     protocol: str = Field(index=True, unique=True, description="Unique protocol number for the conversation")
-    status: str = Field(default="open", description="Current status of the conversation: open, closed, archived")
+    status: str = Field(default="open", description="Current status of the conversation: open, closed, archived, waiting_human")
+    failed_attempts: int = Field(default=0, description="Consecutive failed understanding attempts by the bot")
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc), description="Timestamp of conversation creation")
 
     user: User = Relationship(back_populates="conversations")

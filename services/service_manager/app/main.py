@@ -131,6 +131,43 @@ def get_active_conversation(user_id: int, session: Session = Depends(get_session
     return conversation
 
 
+@app.get("/api/v1/conversations/{conversation_id}", response_model=Conversation)
+def get_conversation(conversation_id: int, session: Session = Depends(get_session)):
+    conversation = session.get(Conversation, conversation_id)
+    if not conversation:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+    return conversation
+
+
+@app.post("/api/v1/conversations/{conversation_id}/increment-failures", response_model=Conversation)
+def increment_failures(conversation_id: int, session: Session = Depends(get_session)):
+    conversation = session.get(Conversation, conversation_id)
+    if not conversation:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+    
+    conversation.failed_attempts += 1
+    if conversation.failed_attempts >= 3:
+        conversation.status = "waiting_human"
+    
+    session.add(conversation)
+    session.commit()
+    session.refresh(conversation)
+    return conversation
+
+
+@app.post("/api/v1/conversations/{conversation_id}/reset-failures", response_model=Conversation)
+def reset_failures(conversation_id: int, session: Session = Depends(get_session)):
+    conversation = session.get(Conversation, conversation_id)
+    if not conversation:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+    
+    conversation.failed_attempts = 0
+    session.add(conversation)
+    session.commit()
+    session.refresh(conversation)
+    return conversation
+
+
 @app.get("/api/v1/messages", response_model=list[Message])
 def list_messages(session: Session = Depends(get_session)):
     return session.exec(select(Message)).all()

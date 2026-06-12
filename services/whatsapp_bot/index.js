@@ -143,12 +143,16 @@ client.on('ready', () => {
 });
 
 client.on('message', async (msg) => {
-    // 1. Lógica de Feedback (agora por conversa)
+    const chat = await msg.getChat();
+    if (chat.isGroup) return; // Ignora grupos para evitar spam
+
+    const senderId = msg.from; // ID completo (ex: 55129...@c.us ou ...@lid) usado para ESTADO
+    const contact = await msg.getContact();
+    const phone = contact.id.user; // O número real (ex: 5512997126131) usado para BANCO DE DADOS
+
+    // 1. Lógica de Feedback
     if (msg.body.toLowerCase().startsWith('feedback ')) {
         const rating = parseInt(msg.body.split(' ')[1]);
-        
-        // Obter usuário e conversa para ter o ID da conversa atual
-        const phone = msg.from.split('@')[0];
         const user = await getOrCreateUser(phone);
         const conversation = await getOrCreateConversation(user.id);
         
@@ -165,9 +169,8 @@ client.on('message', async (msg) => {
         return;
     }
 
-    // 2. Continuação da coleta de dados (nome/CPF), se já iniciada para este número
-    const onboardingPhone = msg.from.split('@')[0];
-    const onboarding = onboardingState.get(onboardingPhone);
+    // 2. Coleta de dados (Onboarding) - PRIORIDADE TOTAL
+    const onboarding = onboardingState.get(senderId);
 
     if (onboarding) {
         if (onboarding.step === 'name') {
@@ -183,53 +186,75 @@ client.on('message', async (msg) => {
                 return;
             }
 
-            const user = await getOrCreateUser(onboardingPhone);
+            const user = await getOrCreateUser(phone);
             await updateUserData(user.id, { name: onboarding.name, cpf: msg.body.replace(/\D/g, '') });
-            onboardingState.delete(onboardingPhone);
+            
+            const conversation = await getOrCreateConversation(user.id);
+            onboardingState.delete(senderId);
 
-            await msg.reply('Dados confirmados! Agora me conte como posso te ajudar (mencione "procon" na sua mensagem).');
+            await saveMessage(conversation.id, 'system', 'Atendimento iniciado após onboarding.');
+            await msg.reply(`Dados confirmados! Seu atendimento foi iniciado.\n\n*Protocolo:* ${conversation.protocol}\n\nAgora me conte como posso te ajudar (mencione "procon" na sua mensagem).`);
             return;
         }
     }
 
-    // Trava de segurança: só responde se a mensagem contiver "procon" (case insensitive)
+    // Trava de segurança: só inicia se a mensagem contiver "procon"
+    // Mas se o usuário já estiver no meio de um atendimento, ele pode falar sem "procon"
+    const user = await getOrCreateUser(phone);
+    
+    // Inicia a coleta de nome/CPF reais antes de seguir com o atendimento
+    if (!user.cpf) {
+        if (msg.body.toLowerCase().includes('procon')) {
+            onboardingState.set(senderId, { step: 'name' });
+            await msg.reply('Olá! Sou o assistente virtual do Procon Jacareí. Antes de continuar, preciso confirmar alguns dados.\n\nQual o seu nome completo?');
+        }
+        return;
+    }
+
+    // Se já tem CPF, verificamos se a conversa está aberta e se precisa da keyword
+    const conversation = await getOrCreateConversation(user.id);
+
+    // Task #23: Se estiver aguardando humano, não processa IA e apenas avisa
+    if (conversation.status === 'waiting_human') {
+        if (msg.body.toLowerCase().includes('procon')) {
+            await msg.reply('Seu atendimento já foi transferido para um atendente humano. Por favor, aguarde o contato.');
+        }
+        return;
+    }
+
+    // Se a mensagem não tem "procon" e não houve interação recente (ex: 30 min), poderíamos ignorar.
     if (!msg.body.toLowerCase().includes('procon')) {
         return;
     }
 
-    console.log(`Mensagem recebida de ${msg.from}: ${msg.body}`);
+    console.log(`Mensagem recebida de ${senderId}: ${msg.body}`);
 
     try {
-        // 1. Persistência: Identificar usuário e conversa
-        const contact = await msg.getContact();
-        const phone = contact.id.user; // O número real está aqui
-        const user = await getOrCreateUser(phone);
-
-        // Inicia a coleta de nome/CPF reais antes de seguir com o atendimento
-        if (!user.cpf) {
-            onboardingState.set(phone, { step: 'name' });
-            await msg.reply('Olá! Sou o assistente virtual do Procon Jacareí. Antes de continuar, preciso confirmar alguns dados.\n\nQual o seu nome completo?');
-            return;
-        }
-
-        const conversation = await getOrCreateConversation(user.id);
-
-        // 2. Salvar mensagem do usuário no banco
         await saveMessage(conversation.id, 'user', msg.body);
 
-        // 3. Obter resposta do PLN
         const plnResponse = await axios.post(PLN_URL, {
             raw_text: msg.body
         });
 
         const reply = plnResponse.data.class_response;
-        
-        // 4. Salvar resposta do bot no banco
+        const isFallback = plnResponse.data.is_fallback;
+
         await saveMessage(conversation.id, 'bot', reply);
 
-        // 5. Responder no WhatsApp
+        if (isFallback) {
+            // Incrementa falhas no banco
+            const updatedConv = await axios.post(`${MANAGER_URL}/conversations/${conversation.id}/increment-failures`);
+            
+            if (updatedConv.data.status === 'waiting_human') {
+                await msg.reply('Desculpe, não consegui compreender sua dúvida após algumas tentativas. Estou te transferindo para um atendente humano. Por favor, aguarde.');
+                return;
+            }
+        } else {
+            // Reset de falhas (acerto consecutivo)
+            await axios.post(`${MANAGER_URL}/conversations/${conversation.id}/reset-failures`);
+        }
+
         await msg.reply(reply + '\n\nAo finalizar, avalie este atendimento enviando "feedback 1 a 5"');
-        console.log(`Resposta enviada para ${msg.from}`);
 
     } catch (error) {
         console.error('Erro no processamento da mensagem:', error.message);

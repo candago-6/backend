@@ -1,6 +1,6 @@
 import os
 import time
-from sqlmodel import create_engine, SQLModel, Session
+from sqlmodel import create_engine, SQLModel, Session, text
 from sqlalchemy.exc import OperationalError
 from dotenv import load_dotenv
 
@@ -21,7 +21,13 @@ def create_db_and_tables():
     for i in range(max_retries):
         try:
             SQLModel.metadata.create_all(engine)
-            print("Database tables created successfully!")
+            
+            # Auto-migration for Task #23
+            with Session(engine) as session:
+                session.execute(text("ALTER TABLE conversation ADD COLUMN IF NOT EXISTS failed_attempts INTEGER DEFAULT 0"))
+                session.commit()
+            
+            print("Database tables created and migrated successfully!")
             break
         except OperationalError as e:
             if i < max_retries - 1:
