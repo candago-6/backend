@@ -1,5 +1,6 @@
 import csv
 import json
+import os
 from fastapi import FastAPI, HTTPException, Query
 from pathlib import Path
 
@@ -7,11 +8,13 @@ from dotenv import load_dotenv
 
 import numpy as np
 
+from app.models.distilbert import DistilBertConfig, DistilBertPipeline
 from app.models.fastText_pipe import FastTextPipeline
 from app.models.rag_pipeline import RAGConfig, RAGPipeline
 from app.models.rag_remote import RemoteRAGConfig, RemoteRAGPipeline
 from app.models.w2vec_pipe import W2VPipeline
 from app.models.schemas import (
+    ClassResponseOnly,
     ItemSimilarity,
     PreprocessingRequest,
     PreprocessingResponse,
@@ -44,6 +47,10 @@ DEFAULT_RAG_CACHE_DIR = (
 DEFAULT_REMOTE_RAG_CACHE_DIR = (
     Path(__file__).resolve().parent / "utils" / "faq_fonte_rag_remote_index"
 )
+DEFAULT_DISTILBERT_MODEL_PATH = Path(__file__).resolve().parent / "faq_model"
+DEFAULT_DISTILBERT_DATASET_PATH = (
+    Path(__file__).resolve().parent / "lm_datasets" / "distilbert_dataset.json"
+)
 
 KNN_MIN_TOP_SIMILARITY = 0.18
 KNN_MIN_TOP_MARGIN = 0.001
@@ -51,6 +58,7 @@ KNN_MIN_CLASS_VOTE_RATIO = 1.0 / 3.0
 
 RAG_PIPELINE: RAGPipeline | None = None
 REMOTE_RAG_PIPELINE: RemoteRAGPipeline | None = None
+DISTILBERT_PIPELINE: DistilBertPipeline | None = None
 
 
 def load_default_training_corpus() -> list[str]:
@@ -263,6 +271,20 @@ def get_rag_remote_pipeline() -> RemoteRAGPipeline:
         )
         REMOTE_RAG_PIPELINE = RemoteRAGPipeline(config)
     return REMOTE_RAG_PIPELINE
+
+
+def get_distilbert_pipeline() -> DistilBertPipeline:
+    global DISTILBERT_PIPELINE
+    if DISTILBERT_PIPELINE is None:
+        model_path = Path(
+            os.getenv("DISTILBERT_MODEL_PATH", str(DEFAULT_DISTILBERT_MODEL_PATH))
+        )
+        config = DistilBertConfig(
+            model_path=model_path,
+            dataset_path=DEFAULT_DISTILBERT_DATASET_PATH,
+        )
+        DISTILBERT_PIPELINE = DistilBertPipeline(config)
+    return DISTILBERT_PIPELINE
 
 
 @app.get("/api/health")
@@ -500,3 +522,17 @@ def rag_remote_answer(payload: RAGRequest) -> RAGResponse:
     ]
 
     return RAGResponse(answer=answer, sources=sources)
+
+
+@app.post("/api/distilbert", response_model=ClassResponseOnly)
+def distilbert_answer(payload: PreprocessingRequest) -> ClassResponseOnly:
+    if not payload.raw_text.strip():
+        raise HTTPException(status_code=400, detail="Text is empty.")
+
+    try:
+        pipeline = get_distilbert_pipeline()
+        class_response = pipeline.chat(payload.raw_text)
+    except Exception as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+
+    return ClassResponseOnly(class_response=class_response)
