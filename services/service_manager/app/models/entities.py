@@ -10,6 +10,7 @@ class User(SQLModel, table=True):
     name: str = Field(description="Full name of the user")
     cpf: str = Field(index=True, description="User CPF (stored encrypted)")  # Stored encrypted
     phone: str = Field(index=True, description="WhatsApp phone number of the user")
+    whatsapp_id: Optional[str] = Field(default=None, index=True, description="Internal WhatsApp ID (LID or JID)")
 
     conversations: List["Conversation"] = Relationship(back_populates="user")
 
@@ -27,9 +28,12 @@ class Conversation(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True, description="Unique identifier for the conversation")
     user_id: int = Field(foreign_key="user.id", description="ID of the user associated with this conversation")
     protocol: str = Field(index=True, unique=True, description="Unique protocol number for the conversation")
-    status: str = Field(default="open", description="Current status of the conversation: open, closed, archived, waiting_human")
+    status: str = Field(default="open", description="Current status of the conversation: open, closed, archived, waiting_human, human_handover, confirming_closure, awaiting_feedback")
     failed_attempts: int = Field(default=0, description="Consecutive failed understanding attempts by the bot")
+    patience_msg_sent: bool = Field(default=False, description="Whether the patience message has been sent for this conversation")
+    is_onboarded: bool = Field(default=False, description="Whether the user has completed onboarding for THIS specific conversation")
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc), description="Timestamp of conversation creation")
+    updated_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc), description="Timestamp of last activity")
 
     user: User = Relationship(back_populates="conversations")
     messages: List["Message"] = Relationship(back_populates="conversation")

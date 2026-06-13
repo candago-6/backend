@@ -4,260 +4,263 @@ const QRCode = require('qrcode');
 const express = require('express');
 const axios = require('axios');
 
-// Iniciando um servidor express simples para healthcheck e exibição do QR Code
 const app = express();
 const PORT = 8003;
 const PLN_URL = process.env.PLN_URL || 'http://pln-pipeline:8001/api/fasttext/knn';
 const MANAGER_URL = process.env.MANAGER_URL || 'http://service-manager:8002/api/v1';
 
-// Armazena o último QR Code recebido para servir via HTTP
 let latestQR = null;
+const pendingBotMessages = new Set();
 
-app.get('/api/v1/health', (req, res) => {
-    res.json({ status: 'ok', service: 'whatsapp-bot (node)' });
-});
+async function botReply(msg, text) {
+    pendingBotMessages.add(text);
+    const reply = await msg.reply(text);
+    setTimeout(() => pendingBotMessages.delete(text), 5000);
+    return reply;
+}
 
-// Serve o QR Code como imagem PNG para escanear pelo browser
+async function botSend(chatId, text) {
+    pendingBotMessages.add(text);
+    const msg = await client.sendMessage(chatId, text);
+    setTimeout(() => pendingBotMessages.delete(text), 5000);
+    return msg;
+}
+
+app.get('/api/v1/health', (req, res) => res.json({ status: 'ok', service: 'whatsapp-bot (node)' }));
 app.get('/qr', async (req, res) => {
-    if (!latestQR) {
-        return res.status(404).send('<h2>QR Code ainda não disponível. Aguarde alguns segundos e recarregue.</h2>');
-    }
-    try {
-        const pngBuffer = await QRCode.toBuffer(latestQR, { scale: 8 });
-        res.setHeader('Content-Type', 'image/png');
-        res.send(pngBuffer);
-    } catch (err) {
-        res.status(500).send('Erro ao gerar QR Code');
-    }
+    if (!latestQR) return res.status(404).send('<h2>Aguarde o QR Code...</h2>');
+    const pngBuffer = await QRCode.toBuffer(latestQR, { scale: 8 });
+    res.setHeader('Content-Type', 'image/png');
+    res.send(pngBuffer);
 });
+app.listen(PORT, () => console.log(`Bot na porta ${PORT}. QR: http://localhost:${PORT}/qr`));
 
-app.listen(PORT, () => {
-    console.log(`Serviço do Bot ouvindo na porta ${PORT}`);
-    console.log(`QR Code disponível em: http://localhost:${PORT}/qr`);
-});
-
-// Funções auxiliares para persistência
-async function getOrCreateUser(phone) {
+// BUSCA UNIFICADA: Tenta achar o usuário por Telefone ou por WhatsApp ID (LID/JID)
+async function findUser(phone, whatsappId) {
     try {
-        const response = await axios.get(`${MANAGER_URL}/users/phone/${phone}`);
-        return response.data;
-    } catch (error) {
-        if (error.response && error.response.status === 404) {
-            const createResponse = await axios.post(`${MANAGER_URL}/users`, {
-                name: "Cliente WhatsApp",
-                phone: phone,
-                cpf: "" // Ficará vazio por enquanto
-            });
-            return createResponse.data;
+        // 1. Tenta pelo Telefone
+        if (phone) {
+            const r = await axios.get(`${MANAGER_URL}/users/phone/${phone}`);
+            if (r.data) return r.data;
         }
-        throw error;
+    } catch (e) {}
+    
+    try {
+        // 2. Tenta pelo WhatsApp ID (LID)
+        if (whatsappId) {
+            const r = await axios.get(`${MANAGER_URL}/users/whatsapp-id/${whatsappId}`);
+            if (r.data) return r.data;
+        }
+    } catch (e) {}
+    
+    return null;
+}
+
+async function findActiveConversation(userId) {
+    try { return (await axios.get(`${MANAGER_URL}/conversations/active/${userId}`)).data; } catch (e) { return null; }
+}
+
+async function getOrCreateUser(phone, whatsappId) {
+    const user = await findUser(phone, whatsappId);
+    if (user) {
+        // Se achou mas o whatsappId ou phone estava faltando, atualiza
+        if ((whatsappId && user.whatsapp_id !== whatsappId) || (phone && user.phone !== phone)) {
+            const updated = await axios.put(`${MANAGER_URL}/users/${user.id}`, { phone, whatsapp_id: whatsappId });
+            return updated.data;
+        }
+        return user;
     }
+    return (await axios.post(`${MANAGER_URL}/users`, { name: "Cliente WhatsApp", phone, whatsapp_id: whatsappId, cpf: "" })).data;
 }
 
 async function getOrCreateConversation(userId) {
-    try {
-        const response = await axios.get(`${MANAGER_URL}/conversations/active/${userId}`);
-        return response.data;
-    } catch (error) {
-        if (error.response && error.response.status === 404) {
-            const protocol = `PROCON-${Date.now()}`;
-            const createResponse = await axios.post(`${MANAGER_URL}/conversations`, {
-                user_id: userId,
-                protocol: protocol,
-                status: "open"
-            });
-            return createResponse.data;
-        }
-        throw error;
-    }
+    const conv = await findActiveConversation(userId);
+    if (conv) return conv;
+    return (await axios.post(`${MANAGER_URL}/conversations`, { user_id: userId, protocol: `PROCON-${Date.now()}`, status: "open" })).data;
 }
 
-// Variável para armazenar o ID da conversa ativa (opcional, já que buscamos do banco)
-let currentConversationId = null;
-
 async function saveMessage(conversationId, role, content) {
-    try {
-        const response = await axios.post(`${MANAGER_URL}/messages`, {
-            conversation_id: conversationId,
-            role: role,
-            content: content
-        });
-        return response.data.id;
-    } catch (error) {
-        console.error('Erro ao salvar mensagem:', error.message);
-        return null;
-    }
+    try { await axios.post(`${MANAGER_URL}/messages`, { conversation_id: conversationId, role, content }); } catch (e) {}
 }
 
 async function saveFeedback(conversationId, rating) {
+    try { await axios.post(`${MANAGER_URL}/feedback`, { conversation_id: conversationId, rating, is_best_answer: rating >= 4 }); return true; } catch (e) { return false; }
+}
+
+const onboardingState = new Map();
+const isValidCpf = (v) => v.replace(/\D/g, '').length === 11;
+
+async function startMonitor() {
+    console.log('[Monitor] Vigilante iniciado.');
+    setInterval(async () => {
+        try {
+            const r = await axios.get(`${MANAGER_URL}/conversations`);
+            const now = new Date();
+            for (const conv of r.data) {
+                if (!['open', 'waiting_human', 'confirming_closure'].includes(conv.status)) continue;
+                const diff = (now - new Date(conv.updated_at)) / (1000 * 60);
+                if (diff > 720) continue; 
+
+                const u = (await axios.get(`${MANAGER_URL}/users/${conv.user_id}`)).data;
+                const chatId = u.whatsapp_id || `${u.phone}@c.us`;
+
+                if (conv.status === 'open' && diff >= 1) {
+                    await botSend(chatId, 'Vi que você não mandou mais nada. Seu atendimento acabou?\n\n(Responda *Sim* para encerrar e avaliar)');
+                    await axios.post(`${MANAGER_URL}/conversations/${conv.id}/update-status?status=confirming_closure`);
+                } else if (conv.status === 'waiting_human' && diff >= 3 && !conv.patience_msg_sent) {
+                    await botSend(chatId, 'Nossa fila está um pouco cheia no momento, agradecemos sua paciência! Logo um atendente falará com você.');
+                    await axios.post(`${MANAGER_URL}/conversations/${conv.id}/mark-patience-sent`);
+                } else if (conv.status === 'confirming_closure' && diff >= 5) {
+                    await axios.post(`${MANAGER_URL}/conversations/${conv.id}/close`);
+                }
+            }
+        } catch (e) {}
+    }, 60000);
+}
+
+const client = new Client({ authStrategy: new LocalAuth(), puppeteer: { executablePath: '/usr/bin/chromium', args: ['--no-sandbox'] } });
+
+client.on('qr', (qr) => { latestQR = qr; qrcode.generate(qr, { small: true }); });
+client.on('ready', () => { latestQR = null; console.log('Bot pronto!'); startMonitor(); });
+
+// 1. EVENTO: VOCÊ FALANDO
+client.on('message_create', async (msg) => {
+    if (!msg.fromMe) return; 
+    const chat = await msg.getChat();
+    if (chat.isGroup) return;
+
     try {
-        await axios.post(`${MANAGER_URL}/feedback`, {
-            conversation_id: conversationId,
-            rating: rating,
-            is_best_answer: rating >= 4
-        });
-        return true;
-    } catch (error) {
-        console.error('Erro ao salvar feedback:', error.message);
-        return false;
-    }
-}
+        const contact = await client.getContactById(msg.to);
+        const whatsappId = contact.id._serialized;
+        // Extrai apenas os números do ID (antes do @) para garantir que temos o telefone real
+        const phone = whatsappId.split('@')[0].replace(/\D/g, '');
 
-// Coleta de dados reais do cliente (nome/CPF), substituindo o placeholder inicial
-const onboardingState = new Map(); // phone -> { step: 'name' | 'cpf', name?: string }
+        if (pendingBotMessages.has(msg.body)) return;
 
-function isValidCpf(value) {
-    return value.replace(/\D/g, '').length === 11;
-}
+        // Procura o usuário por qualquer um dos IDs
+        const user = await findUser(phone, whatsappId);
+        if (!user) return; 
+        const conv = await findActiveConversation(user.id);
+        if (!conv) return;
 
-async function updateUserData(userId, data) {
-    try {
-        await axios.put(`${MANAGER_URL}/users/${userId}`, data);
-        return true;
-    } catch (error) {
-        console.error('Erro ao atualizar dados do cliente:', error.message);
-        return false;
-    }
-}
+        if (msg.body === '#finalizar') {
+            await axios.post(`${MANAGER_URL}/conversations/${conv.id}/close`);
+            await botSend(msg.to, '✅ *Atendimento encerrado com sucesso.*');
+            return;
+        }
 
-// ... (Client initialization)
-const client = new Client({
-    authStrategy: new LocalAuth(),
-    puppeteer: {
-        executablePath: '/usr/bin/chromium',
-        args: ['--no-sandbox', '--disable-setuid-sandbox']
-    }
+        if (!msg.body.startsWith('!') && !msg.body.startsWith('#')) {
+            if (conv.status === 'waiting_human' || conv.status === 'open' || conv.status === 'confirming_closure') {
+                console.log(`[Handover] SUCESSO! Mudando usuário ${user.id} para human_handover.`);
+                await axios.post(`${MANAGER_URL}/conversations/${conv.id}/update-status?status=human_handover`);
+                await saveMessage(conv.id, 'bot', `[Atendimento Manual] ${msg.body}`);
+            }
+        }
+    } catch (e) {}
 });
 
-client.on('qr', (qr) => {
-    // Salva o QR Code para servir via HTTP
-    latestQR = qr;
-    console.log('Novo QR Code gerado. Acesse http://localhost:8003/qr no seu browser para escanear.');
-    qrcode.generate(qr, { small: true });
-});
-
-client.on('ready', () => {
-    // Limpa o QR Code após autenticação bem-sucedida
-    latestQR = null;
-    console.log('Cliente WhatsApp está pronto e conectado!');
-});
-
+// 2. EVENTO: CLIENTE FALANDO
 client.on('message', async (msg) => {
     const chat = await msg.getChat();
-    if (chat.isGroup) return; // Ignora grupos para evitar spam
-
-    const senderId = msg.from; // ID completo (ex: 55129...@c.us ou ...@lid) usado para ESTADO
+    if (chat.isGroup) return;
+    
     const contact = await msg.getContact();
-    const phone = contact.id.user; // O número real (ex: 5512997126131) usado para BANCO DE DADOS
+    const whatsappId = contact.id._serialized;
+    const phone = whatsappId.split('@')[0].replace(/\D/g, '');
 
-    // 1. Lógica de Feedback
-    if (msg.body.toLowerCase().startsWith('feedback ')) {
-        const rating = parseInt(msg.body.split(' ')[1]);
-        const user = await getOrCreateUser(phone);
-        const conversation = await getOrCreateConversation(user.id);
-        
-        if (rating >= 1 && rating <= 5) {
-            const success = await saveFeedback(conversation.id, rating);
-            if (success) {
-                await msg.reply('Obrigado pelo seu feedback sobre este atendimento!');
-            } else {
-                await msg.reply('Erro ao salvar feedback.');
-            }
-        } else {
-            await msg.reply('Por favor, envie "feedback" seguido de uma nota de 1 a 5.');
-        }
-        return;
+    const user = await findUser(phone, whatsappId);
+    const conv = user ? await findActiveConversation(user.id) : null;
+
+    if (conv && (conv.status === 'waiting_human' || conv.status === 'human_handover')) {
+        await saveMessage(conv.id, 'user', msg.body);
+        return; 
     }
 
-    // 2. Coleta de dados (Onboarding) - PRIORIDADE TOTAL
-    const onboarding = onboardingState.get(senderId);
-
+    const onboarding = onboardingState.get(msg.from);
     if (onboarding) {
+        const u = await getOrCreateUser(phone, whatsappId);
+        const c = await getOrCreateConversation(u.id);
+        
         if (onboarding.step === 'name') {
             onboarding.name = msg.body.trim();
             onboarding.step = 'cpf';
-            await msg.reply('Obrigado! Agora informe seu CPF (apenas números).');
+            await botReply(msg, 'Obrigado! Agora informe seu CPF (apenas números).');
+        } else if (onboarding.step === 'cpf') {
+            const cleanCpf = msg.body.replace(/\D/g, '');
+            if (!isValidCpf(cleanCpf)) return await botReply(msg, 'CPF inválido. Envie os 11 números.');
+            onboarding.cpf = cleanCpf;
+            onboarding.step = 'confirm';
+            await botReply(msg, `Confirma seus dados?\n\n*Nome:* ${onboarding.name}\n*CPF:* ${onboarding.cpf}\n\nResponda *Sim* para confirmar ou *Não* para corrigir.`);
+        } else if (onboarding.step === 'confirm') {
+            const resp = msg.body.toLowerCase();
+            if (resp.includes('sim')) {
+                await axios.put(`${MANAGER_URL}/users/${u.id}`, { name: onboarding.name, cpf: onboarding.cpf });
+                await axios.post(`${MANAGER_URL}/conversations/${c.id}/mark-onboarded`);
+                onboardingState.delete(msg.from);
+                await botReply(msg, `Dados confirmados! Seu protocolo é: ${c.protocol}\n\nComo posso ajudar? (mencione "procon")`);
+            } else if (resp.includes('não') || resp.includes('nao')) {
+                onboarding.step = 'name';
+                await botReply(msg, 'Entendido. Vamos recomeçar.\n\nQual o seu nome completo?');
+            } else {
+                await botReply(msg, 'Por favor, responda apenas *Sim* ou *Não*.');
+            }
+        }
+        return;
+    }
+
+    if (conv) {
+        if (conv.status === 'confirming_closure') {
+            if (msg.body.toLowerCase().includes('sim')) {
+                await axios.post(`${MANAGER_URL}/conversations/${conv.id}/update-status?status=awaiting_feedback`);
+                await botReply(msg, 'Entendido! Para encerrar, envie uma nota de 1 a 5 para o meu atendimento.');
+            } else {
+                await axios.post(`${MANAGER_URL}/conversations/${conv.id}/update-status?status=open`);
+                await botReply(msg, 'Certo! Como posso continuar te ajudando?');
+            }
             return;
         }
-
-        if (onboarding.step === 'cpf') {
-            if (!isValidCpf(msg.body)) {
-                await msg.reply('CPF inválido. Por favor, envie os 11 números do seu CPF.');
-                return;
-            }
-
-            const user = await getOrCreateUser(phone);
-            await updateUserData(user.id, { name: onboarding.name, cpf: msg.body.replace(/\D/g, '') });
-            
-            const conversation = await getOrCreateConversation(user.id);
-            onboardingState.delete(senderId);
-
-            await saveMessage(conversation.id, 'system', 'Atendimento iniciado após onboarding.');
-            await msg.reply(`Dados confirmados! Seu atendimento foi iniciado.\n\n*Protocolo:* ${conversation.protocol}\n\nAgora me conte como posso te ajudar (mencione "procon" na sua mensagem).`);
+        if (conv.status === 'awaiting_feedback') {
+            const rating = parseInt(msg.body.trim());
+            if (rating >= 1 && rating <= 5) {
+                await saveFeedback(conv.id, rating);
+                await axios.post(`${MANAGER_URL}/conversations/${conv.id}/close`);
+                await botReply(msg, 'Muito obrigado! Atendimento encerrado.');
+            } else { await botReply(msg, 'Envie apenas o número de 1 a 5.'); }
             return;
         }
     }
 
-    // Trava de segurança: só inicia se a mensagem contiver "procon"
-    // Mas se o usuário já estiver no meio de um atendimento, ele pode falar sem "procon"
-    const user = await getOrCreateUser(phone);
-    
-    // Inicia a coleta de nome/CPF reais antes de seguir com o atendimento
-    if (!user.cpf) {
-        if (msg.body.toLowerCase().includes('procon')) {
-            onboardingState.set(senderId, { step: 'name' });
-            await msg.reply('Olá! Sou o assistente virtual do Procon Jacareí. Antes de continuar, preciso confirmar alguns dados.\n\nQual o seu nome completo?');
-        }
-        return;
-    }
+    if (msg.body.toLowerCase().includes('procon')) {
+        const u = await getOrCreateUser(phone, whatsappId);
+        const c = await getOrCreateConversation(u.id);
 
-    // Se já tem CPF, verificamos se a conversa está aberta e se precisa da keyword
-    const conversation = await getOrCreateConversation(user.id);
-
-    // Task #23: Se estiver aguardando humano, não processa IA e apenas avisa
-    if (conversation.status === 'waiting_human') {
-        if (msg.body.toLowerCase().includes('procon')) {
-            await msg.reply('Seu atendimento já foi transferido para um atendente humano. Por favor, aguarde o contato.');
-        }
-        return;
-    }
-
-    // Se a mensagem não tem "procon" e não houve interação recente (ex: 30 min), poderíamos ignorar.
-    if (!msg.body.toLowerCase().includes('procon')) {
-        return;
-    }
-
-    console.log(`Mensagem recebida de ${senderId}: ${msg.body}`);
-
-    try {
-        await saveMessage(conversation.id, 'user', msg.body);
-
-        const plnResponse = await axios.post(PLN_URL, {
-            raw_text: msg.body
-        });
-
-        const reply = plnResponse.data.class_response;
-        const isFallback = plnResponse.data.is_fallback;
-
-        await saveMessage(conversation.id, 'bot', reply);
-
-        if (isFallback) {
-            // Incrementa falhas no banco
-            const updatedConv = await axios.post(`${MANAGER_URL}/conversations/${conversation.id}/increment-failures`);
-            
-            if (updatedConv.data.status === 'waiting_human') {
-                await msg.reply('Desculpe, não consegui compreender sua dúvida após algumas tentativas. Estou te transferindo para um atendente humano. Por favor, aguarde.');
-                return;
-            }
+        if (!c.is_onboarded) {
+            onboardingState.set(msg.from, { step: 'name' });
+            await botReply(msg, 'Olá! Sou o assistente virtual do Procon Jacareí. Antes de continuar, preciso confirmar seus dados.\n\nQual o seu nome completo?');
         } else {
-            // Reset de falhas (acerto consecutivo)
-            await axios.post(`${MANAGER_URL}/conversations/${conversation.id}/reset-failures`);
+            await saveMessage(c.id, 'user', msg.body);
+            const pln = await axios.post(PLN_URL, { raw_text: msg.body }, { timeout: 15000 });
+            let reply = pln.data.class_response;
+            let isFallback = pln.data.is_fallback;
+
+            if (isFallback && c.failed_attempts === 1) {
+                try {
+                    const rag = await axios.post(PLN_URL.replace('/fasttext/knn', '/rag'), { question: msg.body, top_k: 3 }, { timeout: 45000 });
+                    if (rag.data.answer && !rag.data.answer.includes("não encontrei")) {
+                        reply = "*[IA Avançada]* " + rag.data.answer;
+                        isFallback = false;
+                    }
+                } catch (e) {}
+            }
+
+            await saveMessage(c.id, 'bot', reply);
+            if (isFallback) {
+                const updated = await axios.post(`${MANAGER_URL}/conversations/${c.id}/increment-failures`);
+                if (updated.data.status === 'waiting_human') return await botReply(msg, 'Estou te transferindo para um atendente humano. Aguarde.');
+            } else { await axios.post(`${MANAGER_URL}/conversations/${c.id}/reset-failures`); }
+
+            await botReply(msg, reply);
         }
-
-        await msg.reply(reply + '\n\nAo finalizar, avalie este atendimento enviando "feedback 1 a 5"');
-
-    } catch (error) {
-        console.error('Erro no processamento da mensagem:', error.message);
     }
 });
 

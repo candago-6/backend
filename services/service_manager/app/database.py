@@ -22,9 +22,14 @@ def create_db_and_tables():
         try:
             SQLModel.metadata.create_all(engine)
             
-            # Auto-migration for Task #23
+            # Auto-migration for advanced conversational management
             with Session(engine) as session:
+                session.execute(text('ALTER TABLE "user" ADD COLUMN IF NOT EXISTS whatsapp_id VARCHAR'))
+                session.execute(text('CREATE INDEX IF NOT EXISTS ix_user_whatsapp_id ON "user" (whatsapp_id)'))
                 session.execute(text("ALTER TABLE conversation ADD COLUMN IF NOT EXISTS failed_attempts INTEGER DEFAULT 0"))
+                session.execute(text("ALTER TABLE conversation ADD COLUMN IF NOT EXISTS patience_msg_sent BOOLEAN DEFAULT FALSE"))
+                session.execute(text("ALTER TABLE conversation ADD COLUMN IF NOT EXISTS is_onboarded BOOLEAN DEFAULT FALSE"))
+                session.execute(text("ALTER TABLE conversation ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP"))
                 session.commit()
             
             print("Database tables created and migrated successfully!")
