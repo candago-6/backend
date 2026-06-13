@@ -20,6 +20,7 @@ class PreprocessingResponse(BaseModel):
     item_similarities: list[ItemSimilarity]
     predicted_class: str | None
     class_response: str
+    is_fallback: bool = False
 
 
 class PreprocessingSummaryResponse(BaseModel):
@@ -27,6 +28,7 @@ class PreprocessingSummaryResponse(BaseModel):
     item_similarities: list[ItemSimilarity]
     predicted_class: str | None
     class_response: str
+    is_fallback: bool = False
 
 
 class ClassResponseOnly(BaseModel):

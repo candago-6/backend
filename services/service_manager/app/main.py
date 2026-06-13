@@ -17,6 +17,8 @@ from .utils.security import decrypt_data, encrypt_data
 class UserUpdate(BaseModel):
     name: Optional[str] = None
     cpf: Optional[str] = None
+    phone: Optional[str] = None
+    whatsapp_id: Optional[str] = None
 
 
 class MessageEvaluationInput(BaseModel):
@@ -55,6 +57,9 @@ def health_check() -> dict[str, str]:
 # User Endpoints
 @app.post("/api/v1/users", response_model=User)
 def create_user(user: User, session: Session = Depends(get_session)):
+    # Garante que o CPF esteja criptografado na criação
+    if user.cpf:
+        user.cpf = encrypt_data(user.cpf)
     session.add(user)
     session.commit()
     session.refresh(user)
@@ -63,10 +68,9 @@ def create_user(user: User, session: Session = Depends(get_session)):
 
 @app.get("/api/v1/users", response_model=list[User])
 def list_users(session: Session = Depends(get_session)):
-    users = session.exec(select(User)).all()
-    for user in users:
-        user.cpf = decrypt_data(user.cpf)
-    return users
+    users_list = session.exec(select(User)).all()
+    # Retornamos os dados como estão no banco (criptografados)
+    return users_list
 
 
 @app.get("/api/v1/users/{user_id}", response_model=User)
@@ -74,15 +78,21 @@ def get_user(user_id: int, session: Session = Depends(get_session)):
     user = session.get(User, user_id)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-    
-    # Decrypt CPF for the response
-    user.cpf = decrypt_data(user.cpf)
     return user
 
 
 @app.get("/api/v1/users/phone/{phone}", response_model=User)
 def get_user_by_phone(phone: str, session: Session = Depends(get_session)):
     statement = select(User).where(User.phone == phone)
+    user = session.exec(statement).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return user
+
+
+@app.get("/api/v1/users/whatsapp-id/{whatsapp_id}", response_model=User)
+def get_user_by_whatsapp_id(whatsapp_id: str, session: Session = Depends(get_session)):
+    statement = select(User).where(User.whatsapp_id == whatsapp_id)
     user = session.exec(statement).first()
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
@@ -98,13 +108,16 @@ def update_user(user_id: int, payload: UserUpdate, session: Session = Depends(ge
     if payload.name is not None:
         user.name = payload.name
     if payload.cpf is not None:
+        # Forçamos a criptografia manual pois a atribuição direta ignora o validator do modelo
         user.cpf = encrypt_data(payload.cpf)
+    if payload.phone is not None:
+        user.phone = payload.phone
+    if payload.whatsapp_id is not None:
+        user.whatsapp_id = payload.whatsapp_id
 
     session.add(user)
     session.commit()
     session.refresh(user)
-
-    user.cpf = decrypt_data(user.cpf)
     return user
 
 
@@ -124,10 +137,110 @@ def list_conversations(session: Session = Depends(get_session)):
 
 @app.get("/api/v1/conversations/active/{user_id}", response_model=Conversation)
 def get_active_conversation(user_id: int, session: Session = Depends(get_session)):
-    statement = select(Conversation).where(Conversation.user_id == user_id, Conversation.status == "open")
+    active_statuses = ["open", "waiting_human", "human_handover", "confirming_closure", "awaiting_feedback"]
+    statement = select(Conversation).where(
+        Conversation.user_id == user_id, 
+        Conversation.status.in_(active_statuses)
+    )
     conversation = session.exec(statement).first()
     if not conversation:
         raise HTTPException(status_code=404, detail="No active conversation found")
+    return conversation
+
+
+@app.get("/api/v1/conversations/{conversation_id}", response_model=Conversation)
+def get_conversation(conversation_id: int, session: Session = Depends(get_session)):
+    conversation = session.get(Conversation, conversation_id)
+    if not conversation:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+    return conversation
+
+
+@app.post("/api/v1/conversations/{conversation_id}/close", response_model=Conversation)
+def close_conversation(conversation_id: int, session: Session = Depends(get_session)):
+    conversation = session.get(Conversation, conversation_id)
+    if not conversation:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+
+    conversation.status = "closed"
+    conversation.failed_attempts = 0
+    conversation.patience_msg_sent = False
+    # Nota: is_onboarded não é resetado para mantermos o histórico, mas um novo protocolo terá is_onboarded=False
+
+    session.add(conversation)
+    session.commit()
+    session.refresh(conversation)
+    return conversation
+
+
+@app.post("/api/v1/conversations/{conversation_id}/mark-onboarded", response_model=Conversation)
+def mark_onboarded(conversation_id: int, session: Session = Depends(get_session)):
+    conversation = session.get(Conversation, conversation_id)
+    if not conversation:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+
+    conversation.is_onboarded = True
+    session.add(conversation)
+    session.commit()
+    session.refresh(conversation)
+    return conversation
+
+
+@app.post("/api/v1/conversations/{conversation_id}/mark-patience-sent", response_model=Conversation)
+def mark_patience_sent(conversation_id: int, session: Session = Depends(get_session)):
+    conversation = session.get(Conversation, conversation_id)
+    if not conversation:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+
+    conversation.patience_msg_sent = True
+    session.add(conversation)
+    session.commit()
+    session.refresh(conversation)
+    return conversation
+
+
+@app.post("/api/v1/conversations/{conversation_id}/update-status", response_model=Conversation)
+def update_conversation_status(conversation_id: int, status: str, session: Session = Depends(get_session)):
+    conversation = session.get(Conversation, conversation_id)
+    if not conversation:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+
+    from datetime import datetime, timezone
+    conversation.status = status
+    conversation.updated_at = datetime.now(timezone.utc)
+    
+    session.add(conversation)
+    session.commit()
+    session.refresh(conversation)
+    return conversation
+
+
+@app.post("/api/v1/conversations/{conversation_id}/increment-failures", response_model=Conversation)
+def increment_failures(conversation_id: int, session: Session = Depends(get_session)):
+    conversation = session.get(Conversation, conversation_id)
+    if not conversation:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+    
+    conversation.failed_attempts += 1
+    if conversation.failed_attempts >= 3:
+        conversation.status = "waiting_human"
+    
+    session.add(conversation)
+    session.commit()
+    session.refresh(conversation)
+    return conversation
+
+
+@app.post("/api/v1/conversations/{conversation_id}/reset-failures", response_model=Conversation)
+def reset_failures(conversation_id: int, session: Session = Depends(get_session)):
+    conversation = session.get(Conversation, conversation_id)
+    if not conversation:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+    
+    conversation.failed_attempts = 0
+    session.add(conversation)
+    session.commit()
+    session.refresh(conversation)
     return conversation
 
 
@@ -139,29 +252,34 @@ def list_messages(session: Session = Depends(get_session)):
 @app.post("/api/v1/messages", response_model=Message)
 def create_message(message: Message, session: Session = Depends(get_session)):
     session.add(message)
+    
+    # Update conversation last activity
+    conversation = session.get(Conversation, message.conversation_id)
+    if conversation:
+        from datetime import datetime, timezone
+        conversation.updated_at = datetime.now(timezone.utc)
+        session.add(conversation)
+        
     session.commit()
     session.refresh(message)
     return message
 
 
-# Feedback Endpoints (Task 08.1)
+# Feedback Endpoints
 @app.get("/api/v1/feedback", response_model=list[Feedback])
 def list_feedback(session: Session = Depends(get_session)):
     return session.exec(select(Feedback)).all()
 
 @app.post("/api/v1/feedback", response_model=Feedback)
 def create_feedback(feedback: Feedback, session: Session = Depends(get_session)):
-    # 1. Verificar se a conversa existe
     conversation = session.get(Conversation, feedback.conversation_id)
     if not conversation:
         raise HTTPException(status_code=404, detail="Conversation not found")
     
-    # 2. Tentar encontrar feedback existente para esta conversa
     statement = select(Feedback).where(Feedback.conversation_id == feedback.conversation_id)
     existing_feedback = session.exec(statement).first()
     
     if existing_feedback:
-        # Atualizar registro existente
         existing_feedback.rating = feedback.rating
         existing_feedback.comment = feedback.comment
         existing_feedback.is_best_answer = feedback.is_best_answer
@@ -170,14 +288,13 @@ def create_feedback(feedback: Feedback, session: Session = Depends(get_session))
         session.refresh(existing_feedback)
         return existing_feedback
     else:
-        # Criar novo registro
         session.add(feedback)
         session.commit()
         session.refresh(feedback)
         return feedback
 
 
-# Message Evaluation Endpoints (avaliação de respostas da LLM por gestores/analistas)
+# Message Evaluation Endpoints
 @app.get("/api/v1/message-evaluations", response_model=list[MessageEvaluation])
 def list_message_evaluations(
     session: Session = Depends(get_session),

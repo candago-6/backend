@@ -295,6 +295,7 @@ def preprocessing_w2vec(payload: PreprocessingRequest) -> PreprocessingResponse:
             item_responses,
         )
         predicted_class = item_similarities[0].classe if item_similarities else None
+        is_fallback = predicted_class is None
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
@@ -306,6 +307,7 @@ def preprocessing_w2vec(payload: PreprocessingRequest) -> PreprocessingResponse:
         item_similarities=item_similarities,
         predicted_class=predicted_class,
         class_response=class_response,
+        is_fallback=is_fallback,
     )
 
 
@@ -346,6 +348,7 @@ def preprocessing_w2vec_knn(
                 predicted_class,
                 item_responses,
             )
+        is_fallback = predicted_class is None
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
@@ -354,6 +357,7 @@ def preprocessing_w2vec_knn(
         item_similarities=item_similarities,
         predicted_class=predicted_class,
         class_response=class_response,
+        is_fallback=is_fallback,
     )
 
 
@@ -382,6 +386,7 @@ def preprocessing_fasttext(payload: PreprocessingRequest) -> PreprocessingRespon
             item_responses,
         )
         predicted_class = item_similarities[0].classe if item_similarities else None
+        is_fallback = predicted_class is None
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
@@ -393,6 +398,7 @@ def preprocessing_fasttext(payload: PreprocessingRequest) -> PreprocessingRespon
         item_similarities=item_similarities,
         predicted_class=predicted_class,
         class_response=class_response,
+        is_fallback=is_fallback,
     )
 
 
@@ -433,6 +439,7 @@ def preprocessing_fasttext_knn(
                 predicted_class,
                 item_responses,
             )
+        is_fallback = predicted_class is None
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc)) from exc
 
@@ -441,6 +448,7 @@ def preprocessing_fasttext_knn(
         item_similarities=item_similarities,
         predicted_class=predicted_class,
         class_response=class_response,
+        is_fallback=is_fallback,
     )
 
 
@@ -490,8 +498,5 @@ def rag_remote_answer(payload: RAGRequest) -> RAGResponse:
         )
         for hit in hits
     ]
-    
-@app.post("/api/distilbert", response_model=RAGResponse)
-def distilbert_answer()
 
     return RAGResponse(answer=answer, sources=sources)
