@@ -30,6 +30,7 @@ class Conversation(SQLModel, table=True):
     protocol: str = Field(index=True, unique=True, description="Unique protocol number for the conversation")
     status: str = Field(default="open", description="Current status of the conversation: open, closed, archived, waiting_human, human_handover, confirming_closure, awaiting_feedback")
     failed_attempts: int = Field(default=0, description="Consecutive failed understanding attempts by the bot")
+    assigned_admin_id: Optional[str] = Field(default=None, foreign_key="admin_users.id", description="Admin who took over this conversation (live handover)")
     patience_msg_sent: bool = Field(default=False, description="Whether the patience message has been sent for this conversation")
     is_onboarded: bool = Field(default=False, description="Whether the user has completed onboarding for THIS specific conversation")
     created_at: datetime = Field(default_factory=lambda: datetime.now(timezone.utc), description="Timestamp of conversation creation")
@@ -43,7 +44,7 @@ class Conversation(SQLModel, table=True):
 class Message(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True, description="Unique identifier for the message")
     conversation_id: int = Field(foreign_key="conversation.id", description="ID of the conversation this message belongs to")
-    role: str = Field(description="Role of the message sender: user, bot, system")  # user, bot, system
+    role: str = Field(description="Role of the message sender: user, bot, system, agent")  # user, bot, system, agent
     content: str = Field(description="Content of the message")
     timestamp: datetime = Field(default_factory=lambda: datetime.now(timezone.utc), description="Timestamp of the message")
 

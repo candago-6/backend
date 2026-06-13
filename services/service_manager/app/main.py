@@ -1,6 +1,9 @@
+import os
 from contextlib import asynccontextmanager
+from datetime import datetime, timezone
 from typing import Literal, Optional
 
+import httpx
 from fastapi import FastAPI, Depends, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -23,6 +26,30 @@ class UserUpdate(BaseModel):
 
 class MessageEvaluationInput(BaseModel):
     rating: Literal["positive", "negative"]
+
+
+class AgentMessageInput(BaseModel):
+    content: str
+
+
+BOT_URL = os.getenv("BOT_URL", "http://whatsapp-bot:8003")
+BOT_SECRET = os.getenv("BOT_SECRET", "dev-bot-secret-change-me")
+
+
+def _chat_id(user: User) -> str:
+    """Mirror the bot's chatId resolution: prefer WhatsApp ID, fall back to phone JID."""
+    return user.whatsapp_id or f"{user.phone}@c.us"
+
+
+def send_whatsapp_message(chat_id: str, text: str) -> None:
+    """Push an outbound WhatsApp message through the bot. Raises on failure."""
+    resp = httpx.post(
+        f"{BOT_URL}/send",
+        json={"chatId": chat_id, "text": text},
+        headers={"X-Bot-Secret": BOT_SECRET},
+        timeout=15.0,
+    )
+    resp.raise_for_status()
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -238,6 +265,114 @@ def reset_failures(conversation_id: int, session: Session = Depends(get_session)
         raise HTTPException(status_code=404, detail="Conversation not found")
     
     conversation.failed_attempts = 0
+    session.add(conversation)
+    session.commit()
+    session.refresh(conversation)
+    return conversation
+
+
+# Live Handover Endpoints (analyst takes over the conversation from the dashboard)
+@app.post("/api/v1/conversations/{conversation_id}/takeover", response_model=Conversation)
+def takeover_conversation(
+    conversation_id: int,
+    session: Session = Depends(get_session),
+    current_user: AdminUser = Depends(get_current_user),
+):
+    conversation = session.get(Conversation, conversation_id)
+    if not conversation:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+
+    if conversation.status == "closed":
+        raise HTTPException(status_code=409, detail="Conversation already closed")
+    if conversation.assigned_admin_id and conversation.assigned_admin_id != current_user.id:
+        raise HTTPException(status_code=409, detail="Conversation already taken by another agent")
+
+    conversation.status = "human_handover"
+    conversation.assigned_admin_id = current_user.id
+    conversation.updated_at = datetime.now(timezone.utc)
+    session.add(conversation)
+    session.commit()
+    session.refresh(conversation)
+    return conversation
+
+
+@app.post("/api/v1/conversations/{conversation_id}/agent-message", response_model=Message)
+def agent_message(
+    conversation_id: int,
+    payload: AgentMessageInput,
+    session: Session = Depends(get_session),
+    current_user: AdminUser = Depends(get_current_user),
+):
+    conversation = session.get(Conversation, conversation_id)
+    if not conversation:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+    if conversation.status != "human_handover":
+        raise HTTPException(status_code=409, detail="Conversation is not under human handover")
+    # Handover can be reached without an explicit takeover (e.g. the analyst replied
+    # directly in WhatsApp, which the bot detects and flips to human_handover).
+    # Claim it for the first agent who sends from the dashboard.
+    if conversation.assigned_admin_id is None:
+        conversation.assigned_admin_id = current_user.id
+    elif conversation.assigned_admin_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Conversation assigned to another agent")
+
+    user = session.get(User, conversation.user_id)
+    if not user:
+        raise HTTPException(status_code=404, detail="Conversation user not found")
+
+    # Deliver to WhatsApp first; only persist if it actually went out.
+    try:
+        send_whatsapp_message(_chat_id(user), payload.content)
+    except httpx.HTTPError as exc:
+        raise HTTPException(status_code=502, detail=f"Failed to deliver message via bot: {exc}")
+
+    message = Message(conversation_id=conversation_id, role="agent", content=payload.content)
+    conversation.updated_at = datetime.now(timezone.utc)
+    session.add(message)
+    session.add(conversation)
+    session.commit()
+    session.refresh(message)
+    return message
+
+
+@app.post("/api/v1/conversations/{conversation_id}/release", response_model=Conversation)
+def release_conversation(
+    conversation_id: int,
+    to_bot: bool = False,
+    session: Session = Depends(get_session),
+    current_user: AdminUser = Depends(get_current_user),
+):
+    """End the live handover. Default: send a closing message + ask for a 1-5 rating
+    (status -> awaiting_feedback, bot collects the rating and closes). Pass to_bot=true
+    to instead hand control back to the bot (status -> open)."""
+    conversation = session.get(Conversation, conversation_id)
+    if not conversation:
+        raise HTTPException(status_code=404, detail="Conversation not found")
+    if conversation.assigned_admin_id and conversation.assigned_admin_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Conversation assigned to another agent")
+
+    conversation.assigned_admin_id = None
+    conversation.failed_attempts = 0
+    if to_bot:
+        conversation.status = "open"
+    else:
+        # Close out: notify the client and ask for a satisfaction rating.
+        # The bot's awaiting_feedback handler collects the 1-5 reply and closes.
+        conversation.status = "awaiting_feedback"
+        conversation.patience_msg_sent = False
+        user = session.get(User, conversation.user_id)
+        if user:
+            closing = (
+                "Seu atendimento foi encerrado pelo nosso atendente. "
+                "Para finalizar, avalie o atendimento com uma nota de *1 a 5*."
+            )
+            try:
+                send_whatsapp_message(_chat_id(user), closing)
+            except httpx.HTTPError as exc:
+                # Best-effort: still transition state so the dashboard reflects the end.
+                print(f"[release] failed to send closing message: {exc}")
+            session.add(Message(conversation_id=conversation_id, role="system", content=closing))
+    conversation.updated_at = datetime.now(timezone.utc)
     session.add(conversation)
     session.commit()
     session.refresh(conversation)

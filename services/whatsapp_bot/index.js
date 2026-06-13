@@ -5,9 +5,11 @@ const express = require('express');
 const axios = require('axios');
 
 const app = express();
+app.use(express.json());
 const PORT = 8003;
 const PLN_URL = process.env.PLN_URL || 'http://pln-pipeline:8001/api/fasttext/knn';
 const MANAGER_URL = process.env.MANAGER_URL || 'http://service-manager:8002/api/v1';
+const BOT_SECRET = process.env.BOT_SECRET || 'dev-bot-secret-change-me';
 
 let latestQR = null;
 const pendingBotMessages = new Set();
@@ -27,6 +29,19 @@ async function botSend(chatId, text) {
 }
 
 app.get('/api/v1/health', (req, res) => res.json({ status: 'ok', service: 'whatsapp-bot (node)' }));
+
+// Outbound send: used by service_manager when an analyst replies from the dashboard (live handover).
+app.post('/send', async (req, res) => {
+    if (req.headers['x-bot-secret'] !== BOT_SECRET) return res.status(401).json({ error: 'unauthorized' });
+    const { chatId, text } = req.body || {};
+    if (!chatId || !text) return res.status(400).json({ error: 'chatId and text required' });
+    try {
+        await botSend(chatId, text);
+        res.json({ status: 'sent' });
+    } catch (e) {
+        res.status(500).json({ error: 'send failed', detail: String(e) });
+    }
+});
 app.get('/qr', async (req, res) => {
     if (!latestQR) return res.status(404).send('<h2>Aguarde o QR Code...</h2>');
     const pngBuffer = await QRCode.toBuffer(latestQR, { scale: 8 });
@@ -118,18 +133,27 @@ async function startMonitor() {
     }, 60000);
 }
 
-const client = new Client({ authStrategy: new LocalAuth(), puppeteer: { executablePath: '/usr/bin/chromium', args: ['--no-sandbox'] } });
+const client = new Client({
+    authStrategy: new LocalAuth(),
+    puppeteer: { executablePath: '/usr/bin/chromium', args: ['--no-sandbox'] },
+    // Chromium can stall briefly during WhatsApp Web sync; give CDP calls more room before timing out.
+    protocolTimeout: 120000,
+});
 
 client.on('qr', (qr) => { latestQR = qr; qrcode.generate(qr, { small: true }); });
 client.on('ready', () => { latestQR = null; console.log('Bot pronto!'); startMonitor(); });
+client.on('disconnected', (reason) => console.error('[Client] desconectado:', reason));
+
+// A single Chromium/CDP hiccup must not take the whole bot down.
+process.on('unhandledRejection', (err) => console.error('[unhandledRejection]', err));
 
 // 1. EVENTO: VOCÊ FALANDO
 client.on('message_create', async (msg) => {
-    if (!msg.fromMe) return; 
-    const chat = await msg.getChat();
-    if (chat.isGroup) return;
-
+    if (!msg.fromMe) return;
     try {
+        const chat = await msg.getChat();
+        if (chat.isGroup) return;
+
         const contact = await client.getContactById(msg.to);
         const whatsappId = contact.id._serialized;
         // Extrai apenas os números do ID (antes do @) para garantir que temos o telefone real
@@ -161,9 +185,10 @@ client.on('message_create', async (msg) => {
 
 // 2. EVENTO: CLIENTE FALANDO
 client.on('message', async (msg) => {
+  try {
     const chat = await msg.getChat();
     if (chat.isGroup) return;
-    
+
     const contact = await msg.getContact();
     const whatsappId = contact.id._serialized;
     const phone = whatsappId.split('@')[0].replace(/\D/g, '');
@@ -239,7 +264,13 @@ client.on('message', async (msg) => {
             await botReply(msg, 'Olá! Sou o assistente virtual do Procon Jacareí. Antes de continuar, preciso confirmar seus dados.\n\nQual o seu nome completo?');
         } else {
             await saveMessage(c.id, 'user', msg.body);
-            const pln = await axios.post(PLN_URL, { raw_text: msg.body }, { timeout: 15000 });
+            let pln;
+            try {
+                pln = await axios.post(PLN_URL, { raw_text: msg.body }, { timeout: 15000 });
+            } catch (e) {
+                console.error('[PLN indisponível]', e?.message || e);
+                return await botReply(msg, 'Estou com uma instabilidade técnica no momento. Por favor, tente novamente em instantes.');
+            }
             let reply = pln.data.class_response;
             let isFallback = pln.data.is_fallback;
 
@@ -262,6 +293,9 @@ client.on('message', async (msg) => {
             await botReply(msg, reply);
         }
     }
+  } catch (e) {
+    console.error('[message handler]', e?.message || e);
+  }
 });
 
 client.initialize();

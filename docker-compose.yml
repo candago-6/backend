@@ -2,6 +2,7 @@ services:
   db:
     image: postgres:16-alpine
     container_name: assistente_db
+    restart: unless-stopped
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-admin}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-admin123}
@@ -13,6 +14,7 @@ services:
 
   pln-pipeline:
     container_name: pln_pipeline
+    restart: unless-stopped
     build:
       context: ./services/pln_pipeline
       dockerfile: Dockerfile
@@ -23,6 +25,7 @@ services:
 
   service-manager:
     container_name: service_manager
+    restart: unless-stopped
     build:
       context: ./services/service_manager
       dockerfile: Dockerfile
@@ -34,6 +37,8 @@ services:
       JWT_SECRET: ${JWT_SECRET:-dev-secret-change-me}
       ADMIN_EMAIL: ${ADMIN_EMAIL:-admin@procon.sp.gov.br}
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:-admin123}
+      BOT_URL: ${BOT_URL:-http://whatsapp-bot:8003}
+      BOT_SECRET: ${BOT_SECRET:-dev-bot-secret-change-me}
     depends_on:
       - db
     networks:
@@ -41,6 +46,7 @@ services:
 
   whatsapp-bot:
     container_name: whatsapp_bot
+    restart: unless-stopped
     build:
       context: ./services/whatsapp_bot
       dockerfile: Dockerfile
@@ -49,6 +55,9 @@ services:
     environment:
       PLN_URL: http://pln-pipeline:8001/api/fasttext/knn
       MANAGER_URL: http://service-manager:8002/api/v1
+      BOT_SECRET: ${BOT_SECRET:-dev-bot-secret-change-me}
+    volumes:
+      - wa_session:/app/.wwebjs_auth
     networks:
       - assistente-whatsapp-net
 
@@ -58,3 +67,4 @@ networks:
 
 volumes:
   postgres_data:
+  wa_session:
