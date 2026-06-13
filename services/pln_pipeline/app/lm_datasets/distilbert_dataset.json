@@ -7,7 +7,12 @@
       "Apareceu uma cobrança de seguro no meu cartão de crédito que eu nunca contratei, o que eu faço?",
       "Tem um seguro sendo cobrado na minha fatura do cartão sem que eu tenha autorizado, isso é permitido?",
       "Descobri uma cobrança de seguro no cartão que não pedi, como reclamar?",
-      "Meu cartão está com cobrança de um seguro que eu não contratei, posso cancelar e ser ressarcido?"
+      "Meu cartão está com cobrança de um seguro que eu não contratei, posso cancelar e ser ressarcido?",
+      "Notei na fatura do meu cartão um seguro que nunca autorizei, como faço para cancelar?",
+      "Estão me cobrando um seguro junto com a fatura do cartão sem meu consentimento, isso é golpe?",
+      "Vi uma cobrança recorrente de seguro no cartão que eu não lembro de ter aceitado, o que devo fazer?",
+      "É possível pedir o cancelamento e a devolução do dinheiro de um seguro cobrado no cartão sem autorização?",
+      "Como denunciar uma operadora de cartão que está cobrando um seguro que eu nunca pedi?"
     ]
   },
   {
@@ -18,7 +23,12 @@
       "Continuam descontando da minha folha de pagamento um empréstimo que eu já paguei, o que posso fazer?",
       "Já quitei um empréstimo, mas o desconto continua aparecendo no meu contracheque, isso é normal?",
       "Como faço para parar um desconto na folha referente a um empréstimo que já foi quitado?",
-      "Estão me cobrando indevidamente na folha de pagamento por um empréstimo já encerrado, posso reclamar no Procon?"
+      "Estão me cobrando indevidamente na folha de pagamento por um empréstimo já encerrado, posso reclamar no Procon?",
+      "Paguei todas as parcelas do meu empréstimo, mas o banco continua descontando do meu salário, o que fazer?",
+      "Meu contracheque ainda mostra desconto de um empréstimo que já foi totalmente pago, isso pode?",
+      "Como solicito a devolução em dobro de um desconto indevido de empréstimo já quitado na folha?",
+      "O desconto de um empréstimo encerrado continua na minha folha de pagamento há meses, como resolver?",
+      "Quitei o financiamento, mas a empresa não removeu o desconto do meu salário, posso acionar o Procon?"
     ]
   },
   {
@@ -29,7 +39,12 @@
       "Apareceu um desconto no meu benefício referente a um empréstimo que eu nunca contratei, o que fazer?",
       "Estão tirando dinheiro do meu benefício do INSS por causa de um empréstimo que eu não pedi, isso é golpe?",
       "Notei um desconto no meu benefício de um empréstimo consignado que não reconheço, como denunciar?",
-      "Meu benefício está com desconto de um empréstimo que eu não fiz, posso pedir o cancelamento e a devolução do valor?"
+      "Meu benefício está com desconto de um empréstimo que eu não fiz, posso pedir o cancelamento e a devolução do valor?",
+      "Recebo menos no benefício por causa de um empréstimo consignado que eu nunca solicitei, como resolver isso?",
+      "Encontrei no extrato do INSS um desconto de empréstimo desconhecido, o que devo fazer primeiro?",
+      "Posso pedir ao Procon para investigar um desconto de empréstimo não autorizado no meu benefício?",
+      "Meu benefício previdenciário sofreu um desconto de empréstimo que não reconheço, quais documentos preciso reunir?",
+      "Existe a possibilidade de eu ter a devolução em dobro de um valor descontado indevidamente do meu benefício?"
     ]
   },
   {
@@ -40,7 +55,12 @@
       "A empresa se recusa a me entregar uma cópia do contrato que assinei, isso é permitido?",
       "Pedi o contrato do serviço e a empresa não me enviou, o que posso fazer?",
       "Tenho direito de receber uma cópia do meu contrato e a empresa está negando, como proceder?",
-      "A loja não quer me dar o documento do contrato que fiz com eles, posso reclamar no Procon?"
+      "A loja não quer me dar o documento do contrato que fiz com eles, posso reclamar no Procon?",
+      "Solicitei várias vezes a cópia do contrato e a empresa nunca me enviou, isso é uma irregularidade?",
+      "Tenho direito de acesso ao conteúdo do contrato antes de assiná-lo, mas a empresa não disponibiliza, o que fazer?",
+      "A operadora se nega a me passar uma via do contrato que firmei com ela, como devo agir?",
+      "Posso exigir judicialmente que a empresa me entregue o contrato que assinei?",
+      "Pedi o protocolo e a cópia do contrato pelo SAC, mas não obtive resposta, o que fazer agora?"
     ]
   },
   {
@@ -51,7 +71,12 @@
       "Estou tentando cancelar meu plano de telefone, mas a operadora não me deixa, o que faço?",
       "Quero encerrar meu contrato com a operadora de celular e estão dificultando o cancelamento, isso é legal?",
       "A empresa de telefonia não aceita cancelar meu plano mesmo eu solicitando diversas vezes, como denunciar?",
-      "Não consigo cancelar meu plano de telefone, a operadora coloca vários obstáculos, posso recorrer ao Procon?"
+      "Não consigo cancelar meu plano de telefone, a operadora coloca vários obstáculos, posso recorrer ao Procon?",
+      "Pedi o cancelamento do meu plano de celular pelo telefone, mas continuam me cobrando, o que faço?",
+      "A operadora exige que eu vá até uma loja física para cancelar o plano, isso é obrigatório?",
+      "Solicitei o cancelamento do meu plano há semanas e a cobrança não parou, como proceder?",
+      "Tentei cancelar meu plano de telefone pelo aplicativo e não consegui concluir, quais são meus direitos?",
+      "A operadora está demorando demais para processar o cancelamento do meu plano, posso reclamar no Procon?"
     ]
   },
   {
@@ -62,7 +87,12 @@
       "Apareceu uma cobrança de RMC e RCC no meu benefício que eu não reconheço, o que isso significa?",
       "Estão descontando do meu benefício valores de RMC/RCC que eu nunca contratei, como faço para reverter?",
       "Notei descontos de cartão consignado (RMC/RCC) no meu benefício sem ter contratado, isso é fraude?",
-      "Meu benefício está com desconto referente a RMC e RCC desconhecidos, posso pedir a devolução em dobro?"
+      "Meu benefício está com desconto referente a RMC e RCC desconhecidos, posso pedir a devolução em dobro?",
+      "O que significam as siglas RMC e RCC que aparecem descontadas no meu benefício?",
+      "Encontrei um desconto de cartão de crédito consignado no meu benefício que eu não autorizei, como denunciar?",
+      "Existe um valor de RCC sendo cobrado do meu benefício sem que eu tenha assinado algo, o que fazer?",
+      "Posso solicitar ao Procon a remoção de um desconto de RMC que apareceu sem minha autorização?",
+      "Como faço para comprovar que nunca contratei o cartão consignado que está descontando do meu benefício?"
     ]
   },
   {
@@ -73,7 +103,12 @@
       "Tive um problema com um produto comprado em uma loja dentro de um marketplace, a plataforma também é responsável?",
       "Comprei algo por uma loja parceira de um site de vendas e o produto veio com defeito, devo acionar o marketplace além da loja?",
       "Minha compra feita por uma loja de uma plataforma de e-commerce apresentou problema, posso reclamar com o site também?",
-      "O produto que comprei numa loja de um aplicativo de compras chegou com defeito, a plataforma tem alguma responsabilidade?"
+      "O produto que comprei numa loja de um aplicativo de compras chegou com defeito, a plataforma tem alguma responsabilidade?",
+      "Se a loja dentro do marketplace não responder minha reclamação, posso acionar diretamente a plataforma?",
+      "Comprei de um vendedor terceiro num site de compras e o produto não foi entregue, o marketplace é responsável?",
+      "A plataforma de vendas pode ser responsabilizada junto com a loja por um produto que veio com defeito?",
+      "Fiz uma compra por um aplicativo de marketplace e tive um problema com o vendedor, devo reclamar com quem primeiro?",
+      "Existe responsabilidade da plataforma online quando o produto vendido por terceiros apresenta vício?"
     ]
   },
   {
@@ -84,7 +119,12 @@
       "Já abri uma reclamação pelo Procon online e não tive solução, posso abrir outra presencialmente sobre o mesmo assunto?",
       "Minha reclamação no Procon online não resolveu o problema, posso registrar de novo no atendimento presencial?",
       "Posso fazer uma nova reclamação no Procon presencial se a que abri online não foi resolvida?",
-      "A reclamação que abri pelo site do Procon não teve solução, dá para abrir outra do mesmo caso pessoalmente?"
+      "A reclamação que abri pelo site do Procon não teve solução, dá para abrir outra do mesmo caso pessoalmente?",
+      "Minha reclamação online ficou sem solução, é possível dar continuidade no atendimento presencial do Procon?",
+      "Posso usar a reclamação online não resolvida como base para um novo atendimento presencial?",
+      "O Procon aceita registrar de novo a mesma reclamação se a anterior, feita online, não teve retorno?",
+      "Abri reclamação pelo site, mas a empresa não resolveu, o Procon presencial vai abrir outra reclamação igual?",
+      "É permitido duplicar uma reclamação do Procon online no atendimento presencial?"
     ]
   },
   {
@@ -95,7 +135,12 @@
       "Quando fui cancelar meu contrato, cobraram uma multa de mim, isso é permitido?",
       "É legal a empresa cobrar multa por cancelamento de contrato?",
       "Cancelei um serviço e veio uma cobrança de multa rescisória, posso contestar?",
-      "A empresa pode me cobrar multa na hora de cancelar o contrato?"
+      "A empresa pode me cobrar multa na hora de cancelar o contrato?",
+      "Em quais situações é possível cancelar um contrato sem pagar multa?",
+      "A multa de cancelamento que recebi é considerada abusiva, como faço para contestar?",
+      "Posso cancelar meu contrato sem multa se a empresa não cumpriu o que foi prometido?",
+      "Qual valor de multa por cancelamento é considerado normal pelo CDC?",
+      "Se eu usar o direito de arrependimento de 7 dias, ainda assim posso ser cobrado de multa?"
     ]
   },
   {
@@ -106,7 +151,12 @@
       "É permitido um contrato ter cláusula de fidelidade?",
       "Contratos de serviços podem exigir um período mínimo de permanência (fidelidade)?",
       "Existe limite de tempo para a fidelidade em um contrato?",
-      "A empresa pode obrigar o consumidor a ficar fiel ao contrato por um tempo mínimo?"
+      "A empresa pode obrigar o consumidor a ficar fiel ao contrato por um tempo mínimo?",
+      "Qual é o prazo máximo permitido para a cláusula de fidelidade em um contrato?",
+      "A operadora pode oferecer desconto em troca de fidelidade no contrato?",
+      "Se eu cancelar antes do fim da fidelidade, a multa precisa ser proporcional ao tempo restante?",
+      "É legal a empresa exigir mais de 12 meses de fidelidade do consumidor?",
+      "Se a operadora falhar no serviço, ainda assim tenho que cumprir a fidelidade do contrato?"
     ]
   },
   {
@@ -117,7 +167,12 @@
       "O que é o direito de arrependimento de 7 dias?",
       "Como funciona o prazo de 7 dias para desistir de uma compra?",
       "Posso desistir de uma compra dentro de 7 dias?",
-      "Quais são as regras do direito de arrependimento previsto no CDC?"
+      "Quais são as regras do direito de arrependimento previsto no CDC?",
+      "A partir de quando começa a contar o prazo de 7 dias do direito de arrependimento?",
+      "O direito de arrependimento de 7 dias se aplica a qualquer tipo de compra?",
+      "Comprei pela internet e quero desistir antes dos 7 dias, como faço?",
+      "Quais valores tenho direito a receber de volta ao exercer o arrependimento de 7 dias?",
+      "Existe alguma exceção em que o direito de arrependimento de 7 dias não se aplica?"
     ]
   },
   {
@@ -128,7 +183,12 @@
       "O direito de arrependimento de 7 dias vale para compras feitas em loja física?",
       "Compras presenciais também têm direito de arrependimento?",
       "Se eu comprar dentro da loja, posso me arrepender em até 7 dias?",
-      "O prazo de 7 dias para desistência se aplica a compras feitas no estabelecimento comercial?"
+      "O prazo de 7 dias para desistência se aplica a compras feitas no estabelecimento comercial?",
+      "O direito de arrependimento de 7 dias é exclusivo para compras feitas pela internet ou telefone?",
+      "Comprei um produto pessoalmente na loja, tenho o mesmo direito de devolução de uma compra online?",
+      "Por que compras em loja física não têm direito de arrependimento previsto no CDC?",
+      "Existe diferença entre o direito de troca e o direito de arrependimento para compras presenciais?",
+      "Se eu experimentei o produto na loja antes de comprar, ainda assim não tenho direito de arrependimento?"
     ]
   },
   {
@@ -139,7 +199,12 @@
       "No caso de desistência da compra, quem arca com o custo do frete de devolução?",
       "Se eu usar o direito de arrependimento, eu pago o frete de volta do produto?",
       "A empresa é obrigada a reembolsar o valor do frete na devolução?",
-      "Quem é responsável por pagar o envio de volta quando o consumidor desiste da compra?"
+      "Quem é responsável por pagar o envio de volta quando o consumidor desiste da compra?",
+      "Se eu já paguei o frete de devolução do meu bolso, posso pedir o reembolso desse valor à empresa?",
+      "A loja pode me cobrar pela postagem de devolução quando eu exerço o direito de arrependimento?",
+      "No caso de troca por arrependimento, o valor do frete de ida também deve ser devolvido?",
+      "Quem deve gerar a etiqueta de postagem para devolução de um produto comprado online?",
+      "É legal a loja descontar o valor do frete do reembolso quando o consumidor desiste da compra?"
     ]
   },
   {
@@ -150,7 +215,12 @@
       "Já abri a caixa e testei o produto, ainda tenho direito de devolver dentro do prazo de arrependimento?",
       "Usei o produto algumas vezes, posso devolver mesmo assim dentro dos 7 dias?",
       "Perco o direito de arrependimento se já tiver aberto e usado o produto?",
-      "É obrigatório manter a embalagem original para poder devolver o produto?"
+      "É obrigatório manter a embalagem original para poder devolver o produto?",
+      "A loja pode recusar a devolução só porque a embalagem foi aberta?",
+      "Quais cuidados devo ter ao usar o produto para não perder o direito de devolução?",
+      "Se o produto tiver marcas de uso por causa do teste, isso impede a devolução dentro dos 7 dias?",
+      "É necessário devolver o produto com todos os acessórios e manual para exercer o arrependimento?",
+      "Testar um eletrônico antes de decidir devolver pode ser considerado mau uso pela loja?"
     ]
   },
   {
@@ -161,7 +231,12 @@
       "A empresa não entregou meu produto no prazo combinado, o que posso fazer?",
       "Comprei um produto e o prazo de entrega já passou, quais são meus direitos?",
       "Meu pedido está atrasado e ultrapassou o prazo de entrega informado, como proceder?",
-      "O que o consumidor pode exigir quando o prazo de entrega de um produto não é cumprido?"
+      "O que o consumidor pode exigir quando o prazo de entrega de um produto não é cumprido?",
+      "Posso cancelar a compra e pedir reembolso se o produto não chegou no prazo prometido?",
+      "A loja pode me oferecer um produto diferente do que comprei por causa do atraso na entrega?",
+      "Tenho direito a algum tipo de indenização se a entrega atrasar muito além do prometido?",
+      "Se o prazo de entrega não foi cumprido, posso exigir que a empresa entregue de qualquer forma?",
+      "Meu pedido está muito atrasado, posso pedir a devolução do valor pago com correção monetária?"
     ]
   },
   {
@@ -172,7 +247,12 @@
       "Pode me explicar o que significa vício aparente?",
       "O que caracteriza um defeito do tipo vício aparente?",
       "Qual a diferença entre vício aparente e outros tipos de defeito?",
-      "Como identificar um vício aparente em um produto?"
+      "Como identificar um vício aparente em um produto?",
+      "Quais exemplos podem ser considerados vício aparente em um produto?",
+      "Um defeito visível logo na entrega do produto é classificado como vício aparente?",
+      "O vício aparente precisa de reparo demorado para ser identificado?",
+      "Vício aparente é o mesmo que defeito de fabricação visível?",
+      "Como devo proceder ao identificar um vício aparente em um produto recém-comprado?"
     ]
   },
   {
@@ -183,7 +263,12 @@
       "O que significa vício oculto em um produto?",
       "Pode explicar o conceito de vício oculto?",
       "Como saber se um defeito é considerado vício oculto?",
-      "Qual a definição de vício oculto segundo o CDC?"
+      "Qual a definição de vício oculto segundo o CDC?",
+      "Pode me dar um exemplo de vício oculto em um produto?",
+      "Um defeito que só aparece depois de um tempo de uso é considerado vício oculto?",
+      "Vício oculto é diferente de vício aparente em quais aspectos?",
+      "O fabricante é responsável por vícios ocultos mesmo após o uso do produto?",
+      "Como identificar se o problema do meu produto é um vício oculto?"
     ]
   },
   {
@@ -194,7 +279,12 @@
       "A partir de quando começa a contar o prazo para reclamar de um vício oculto?",
       "Quando inicia o prazo de garantia em caso de defeito oculto?",
       "O prazo para reclamar de vício oculto conta a partir da compra ou da descoberta do defeito?",
-      "Como funciona a contagem do prazo de reclamação quando o defeito só aparece depois de um tempo?"
+      "Como funciona a contagem do prazo de reclamação quando o defeito só aparece depois de um tempo?",
+      "Se eu demorar para notar o defeito, ainda tenho direito de reclamar pelo vício oculto?",
+      "O prazo de reclamação do vício oculto é o mesmo prazo da garantia legal?",
+      "Como provar que o defeito do produto é um vício oculto e não mau uso?",
+      "Existe um limite de tempo após a compra para que um vício seja considerado oculto?",
+      "Se o defeito surgiu após o fim da garantia contratual, ainda posso reclamar de vício oculto?"
     ]
   },
   {
@@ -205,7 +295,12 @@
       "Quais são os prazos para reclamar de um produto ou serviço?",
       "Quanto tempo eu tenho para reclamar de um produto com defeito?",
       "Existe um prazo limite para abrir reclamação sobre um produto ou serviço?",
-      "Quais os prazos previstos no CDC para reclamação de produtos duráveis e não duráveis?"
+      "Quais os prazos previstos no CDC para reclamação de produtos duráveis e não duráveis?",
+      "Qual o prazo para reclamar de um serviço de estética com problema?",
+      "Comprei um eletrodoméstico com defeito, quanto tempo tenho para reclamar?",
+      "Os prazos de 30 e 90 dias começam a contar a partir de quando?",
+      "O que define se um produto é durável ou não durável para fins de prazo de reclamação?",
+      "Perdi o prazo de reclamação, ainda tenho algum direito sobre o produto com defeito?"
     ]
   },
   {
@@ -216,7 +311,12 @@
       "Qual a diferença entre vício e defeito de um produto?",
       "O que diferencia vício de defeito (fato do produto)?",
       "Quando um problema é considerado vício e quando é considerado defeito?",
-      "Vício e defeito são a mesma coisa no CDC?"
+      "Vício e defeito são a mesma coisa no CDC?",
+      "Se um produto causar um acidente, isso é considerado vício ou defeito (fato do produto)?",
+      "Por que a diferença entre vício e defeito é importante para o consumidor?",
+      "Um celular que superesquenta e queima a mão é vício ou defeito segundo o CDC?",
+      "Os prazos de reclamação são os mesmos para vício e para defeito (fato do produto)?",
+      "Como o Procon classifica um problema de produto que ofereceu risco à saúde do consumidor?"
     ]
   },
   {
@@ -227,7 +327,12 @@
       "Quando troco um produto pela garantia, o produto novo recebe uma garantia nova ou continua a antiga?",
       "Recebi um produto substituído por garantia, qual o prazo de garantia desse produto novo?",
       "Se meu produto foi trocado dentro da garantia, o novo item tem o mesmo prazo de garantia do original?",
-      "Como funciona a garantia de um produto que foi substituído por defeito de fabricação?"
+      "Como funciona a garantia de um produto que foi substituído por defeito de fabricação?",
+      "Se meu produto tinha 2 anos de garantia e foi trocado com 1 ano restante, o novo produto terá 1 ano ou outro prazo?",
+      "A garantia do produto novo recebido por troca começa a contar do zero?",
+      "Quando a loja substitui o produto por garantia, isso gera um novo termo de garantia?",
+      "O prazo de garantia restante é transferido integralmente para o produto de reposição?",
+      "Recebi um aparelho novo por troca de garantia, esse aparelho também tem direito a futuras trocas?"
     ]
   },
   {
@@ -238,7 +343,12 @@
       "Pedi a troca de um produto com defeito de fabricação, mas o modelo não está mais disponível, posso receber outro equivalente?",
       "O modelo do meu produto com vício foi descontinuado, tenho direito a um produto similar de outra marca?",
       "Não há mais o mesmo produto em estoque para troca por defeito de fabricação, o que a loja deve fazer?",
-      "Se o produto trocado por garantia não existir mais, a loja pode me oferecer outro de marca diferente?"
+      "Se o produto trocado por garantia não existir mais, a loja pode me oferecer outro de marca diferente?",
+      "Quais são as três opções que tenho quando o vício não é sanado em 30 dias?",
+      "Se eu escolher a restituição do valor pago, a empresa pode tentar me oferecer outro produto no lugar?",
+      "A loja pode se recusar a me dar um produto de marca diferente quando o meu modelo foi descontinuado?",
+      "Posso exigir abatimento no preço em vez de aceitar a troca por outro produto similar?",
+      "Quando não há produto idêntico disponível para troca, quem decide qual produto similar será oferecido?"
     ]
   },
   {
@@ -249,7 +359,12 @@
       "A loja é obrigada a trocar um produto que não tem defeito, só porque não gostei?",
       "Existe lei que obriga a troca de produto sem defeito por outro tamanho ou cor?",
       "Comprei algo sem defeito e me arrependi, a loja é obrigada a trocar?",
-      "É direito do consumidor trocar um produto que está em perfeito estado, apenas por insatisfação?"
+      "É direito do consumidor trocar um produto que está em perfeito estado, apenas por insatisfação?",
+      "Se a embalagem do produto que não tem defeito já foi aberta, a loja ainda pode aceitar a troca por cortesia?",
+      "Trocar produto sem defeito por tamanho errado depende de cada loja ou é regra geral?",
+      "Existe alguma lei que obrigue lojas a aceitar devolução de produto que não apresenta problema?",
+      "Se a loja tem política de troca por satisfação, ela é obrigada a cumprir o que anunciou?",
+      "Comprei uma roupa do tamanho errado sem querer, a loja é obrigada a trocar mesmo sem defeito?"
     ]
   },
   {
@@ -260,7 +375,12 @@
       "Existe alguma restrição para fazer a portabilidade do meu benefício para outro banco?",
       "Posso transferir meu benefício para outra conta bancária quando quiser?",
       "A portabilidade do benefício pode ser feita a qualquer momento ou existe alguma condição?",
-      "Quem pode solicitar a portabilidade do benefício para outro banco?"
+      "Quem pode solicitar a portabilidade do benefício para outro banco?",
+      "Se eu tiver um empréstimo consignado ativo, isso impede a portabilidade do meu benefício?",
+      "A portabilidade do benefício pode ser feita por um terceiro autorizado pelo titular?",
+      "Quanto tempo demora para a portabilidade do benefício ser concluída entre bancos?",
+      "Existe alguma taxa cobrada para realizar a portabilidade do benefício?",
+      "Se meu pedido de portabilidade for negado por causa de dívida, o que posso fazer?"
     ]
   },
   {
@@ -271,7 +391,12 @@
       "Depois de cinco anos uma dívida deixa de existir?",
       "É verdade que dívidas com mais de 5 anos não podem mais ser cobradas?",
       "Se uma dívida prescreveu, meu nome ainda pode ficar negativado por causa dela?",
-      "O que significa a prescrição de uma dívida após cinco anos?"
+      "O que significa a prescrição de uma dívida após cinco anos?",
+      "Depois que uma dívida prescreve, a empresa ainda pode me cobrar de alguma forma?",
+      "Quais tipos de dívida têm o prazo de prescrição de cinco anos?",
+      "Uma dívida prescrita pode voltar a negativar meu nome se eu não pagar?",
+      "Mesmo com a dívida prescrita, ainda posso negociar para quitar o débito?",
+      "Como saber se uma dívida antiga já está prescrita?"
     ]
   },
   {
@@ -282,7 +407,12 @@
       "Depois que eu abro uma reclamação no Procon, em quanto tempo a empresa precisa responder?",
       "Qual o prazo que o fornecedor tem para responder uma CIP no Procon?",
       "Quanto tempo demora para ter uma resposta da empresa após abrir reclamação no Procon?",
-      "O que acontece se a empresa não responder dentro do prazo da reclamação no Procon?"
+      "O que acontece se a empresa não responder dentro do prazo da reclamação no Procon?",
+      "O que é uma CIP no Procon e como ela funciona?",
+      "Se a empresa não responder a CIP em 10 dias, o que acontece com a minha reclamação?",
+      "A audiência conciliatória é marcada automaticamente se a empresa não responder a reclamação?",
+      "Os 10 dias para resposta da empresa são dias corridos ou dias úteis?",
+      "Depois que a empresa responde a reclamação, o que acontece em seguida no processo do Procon?"
     ]
   },
   {
@@ -293,7 +423,12 @@
       "O que eu preciso levar para abrir uma reclamação no Procon?",
       "Quais documentos devo apresentar para registrar uma reclamação?",
       "Para fazer uma reclamação no Procon, quais comprovantes são exigidos?",
-      "Existe uma lista de documentos obrigatórios para abrir uma reclamação?"
+      "Existe uma lista de documentos obrigatórios para abrir uma reclamação?",
+      "Além do CNPJ do fornecedor, quais outros dados da empresa preciso ter para abrir reclamação?",
+      "Posso abrir uma reclamação no Procon sem ter o comprovante da compra?",
+      "É necessário levar o RG e CPF originais ou cópias para abrir reclamação no Procon?",
+      "Cada tipo de reclamação exige documentos diferentes, como saber quais são exigidos no meu caso?",
+      "Por que é recomendável ir presencialmente ao Procon antes de abrir uma reclamação formal?"
     ]
   },
   {
@@ -304,7 +439,12 @@
       "Quantos tipos de garantia existem para produtos e serviços?",
       "Quais são as diferenças entre os tipos de garantia que um produto pode ter?",
       "Que tipos de garantia o consumidor pode ter direito?",
-      "Pode me explicar os tipos de garantia previstos para produtos?"
+      "Pode me explicar os tipos de garantia previstos para produtos?",
+      "Garantia legal, contratual e estendida podem existir ao mesmo tempo em um produto?",
+      "Qual é a base legal para cada um dos tipos de garantia existentes?",
+      "Os prazos de garantia mudam dependendo se o produto é durável ou não durável?",
+      "Como saber qual tipo de garantia se aplica ao meu produto?",
+      "A garantia contratual precisa estar descrita por escrito para valer?"
     ]
   },
   {
@@ -315,7 +455,12 @@
       "Pode explicar o que é a garantia legal?",
       "Como funciona a garantia legal prevista no CDC?",
       "Qual o prazo da garantia legal para produtos duráveis e não duráveis?",
-      "Todo produto tem direito à garantia legal?"
+      "Todo produto tem direito à garantia legal?",
+      "A garantia legal precisa ser solicitada pelo consumidor ou já vem automaticamente?",
+      "Posso exigir a garantia legal mesmo sem ter um termo de garantia assinado?",
+      "Qual a diferença de prazo da garantia legal entre um celular e um alimento?",
+      "A garantia legal cobre qualquer tipo de defeito do produto?",
+      "Mesmo produtos importados têm direito à garantia legal prevista no CDC?"
     ]
   },
   {
@@ -326,7 +471,12 @@
       "A partir de qual momento começa a contagem da garantia legal?",
       "O prazo da garantia legal inicia na compra ou na entrega do produto?",
       "Quando começa a valer a garantia legal de um produto?",
-      "Em caso de defeito oculto, quando começa a contar a garantia legal?"
+      "Em caso de defeito oculto, quando começa a contar a garantia legal?",
+      "Se o produto for entregue com atraso, a garantia legal começa a contar da compra ou da entrega?",
+      "No caso de serviços, a garantia legal começa quando o serviço é contratado ou quando termina?",
+      "Por que o vício oculto tem uma regra diferente para o início da contagem da garantia legal?",
+      "Existe alguma forma de comprovar a data de entrega para fins de contagem da garantia legal?",
+      "A data da nota fiscal sempre corresponde ao início da contagem da garantia legal?"
     ]
   },
   {
@@ -337,7 +487,12 @@
       "O que significa garantia contratual?",
       "Qual a diferença entre garantia contratual e garantia legal?",
       "A garantia contratual substitui a garantia legal?",
-      "Como funciona a garantia contratual oferecida pelo fabricante?"
+      "Como funciona a garantia contratual oferecida pelo fabricante?",
+      "A garantia contratual pode ser menor que a garantia legal?",
+      "Se a empresa não me entregar o termo de garantia contratual, isso afeta meus direitos?",
+      "A garantia contratual soma o prazo com a garantia legal ou substitui ela?",
+      "Quais informações o termo de garantia contratual deve conter obrigatoriamente?",
+      "Comprei um produto com 1 ano de garantia contratual, quanto tempo de garantia total eu tenho ao somar com a legal?"
     ]
   },
   {
@@ -348,7 +503,12 @@
       "Pode explicar o que é a garantia estendida?",
       "A garantia estendida é obrigatória ou opcional?",
       "Como funciona a garantia estendida vendida pelas lojas?",
-      "Qual a diferença entre garantia estendida e garantia contratual?"
+      "Qual a diferença entre garantia estendida e garantia contratual?",
+      "A garantia estendida cobre os mesmos problemas que a garantia contratual?",
+      "Se eu não usar a garantia estendida, tenho direito a algum reembolso?",
+      "É possível cancelar a garantia estendida depois de comprá-la?",
+      "A garantia estendida precisa ter um contrato separado da compra do produto?",
+      "Quais cuidados devo ter antes de comprar uma garantia estendida?"
     ]
   },
   {
@@ -359,7 +519,12 @@
       "Em quais situações a loja pode recusar o atendimento dentro da garantia?",
       "A assistência técnica pode se recusar a consertar meu produto que está na garantia?",
       "O fornecedor pode alegar mau uso para não cumprir a garantia?",
-      "Quando é legítimo o fornecedor negar a garantia de um produto?"
+      "Quando é legítimo o fornecedor negar a garantia de um produto?",
+      "Quem precisa comprovar que o defeito foi causado por mau uso, o consumidor ou o fornecedor?",
+      "Se eu abri o produto para tentar consertar, perco o direito à garantia?",
+      "A loja pode negar a garantia só porque o produto está sem a embalagem original?",
+      "Um dano causado por queda do produto sempre anula a garantia automaticamente?",
+      "O que fazer se a assistência técnica recusar a garantia sem justificar o motivo?"
     ]
   },
   {
@@ -370,7 +535,12 @@
       "Se a assistência técnica não resolver o defeito em 30 dias, o que posso exigir?",
       "Quais são minhas opções se o produto continuar com defeito após 30 dias do conserto?",
       "Passou o prazo de 30 dias e meu produto continua com defeito, o que fazer?",
-      "O que o CDC garante ao consumidor quando o vício não é sanado em 30 dias?"
+      "O que o CDC garante ao consumidor quando o vício não é sanado em 30 dias?",
+      "O prazo de 30 dias para o conserto pode ser estendido pela loja sem o meu consentimento?",
+      "Se eu escolher a devolução do dinheiro após os 30 dias, a empresa pode oferecer apenas crédito na loja?",
+      "O abatimento proporcional do preço é calculado como, em casos de vício não sanado?",
+      "Posso exigir a substituição por um produto de modelo mais novo se o meu saiu de linha?",
+      "Os 30 dias para resolver o vício contam a partir de quando eu levo o produto à assistência?"
     ]
   },
   {
@@ -381,7 +551,12 @@
       "É obrigatório ter a nota fiscal para usar a garantia do produto?",
       "Perdi a nota fiscal, ainda posso acionar a garantia?",
       "Quais documentos posso usar no lugar da nota fiscal para comprovar a compra?",
-      "Sem nota fiscal, dá para fazer reclamação de garantia mesmo assim?"
+      "Sem nota fiscal, dá para fazer reclamação de garantia mesmo assim?",
+      "O extrato do cartão de crédito é aceito como prova de compra para acionar a garantia?",
+      "A loja pode recusar a garantia só porque não tenho mais a nota fiscal física?",
+      "Comprovante de pix ou transferência serve como prova de compra para fins de garantia?",
+      "Se a nota fiscal estiver no nome de outra pessoa, ainda posso acionar a garantia?",
+      "Quais outros documentos, além da nota fiscal, comprovam a data da compra?"
     ]
   },
   {
@@ -392,7 +567,12 @@
       "Um produto usado também tem direito a garantia legal?",
       "Comprei um item usado, ele tem os mesmos 90 dias de garantia de um produto novo?",
       "A garantia de produtos seminovos é diferente da garantia de produtos novos?",
-      "Lojas de produtos usados são obrigadas a dar garantia?"
+      "Lojas de produtos usados são obrigadas a dar garantia?",
+      "Se a loja informar que um produto usado não tem garantia, isso é válido?",
+      "A garantia de produtos usados é de 90 dias mesmo sem termo escrito?",
+      "Comprei um produto seminovo de uma loja, ele tem o mesmo direito de garantia legal que um novo?",
+      "Existe alguma limitação de garantia que a loja pode impor em produtos usados?",
+      "Produtos usados comprados de pessoa física também têm direito à garantia legal?"
     ]
   },
   {
@@ -403,7 +583,12 @@
       "Um serviço prestado também possui prazo de garantia?",
       "Qual o prazo de garantia para serviços, é igual ao de produtos?",
       "Se a manutenção que paguei não resolver o problema, o serviço tem garantia?",
-      "O CDC prevê garantia para prestação de serviços também?"
+      "O CDC prevê garantia para prestação de serviços também?",
+      "Um serviço de pintura residencial tem direito a garantia depois de concluído?",
+      "Qual o prazo de garantia para um serviço considerado durável, como uma reforma?",
+      "Se o serviço prestado apresentar problema depois de alguns dias, ainda posso reclamar dentro da garantia?",
+      "A garantia de serviços segue o mesmo prazo de 30 e 90 dias dos produtos?",
+      "Posso exigir que o prestador de serviço refaça o trabalho dentro do prazo de garantia?"
     ]
   },
   {
@@ -414,7 +599,12 @@
       "A loja precisa vender pelo preço que está no anúncio ou na propaganda?",
       "Se o preço anunciado estiver diferente do cobrado, a empresa é obrigada a respeitar o anúncio?",
       "A propaganda de um produto tem força de contrato?",
-      "Posso exigir que a loja venda pelo valor que estava na publicidade?"
+      "Posso exigir que a loja venda pelo valor que estava na publicidade?",
+      "Anúncios feitos em redes sociais também obrigam o fornecedor a cumprir o preço?",
+      "O que caracteriza uma publicidade suficientemente precisa para obrigar o fornecedor?",
+      "Se o vendedor verbal prometer um preço diferente do anunciado, qual valor prevalece?",
+      "A oferta anunciada em panfleto tem o mesmo valor legal que um anúncio em vitrine?",
+      "Posso usar uma captura de tela de um anúncio como prova para exigir o preço anunciado?"
     ]
   },
   {
@@ -425,7 +615,12 @@
       "O preço da etiqueta na prateleira é diferente do valor cobrado no caixa, qual devo pagar?",
       "Quando há divergência entre o preço exposto e o preço no caixa, qual prevalece?",
       "A loja pode cobrar um valor maior no caixa do que o anunciado na prateleira?",
-      "Se o sistema do caixa cobrar mais caro que o preço marcado na embalagem, o que devo fazer?"
+      "Se o sistema do caixa cobrar mais caro que o preço marcado na embalagem, o que devo fazer?",
+      "Se a etiqueta do produto está rasgada e ilegível, qual preço a loja deve cobrar?",
+      "Posso me recusar a pagar o valor do caixa se for diferente do preço exposto na prateleira?",
+      "O que devo fazer se a loja se recusar a respeitar o preço da prateleira no caixa?",
+      "A diferença de preço entre prateleira e caixa precisa ser registrada em algum órgão?",
+      "Esse direito ao menor preço vale também para promoções de cartazes na loja?"
     ]
   },
   {
@@ -436,7 +631,12 @@
       "A loja se recusa a vender pelo preço anunciado, quais opções eu tenho?",
       "O que posso exigir se o estabelecimento não cumprir o preço que estava anunciado?",
       "Se o vendedor não aceitar o preço da promoção anunciada, posso reclamar?",
-      "Quais são minhas alternativas quando o fornecedor recusa o cumprimento da oferta?"
+      "Quais são minhas alternativas quando o fornecedor recusa o cumprimento da oferta?",
+      "Posso exigir que a loja entregue o produto pelo preço anunciado mesmo que ela alegue erro?",
+      "Se a loja oferecer um produto equivalente, eu sou obrigado a aceitar em vez do preço anunciado?",
+      "Como faço para formalizar uma reclamação quando a loja se recusa a cumprir o preço anunciado?",
+      "Existe prazo para a loja cumprir a oferta depois que eu exijo o preço anunciado?",
+      "Se eu optar por rescindir o contrato por causa do preço não cumprido, tenho direito a perdas e danos?"
     ]
   },
   {
@@ -447,7 +647,12 @@
       "A empresa pode alegar erro de sistema para não honrar o preço anunciado?",
       "Se o preço estava errado por uma falha no sistema da loja, ela ainda é obrigada a vender por aquele valor?",
       "É válido o argumento de erro de digitação para a loja não cumprir o preço anunciado?",
-      "Em quais casos a loja pode se eximir de cumprir um preço anunciado por erro?"
+      "Em quais casos a loja pode se eximir de cumprir um preço anunciado por erro?",
+      "O que caracteriza um 'erro grosseiro e evidente' que libera a loja de cumprir o preço?",
+      "Se o preço estava muito abaixo do normal, ainda assim tenho direito a comprar por aquele valor?",
+      "A loja precisa provar que houve erro de sistema para não cumprir o preço anunciado?",
+      "Posso recorrer ao Procon se a loja alegar erro de sistema para cancelar minha compra?",
+      "Qual a diferença entre um erro de preço razoável e um erro grosseiro segundo a jurisprudência?"
     ]
   },
   {
@@ -458,7 +663,12 @@
       "A loja pode dizer que o produto da promoção acabou se não avisou sobre estoque limitado?",
       "É permitido recusar a venda de um produto anunciado alegando falta de estoque sem ter avisado antes?",
       "Se a propaganda não mencionou enquanto durarem os estoques, a loja é obrigada a vender mesmo sem ter o produto?",
-      "A empresa pode negar a venda de um item anunciado dizendo que esgotou, sem ter informado limite de estoque?"
+      "A empresa pode negar a venda de um item anunciado dizendo que esgotou, sem ter informado limite de estoque?",
+      "A expressão 'enquanto durarem os estoques' precisa estar visível no anúncio para valer?",
+      "Se a loja não mencionou limite de estoque e o produto esgotou, ela pode oferecer outro no lugar?",
+      "Quais práticas o art. 39 do CDC proíbe em relação à disponibilidade de produtos anunciados?",
+      "A loja pode alegar falta de estoque para não vender um produto que está em promoção visível no site?",
+      "O consumidor pode exigir que a loja cumpra a oferta mesmo alegando estoque esgotado sem aviso prévio?"
     ]
   },
   {
@@ -469,7 +679,12 @@
       "Comprei um produto na loja física e no dia seguinte quis trocar por motivos pessoais, mas a loja não aceitou, isso está certo?",
       "Posso me arrepender de uma compra feita presencialmente e pedir o cancelamento poucas horas depois?",
       "A loja é obrigada a aceitar troca ou devolução de um produto comprado presencialmente, mesmo sem defeito?",
-      "Comprei algo numa loja física e me arrependi no dia seguinte, tenho direito de cancelar a compra?"
+      "Comprei algo numa loja física e me arrependi no dia seguinte, tenho direito de cancelar a compra?",
+      "Por que o direito de arrependimento não vale para compras feitas dentro da loja física?",
+      "Se o produto comprado presencialmente foi um presente, a loja é obrigada a aceitar a troca?",
+      "Posso negociar a troca de um produto comprado presencialmente mesmo sem ter esse direito garantido por lei?",
+      "Qual a diferença de direitos entre comprar pela internet e comprar dentro da loja, em relação ao arrependimento?",
+      "A loja pode recusar totalmente o cancelamento de uma compra presencial feita há poucas horas?"
     ]
   },
   {
@@ -480,7 +695,12 @@
       "Comprei um carro seminovo e, mesmo após o conserto na garantia, o mesmo defeito voltou a aparecer, posso pedir a troca do veículo ou cancelamento da compra?",
       "Meu veículo usado apresentou um vício oculto antes dos 90 dias, a loja consertou, mas o problema voltou. Tenho direito a trocar o carro?",
       "O defeito do meu carro usado reapareceu mesmo depois do reparo feito pela concessionária, o que posso fazer?",
-      "Posso cancelar a compra de um veículo usado se o vício oculto persistir mesmo após o conserto dentro da garantia?"
+      "Posso cancelar a compra de um veículo usado se o vício oculto persistir mesmo após o conserto dentro da garantia?",
+      "Mesmo após o conserto na garantia, se o defeito do carro usado voltar, quais opções tenho além da troca?",
+      "É possível exigir a devolução do dinheiro de um veículo usado que apresentou vício oculto reincidente?",
+      "O prazo de 90 dias de garantia para veículos usados se aplica a qualquer tipo de defeito?",
+      "Se a concessionária demorar para consertar o vício oculto do carro usado, o que posso exigir?",
+      "Comprei um carro seminovo com vício oculto, a garantia do Art. 18 do CDC se aplica mesmo sendo usado?"
     ]
   },
   {
@@ -491,7 +711,12 @@
       "Meu carro novo apresentou um vício oculto 40 dias após a compra, quais medidas posso tomar?",
       "Comprei um veículo 0km e cerca de 40 dias depois ele apresentou um defeito oculto, o que devo fazer primeiro?",
       "Meu carro zero quilômetro deu um problema de fábrica pouco depois da compra, posso pedir a troca ou só o conserto?",
-      "Se meu veículo novo apresentar vício oculto e o conserto não resolver, posso cancelar a compra?"
+      "Se meu veículo novo apresentar vício oculto e o conserto não resolver, posso cancelar a compra?",
+      "Quanto tempo a concessionária tem para resolver o vício oculto de um carro novo antes que eu possa pedir a troca?",
+      "Se o vício oculto do meu carro 0km não for resolvido em 30 dias, quais são minhas opções segundo o Art. 20?",
+      "A garantia de fábrica do veículo cobre o conserto de um vício oculto identificado 40 dias após a compra?",
+      "Posso exigir a substituição do veículo novo por outro da mesma espécie se o vício persistir?",
+      "Quais artigos do CDC amparam o consumidor em casos de vício oculto em veículo novo?"
     ]
   },
   {
@@ -502,7 +727,12 @@
       "Comprei um produto e a loja prometeu enviar a nota fiscal em 7 dias, mas não enviou nem após contato, o que posso fazer?",
       "A loja não me entregou a nota fiscal de uma compra mesmo depois de eu cobrar, isso é uma irregularidade?",
       "Fui informado que receberia a nota fiscal por e-mail, mas isso nunca aconteceu, como devo proceder?",
-      "Tenho direito de exigir a nota fiscal de uma compra que a loja se recusa a emitir?"
+      "Tenho direito de exigir a nota fiscal de uma compra que a loja se recusa a emitir?",
+      "Posso registrar uma reclamação no Procon mesmo sem ter recebido a nota fiscal da compra?",
+      "Quais provas posso reunir para mostrar que a loja prometeu enviar a nota fiscal e não cumpriu?",
+      "A recusa em emitir nota fiscal pode trazer outras consequências para a empresa além da reclamação no Procon?",
+      "O Procon pode notificar a empresa para que ela explique por que não emitiu a nota fiscal?",
+      "Tenho direito à nota fiscal mesmo em compras feitas com pagamento em dinheiro?"
     ]
   },
   {
@@ -513,7 +743,12 @@
       "O Procon pode me ajudar com um problema de aluguel ou contrato de locação?",
       "Questões sobre imóveis são tratadas pelo Procon ou pelo CDC?",
       "Tenho um problema com meu contrato de aluguel, o Procon pode intervir?",
-      "Conflitos relacionados à Lei do Inquilinato são resolvidos pelo Procon?"
+      "Conflitos relacionados à Lei do Inquilinato são resolvidos pelo Procon?",
+      "Onde devo buscar orientação para problemas relacionados a contrato de locação de imóvel?",
+      "Por que questões de aluguel não são tratadas pelo CDC e pelo Procon?",
+      "Um problema com a imobiliária sobre devolução de caução pode ser resolvido pelo Procon?",
+      "A Lei do Inquilinato se aplica a contratos de compra e venda de imóveis também?",
+      "Existe algum órgão que oriente o consumidor em disputas envolvendo contratos de aluguel?"
     ]
   },
   {
@@ -526,7 +761,12 @@
       "Boa tarde",
       "Boa noite",
       "Opa, tudo bem?",
-      "Olá, preciso de ajuda"
+      "Olá, preciso de ajuda",
+      "Ei, alguém aí?",
+      "Bom dia, tudo bem?",
+      "Olá, gostaria de uma informação",
+      "Oi, pode me ajudar?",
+      "E aí, como funciona esse atendimento?"
     ]
   }
 ]
