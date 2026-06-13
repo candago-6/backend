@@ -1,0 +1,814 @@
+[
+  {
+    "intent": "estao_cobrando_um_seguro_em_meu_cartao_de_credito_que_eu_nao",
+    "answer": "De acordo com o art. 6°, inciso III, art. 14, Caput, art. 39, inciso III, art. 42, parágrafo único. O consumidor tem total direito de abrir uma reclamação no Procon, requerendo o cancelamento imediato, devolução em dobro dos valores cobrados indevidamente e o envio do contrato.\nSendo necessário a devida documentação:\n- RG com CPF;\n- Faturas com a descrição desde que começou desconto;\n- Comprovantes de pagamentos;\n- Mensagens e e-mails caso tenha;\n- CNPJ matriz do fornecedor;\nVale ressaltar que, os casos possuem variações, sendo necessário o consumidor comparecer presencialmente ao Procon para obter uma consulta.",
+    "questions": [
+      "Estão cobrando um seguro em meu cartão de crédito que eu não contratei (Cobrança por serviço não contratado)",
+      "Estão cobrando um seguro em meu fatura do cartão que eu não contratei (Cobrança por serviço não contratado)",
+      "A empresa pode agir assim no contrato em caso de cobrança por serviço não contratado?",
+      "Posso pedir cópia ou revisão do contrato sobre cobrança por serviço não contratado?",
+      "O Procon atende casos de cobrança por serviço não contratado?",
+      "recebi cobrança um seguro em meu cartão de crédito que eu não reconheço (Cobrança por serviço não contratado)",
+      "Como proceder para rescindir contrato sobre cobrança por serviço não contratado?",
+      "Existe alguma regra sobre cobrança por serviço não contratado?",
+      "Posso desistir da compra por cobrança por serviço não contratado?",
+      "A loja é obrigada a trocar em caso de cobrança por serviço não contratado?"
+    ]
+  },
+  {
+    "intent": "estao_descontando_um_emprestimo_ja_quitado_na_minha_folha_de",
+    "answer": "De acordo com os art. 42 do CDC e o art. 14 do CDC. O consumidor tem total direito de abrir uma reclamação no Procon, requerendo a devolução em dobro dos valores cobrados indevidamente e a interrupção imediata dos descontos.\n\nSendo necessário a devida documentação:\n- RG com CPF;\n- Descontos na folha de pagamento;\n- Comprovantes de pagamentos;\n- Mensagens e e-mails caso tenha;\n- CNPJ matriz do fornecedor;\nVale ressaltar que, os casos possuem variações, sendo necessário o consumidor comparecer presencialmente ao Procon para obter uma consulta.",
+    "questions": [
+      "Estão descontando um empréstimo já quitado na minha folha de pagamento? (Desconto indevido)",
+      "Tenho problema com desconto indevido, quais são meus direitos?",
+      "Gostaria de saber sobre desconto indevido.",
+      "Preciso resolver uma situação de desconto indevido.",
+      "Estão descontando um contrato de empréstimo já quitado na minha folha de pagamento? (Desconto indevido)",
+      "Quem paga os custos de devolução quando há desconto indevido?",
+      "Comprei em loja física e tive desconto indevido; quais são meus direitos?",
+      "Tenho uma dúvida sobre desconto indevido.",
+      "O fornecedor pode recusar troca quando há desconto indevido?"
+    ]
+  },
+  {
+    "intent": "estao_descontando_do_meu_beneficio_um_valor_referente_a_um_e",
+    "answer": "De acordo com os art. 4, inciso I, art. 14, Caput, art. 39, inciso III, art. 42, parágrafo único. O consumidor tem total direito de abrir uma reclamação no Procon, requerendo o cancelamento imediato, devolução em dobro dos valores cobrados indevidamente e o envio do contrato. \n\nSendo necessário a devida documentação:\n- RG com CPF;\n- Extrato consignado do INSS;\n- Extrato bancário com a data de inclusão;\n- Histórico de crédito;\n- Mensagens e e-mails caso tenha;\n- CNPJ matriz do fornecedor;\nVale ressaltar que, os casos possuem variações, pois se o consumidor tiver usado o dinheiro o Procon só poderá requerer uma proposta de quitação, por esse motivo o consumidor deve comparecer até o Procon para ter uma consulta.",
+    "questions": [
+      "Estão descontando do meu benefício um valor referente a um empréstimo não contratado? (Desconto por serviço não reconhecido)",
+      "Estão descontando do meu benefício do INSS um valor referente a um empréstimo não contratado? (Desconto por serviço não reconhecido)",
+      "O que a lei diz sobre desconto por serviço não reconhecido?",
+      "Boa tarde",
+      "Quais são meus direitos sobre desconto por serviço não reconhecido?",
+      "Quais documentos preciso para reclamar sobre desconto por serviço não reconhecido?",
+      "Preciso de ajuda com desconto por serviço não reconhecido.",
+      "Tudo bem?",
+      "O que fazer quando acontece desconto por serviço não reconhecido?"
+    ]
+  },
+  {
+    "intent": "nao_querem_entregar_meu_contrato",
+    "answer": "De acordo com os art. 6º, III, art. 46, do CDC, garante o direito à informação clara e determina que o consumidor deve ter acesso prévio ao conteúdo do contrato. Sendo assim, o fornecedor é obrigado a fornecer o documento, podendo a negativa gerar medidas administrativas ou judiciais.\n\nO consumidor tem total direito de abrir uma reclamação no Procon, requerendo a documentação\n\nSendo necessário a devida documentação:\n- RG com CPF;\n-  Números de protocolo;\n- Mensagens e e-mails requerendo o envio do contrato;\n- CNPJ matriz do fornecedor;\nVale ressaltar que, os casos possuem variações, sendo necessário o consumidor comparecer presencialmente ao Procon para obter uma consulta.",
+    "questions": [
+      "Não querem entregar meu contrato (Recusa em entregar documentação)",
+      "Quero saber se recusa em entregar documentação permite abrir reclamação.",
+      "O que a lei diz sobre recusa em entregar documentação?",
+      "O que o consumidor pode exigir em caso de recusa em entregar documentação?",
+      "Quais direitos tenho em contrato relacionado a recusa em entregar documentação?",
+      "Posso pedir cópia ou revisão do contrato sobre recusa em entregar documentação?",
+      "A empresa pode se recusar a resolver recusa em entregar documentação?",
+      "Posso abrir uma reclamação no Procon sobre recusa em entregar documentação?",
+      "Preciso resolver uma situação de recusa em entregar documentação.",
+      "Qual procedimento para recusa em entregar documentação?"
+    ]
+  },
+  {
+    "intent": "tenho_um_plano_de_telefone_e_quero_cancelar_e_nao_estou_cons",
+    "answer": "De acordo com o art. 6°, inciso III, art. 39, inciso V e o art. 51 do CDC. O consumidor tem total direito de abrir uma reclamação no Procon, requerendo o cancelamento imediato do serviço, sem entraves indevidos, podendo exigir a suspensão das cobranças e buscar medidas administrativas ou judiciais caso a empresa persista na recusa.\n\nSendo necessário a devida documentação:\n- RG com CPF;\n- Contrato;\n- Comprovantes de pagamentos;\n- Mensagens e e-mails caso tenha;\n- Número de protocolo requerendo o cancelamento;\n- CNPJ matriz do fornecedor;\nVale ressaltar que, os casos possuem variações, podendo a empresa cobrar uma multa por quebra de contrato ou fidelidade, sendo necessário o consumidor comparecer presencialmente ao Procon para obter uma consulta.",
+    "questions": [
+      "Tenho um plano de telefone e quero cancelar e não estou conseguindo (Dificuldade para rescindir)",
+      "Preciso resolver uma situação de dificuldade para rescindir.",
+      "O Procon atende casos de dificuldade para rescindir?",
+      "O que o consumidor pode exigir em caso de dificuldade para rescindir?",
+      "A empresa pode agir assim no contrato em caso de dificuldade para rescindir?",
+      "Como cancelar uma cobrança indevida de dificuldade para rescindir?",
+      "O atendimento do Procon pode ajudar com dificuldade para rescindir?",
+      "O que a lei diz sobre dificuldade para rescindir?",
+      "Quais são meus direitos sobre dificuldade para rescindir?",
+      "Posso reclamar se tiver problema com dificuldade para rescindir?"
+    ]
+  },
+  {
+    "intent": "estao_cobrando_no_meu_beneficio_um_valor_referente_a_rmc_e_r",
+    "answer": "De acordo com os art.39, inciso III do CDC, art. 42 do CDC e o art. 14 do CDC. O consumidor tem total direito de abrir uma reclamação no Procon, requerendo a devolução em dobro dos valores cobrados indevidamente e a interrupção imediata dos descontos, salvo engano justificável.\nSendo necessário a devida documentação:\n- RG com CPF;\n- Extrato consignado do INSS;\n- Extrato bancário com a data de inclusão;\n- Histórico de crédito;\n- Mensagens e e-mails caso tenha;\n- CNPJ matriz do fornecedor;\nVale ressaltar que, os casos possuem variações, pois se o consumidor tiver usado o dinheiro, o Procon só poderá requerer uma proposta de quitação, por esse motivo o consumidor deve comparecer até o Procon para ter uma consulta.",
+    "questions": [
+      "Estão cobrando no meu benefício um valor referente a RMC E RCC que eu não reconheço (Desconto por serviço não reconhecido)",
+      "Como funciona desconto por serviço não reconhecido?",
+      "O que o consumidor pode exigir em caso de desconto por serviço não reconhecido?",
+      "Boa noite",
+      "Posso reclamar se tiver problema com desconto por serviço não reconhecido?",
+      "Boa tarde",
+      "Preciso resolver uma situação de desconto por serviço não reconhecido.",
+      "Tudo bem?",
+      "O que a lei diz sobre desconto por serviço não reconhecido?"
+    ]
+  },
+  {
+    "intent": "comprei_um_produto_atraves_de_determinada_loja_de_uma_plataf",
+    "answer": "Sim, o consumidor deve entrar em contato tanto com a loja vendedora quanto com a plataforma online, de acordo com o art. 14 do CDC que impõe responsabilidade objetiva ao fornecedor de serviços ou produtos, que inclui a loja e, em muitos casos, a plataforma que intermedia a venda, especialmente se ela facilita ou garante a transação.",
+    "questions": [
+      "Comprei um produto através de determinada loja de uma plataforma online e houve um problema com o meu produto, devo entrar em contato com a plataforma também?",
+      "Comprei um bem adquirido através de determinada loja de uma plataforma online e houve um problema com o meu bem adquirido, devo entrar em contato com a plataforma também?",
+      "Preciso de ajuda com um produto através de determinada loja de uma plataforma online e houve um problema com o meu produto, devo entrar em contato com a plataforma também.",
+      "Comprei um produto através de determinada fornecedor de uma plataforma online e houve um problema com o meu produto, devo entrar em contato com a plataforma também?",
+      "Preciso resolver uma situação de um produto através de determinada loja de uma plataforma online e houve um problema com o meu produto, devo entrar em contato com a plataforma também.",
+      "O consumidor tem direito em caso de um produto através de determinada loja de uma plataforma online e houve um problema com o meu produto, devo entrar em contato com a plataforma também?",
+      "Como devo proceder em caso de um produto através de determinada loja de uma plataforma online e houve um problema com o meu produto, devo entrar em contato com a plataforma também?",
+      "Como funciona a reclamação no Procon para um produto através de determinada loja de uma plataforma online e houve um problema com o meu produto, devo entrar em contato com a plataforma também?",
+      "Quais são meus direitos sobre um produto através de determinada loja de uma plataforma online e houve um problema com o meu produto, devo entrar em contato com a plataforma também?"
+    ]
+  },
+  {
+    "intent": "fiz_uma_reclamacao_atraves_do_procon_online_mas_nao_consegui",
+    "answer": "Não, pois não podemos abrir reclamação em duplicidade do mesmo assunto.\n\n##  Sobre Contrato",
+    "questions": [
+      "Fiz uma reclamação através do Procon online, mas não consegui resolver o meu problema, posso abrir uma reclamação no posto de atendimento do Procon agora?",
+      "Olá, preciso de ajuda",
+      "Como resolver um problema relacionado a fiz uma reclamação através do Procon online, mas não consegui resolver o meu problema, posso abrir uma reclamação no posto de atendimento do Procon agora?",
+      "Fiz uma registro de reclamação através do Procon online, mas não consegui resolver o meu problema, posso abrir uma registro de reclamação no posto de atendimento do Procon agora?",
+      "Gostaria de saber sobre fiz uma reclamação através do Procon online, mas não consegui resolver o meu problema, posso abrir uma reclamação no posto de atendimento do Procon agora.",
+      "O Procon pode me orientar sobre fiz uma reclamação através do Procon online, mas não consegui resolver o meu problema, posso abrir uma reclamação no posto de atendimento do Procon agora?",
+      "Qual procedimento para fiz uma reclamação através do Procon online, mas não consegui resolver o meu problema, posso abrir uma reclamação no posto de atendimento do Procon agora?",
+      "Fiz uma queixa através do órgão de defesa do consumidor online, mas não consegui resolver o meu problema, posso abrir uma queixa no posto de atendimento do órgão de defesa do consumidor agora?",
+      "Oi, pode me ajudar?"
+    ]
+  },
+  {
+    "intent": "fui_cancelar_o_contrato_e_foi_cobrado_uma_multa_pode",
+    "answer": "Sim, é possível cancelar um contrato assinado sem pagar multa, mas apenas em casos específicos como: direito de arrependimento (até 7 dias para compras fora da loja), descumprimento de cláusulas pela empresa (falha no serviço), ou se a multa for considerada abusiva (geralmente superior a 10% do valor restante).",
+    "questions": [
+      "Fui cancelar o contrato e foi cobrado uma multa, pode?",
+      "Fui rescindir o contrato e foi cobrado uma multa, pode?",
+      "Boa tarde",
+      "Bom dia",
+      "Tudo bem?",
+      "Preciso de ajuda com fui cancelar o contrato e foi cobrado uma multa, pode.",
+      "Fui cancelar o contrato e foi cobrado uma cobrança de multa, pode?",
+      "Posso abrir reclamação no Procon sobre fui cancelar o contrato e foi cobrado uma multa, pode?",
+      "Como devo proceder em caso de fui cancelar o contrato e foi cobrado uma multa, pode?"
+    ]
+  },
+  {
+    "intent": "um_contrato_pode_ter_fidelidade",
+    "answer": "Sim, um contrato pode ter cláusula de fidelidade (ou de permanência), sendo comum em serviços de telecomunicações, academias e assinaturas. Ela obriga o consumidor a manter o serviço por um tempo mínimo (máximo de 12 meses para pessoas físicas), a multa por cancelamento antecipado deve ser proporcional ao tempo restante. \nO Artigo 57 da Resolução nº 632/2014 da Anatel estabelece que operadoras podem oferecer benefícios (descontos, aparelhos) em troca de fidelidade, com prazo máximo de 12 meses. A multa por quebra de contrato deve ser proporcional ao tempo restante e ao benefício, sendo ilegal se a rescisão for por falha da operadora.",
+    "questions": [
+      "Um contrato pode ter fidelidade?",
+      "Quero saber se um contrato pode ter fidelidade permite abrir reclamação.",
+      "Posso reclamar se tiver problema com um contrato pode ter fidelidade?",
+      "Recebi uma cobrança de um contrato pode ter fidelidade que não reconheço.",
+      "O que a lei diz sobre um contrato pode ter fidelidade?",
+      "Como proceder para rescindir contrato sobre um contrato pode ter fidelidade?",
+      "Quero orientação sobre um contrato pode ter fidelidade.",
+      "Como funciona um contrato pode ter fidelidade?",
+      "O que o consumidor pode exigir em caso de um contrato pode ter fidelidade?",
+      "Tenho problema com contrato sobre um contrato pode ter fidelidade. O que faço?"
+    ]
+  },
+  {
+    "intent": "arrependimento_de_7_dias",
+    "answer": "O Direito de Arrependimento (Art. 49 do CDC. O consumidor pode desistir do contrato, no prazo de 7 dias a contar de sua assinatura ou do ato de recebimento do produto ou serviço, sempre que a contratação de fornecimento de produtos e serviços ocorrer fora do estabelecimento comercial, especialmente por telefone ou a domicílio.) Parágrafo único. Se o consumidor exercitar o direito de arrependimento previsto neste artigo, os valores eventualmente pagos, a qualquer título, durante o prazo de reflexão, serão devolvidos, de imediato, monetariamente atualizados.",
+    "questions": [
+      "Arrependimento de 7 dias",
+      "Quero orientação sobre arrependimento de 7 dias.",
+      "Quero cancelar um contrato por causa de arrependimento de 7 dias.",
+      "Preciso resolver uma situação de arrependimento de 7 dias.",
+      "Gostaria de saber sobre arrependimento de 7 dias.",
+      "Como proceder para rescindir contrato sobre arrependimento de 7 dias?",
+      "Como funciona arrependimento de 7 dias?",
+      "A empresa pode se recusar a resolver arrependimento de 7 dias?",
+      "O que fazer quando acontece arrependimento de 7 dias?",
+      "Como devo proceder em caso de arrependimento de 7 dias?"
+    ]
+  },
+  {
+    "intent": "vale_para_compra_em_loja_fisica",
+    "answer": "Não. O consumidor não precisa justificar o motivo da desistência. Basta informar dentro do prazo de 7 dias que se arrependeu da compra. (Art. 49 do CDC. O consumidor pode desistir do contrato, no prazo de 7 dias a contar de sua assinatura ou do ato de recebimento do produto ou serviço, sempre que a contratação de fornecimento de produtos e serviços ocorrer fora do estabelecimento comercial, especialmente por telefone ou a domicílio.)",
+    "questions": [
+      "Vale para compra em loja física?",
+      "O que o consumidor pode exigir em caso de vale para compra em loja física?",
+      "Posso cancelar uma compra presencial por causa de vale para compra em loja física?",
+      "O prazo de 7 dias vale para vale para compra em loja física?",
+      "Tenho problema com contrato sobre vale para compra em loja física. O que faço?",
+      "Posso reclamar se tiver problema com vale para compra em loja física?",
+      "A multa contratual em caso de vale para compra em loja física é permitida?",
+      "Como devo proceder em caso de vale para compra em loja física?",
+      "Existe alguma regra sobre vale para compra em loja física?",
+      "Quais provas ou documentos ajudam em uma reclamação sobre vale para compra em loja física?"
+    ]
+  },
+  {
+    "intent": "quem_paga_o_frete_de_devolucao",
+    "answer": "A empresa. O consumidor não deve arcar com nenhum custo de frete ou postagem para a devolução. A empresa deve reembolsar o valor total pago, incluindo o frete de envio. (Art. 49 do CDC. O consumidor pode desistir do contrato, no prazo de 7 dias a contar de sua assinatura ou do ato de recebimento do produto ou serviço, sempre que a contratação de fornecimento de produtos e serviços ocorrer fora do estabelecimento comercial, especialmente por telefone ou a domicílio.)",
+    "questions": [
+      "Quem paga o frete de devolução?",
+      "Quais provas ou documentos ajudam em uma reclamação sobre quem paga o frete de devolução?",
+      "Como funciona quem paga o frete de devolução?",
+      "Quando começa a contar o prazo de quem paga o frete de devolução?",
+      "O que o consumidor pode exigir em caso de quem paga o frete de devolução?",
+      "Posso desistir da compra por quem paga o frete de devolução?",
+      "A empresa pode se recusar a resolver quem paga o frete de devolução?",
+      "O prazo de 7 dias vale para quem paga o frete de devolução?",
+      "Gostaria de saber sobre quem paga o frete de devolução.",
+      "Quero orientação sobre quem paga o frete de devolução."
+    ]
+  },
+  {
+    "intent": "abri_a_embalagem_e_usei_o_produto_ainda_posso_devolver",
+    "answer": "Sim, desde que com cautela. O consumidor tem o direito de testar o produto para saber se ele atende às expectativas, agindo como faria em uma loja física. A embalagem original é recomendada, mas não é obrigatória para a devolução, e o produto deve ser devolvido sem danos por mau uso. (Art. 49 do CDC. O consumidor pode desistir do contrato, no prazo de 7 dias a contar de sua assinatura ou do ato de recebimento do produto ou serviço, sempre que a contratação de fornecimento de produtos e serviços ocorrer fora do estabelecimento comercial, especialmente por telefone ou a domicílio.)",
+    "questions": [
+      "Abri a embalagem e usei o produto, ainda posso devolver?",
+      "Posso abrir reclamação no Procon sobre abri a embalagem e usei o produto, ainda posso devolver?",
+      "Qual procedimento para abri a embalagem e usei o produto, ainda posso devolver?",
+      "O que fazer quando acontece abri a embalagem e usei o produto, ainda posso devolver?",
+      "A empresa pode se recusar a resolver abri a embalagem e usei o produto, ainda posso devolver?",
+      "Comprei em loja física e tive abri a embalagem e usei o produto, ainda posso devolver; quais são meus direitos?",
+      "Como contar o prazo para abri a embalagem e usei o produto, ainda posso devolver?",
+      "Como resolver um problema relacionado a abri a embalagem e usei o produto, ainda posso devolver?",
+      "Gostaria de saber sobre abri a embalagem e usei o produto, ainda posso devolver."
+    ]
+  },
+  {
+    "intent": "o_prazo_de_entrega_nao_foi_respeitado_e_agora",
+    "answer": "O consumidor pode, a seu critério: I) exigir o cumprimento forçado da obrigação, nos termos da oferta, apresentação ou publicidade; II) aceitar outro produto ou prestação de serviço equivalente; III) rescindir o contrato, com direito à restituição de quantia eventualmente antecipada, monetariamente atualizada.",
+    "questions": [
+      "O prazo de entrega não foi respeitado, e agora?",
+      "Posso abrir reclamação no Procon sobre o prazo de entrega não foi respeitado, e agora?",
+      "Olá, preciso de ajuda",
+      "O Procon pode me orientar sobre o prazo de entrega não foi respeitado, e agora?",
+      "Posso reclamar se tiver problema com o prazo de entrega não foi respeitado, e agora?",
+      "Existe alguma regra sobre o prazo de entrega não foi respeitado, e agora?",
+      "Tenho problema com o prazo de entrega não foi respeitado, e agora, quais são meus direitos?",
+      "Olá",
+      "Tudo bem?"
+    ]
+  },
+  {
+    "intent": "o_que_e_vicio_aparente",
+    "answer": "Falhas fáceis de constatar no momento da compra ou uso inicial, como um risco na tela da TV ou um sapato descolado.",
+    "questions": [
+      "O que é vício aparente?",
+      "Quero saber se é vício aparente permite abrir reclamação.",
+      "Quero orientação sobre é vício aparente.",
+      "Como faço para registrar uma reclamação sobre é vício aparente?",
+      "Bom dia",
+      "Como funciona é vício aparente?",
+      "Tudo bem?",
+      "Existe alguma regra sobre é vício aparente?",
+      "Gostaria de saber sobre é vício aparente."
+    ]
+  },
+  {
+    "intent": "o_que_e_vicio_oculto",
+    "answer": "Defeitos que não aparecem de imediato e surgem com o uso, como um motor de carro que quebra com pouco tempo de uso.",
+    "questions": [
+      "O que é vício oculto?",
+      "Quero saber se é vício oculto permite abrir reclamação.",
+      "O que é falha no produto oculto?",
+      "O consumidor tem direito em caso de é vício oculto?",
+      "Quais documentos preciso para reclamar sobre é vício oculto?",
+      "Quais provas ou documentos ajudam em uma reclamação sobre é vício oculto?",
+      "Preciso de ajuda com é vício oculto.",
+      "A empresa pode negar garantia por é vício oculto?",
+      "Como acionar a garantia em caso de é vício oculto?",
+      "Como devo proceder em caso de é vício oculto?"
+    ]
+  },
+  {
+    "intent": "como_contar_o_prazo_no_vicio_oculto",
+    "answer": "O prazo para reclamar começa a contar a partir do momento em que o defeito é descoberto, e não da compra.",
+    "questions": [
+      "Como contar o prazo no vício oculto?",
+      "O que o consumidor pode exigir em caso de contar o prazo no vício oculto?",
+      "Quais documentos preciso para reclamar sobre contar o prazo no vício oculto?",
+      "Como devo proceder em caso de contar o prazo no vício oculto?",
+      "Como contar o prazo no defeito oculto?",
+      "Tenho problema com contar o prazo no vício oculto, quais são meus direitos?",
+      "Quero saber se contar o prazo no vício oculto permite abrir reclamação.",
+      "Quais são meus direitos sobre contar o prazo no vício oculto?",
+      "O que fazer quando acontece contar o prazo no vício oculto?"
+    ]
+  },
+  {
+    "intent": "prazos_para_reclamacao",
+    "answer": "30 dias: Para produtos ou serviços não duráveis (ex: alimentos, serviços de estética). 90 dias: Para produtos ou serviços duráveis (ex: eletrodomésticos, carros, celulares).",
+    "questions": [
+      "Prazos para Reclamação",
+      "Quais são meus direitos sobre prazos para Reclamação?",
+      "Preciso resolver uma situação de prazos para Reclamação.",
+      "Como resolver um problema relacionado a prazos para Reclamação?",
+      "Quero orientação sobre prazos para Reclamação.",
+      "Prazos para queixa",
+      "Quais provas ou documentos ajudam em uma reclamação sobre prazos para Reclamação?",
+      "Posso reclamar se tiver problema com prazos para Reclamação?",
+      "Qual é o prazo em caso de prazos para Reclamação?",
+      "Existe alguma regra sobre prazos para Reclamação?"
+    ]
+  },
+  {
+    "intent": "vicio_ou_defeito",
+    "answer": "Vício: O problema se limita ao produto/serviço (ex: TV não liga). Fato (ou Defeito): O problema coloca em risco a saúde ou segurança do consumidor, causando dano externo (ex: celular explode).",
+    "questions": [
+      "Vício ou Defeito",
+      "Preciso de ajuda com vício ou Defeito.",
+      "Como devo proceder em caso de vício ou Defeito?",
+      "O produto apresentou problema de vício ou Defeito. Tenho garantia?",
+      "A garantia legal cobre vício ou Defeito?",
+      "Preciso resolver uma situação de vício ou Defeito.",
+      "O que fazer quando acontece vício ou Defeito?",
+      "O que fazer se a garantia não resolver vício ou Defeito?",
+      "Tenho uma dúvida sobre vício ou Defeito.",
+      "falha no produto ou falha no produto"
+    ]
+  },
+  {
+    "intent": "apos_receber_um_produto_novo_atraves_da_garantia_como_fica_a",
+    "answer": "Se se tratar de um bem não durável, 30 dias e 90 dias para bens duráveis. Porém, o prazo não deve ser inferior ao do produto original. Caso o produto tenha sido trocado com 9 meses restantes de garantia, por exemplo, o produto novo terá a garantia restante, no caso, 9 meses.",
+    "questions": [
+      "Após receber um produto novo através da garantia, como fica a garantia desse novo produto?",
+      "Como devo proceder em caso de após receber um produto novo através da garantia, como fica a garantia desse novo produto?",
+      "O que a lei diz sobre após receber um produto novo através da garantia, como fica a garantia desse novo produto?",
+      "Posso reclamar se tiver problema com após receber um produto novo através da garantia, como fica a garantia desse novo produto?",
+      "Posso trocar produto comprado presencialmente por após receber um produto novo através da garantia, como fica a garantia desse novo produto?",
+      "Após receber um bem adquirido novo através da cobertura da garantia, como fica a cobertura da garantia desse novo bem adquirido?",
+      "O que fazer quando acontece após receber um produto novo através da garantia, como fica a garantia desse novo produto?",
+      "Após receber um produto novo através da garantia legal, como fica a garantia legal desse novo produto?",
+      "A empresa pode negar garantia por após receber um produto novo através da garantia, como fica a garantia desse novo produto?",
+      "Preciso de nota fiscal para garantia em caso de após receber um produto novo através da garantia, como fica a garantia desse novo produto?"
+    ]
+  },
+  {
+    "intent": "optei_pela_substituicao_de_um_produto_com_vicio_de_fabricaca",
+    "answer": "Sim, tendo o consumidor optado pela substituição do produto, e não sendo possível a substituição do bem, poderá haver substituição por outro de espécie, marca ou modelo diversos, mediante complementação ou restituição de eventual diferença de preço.\nDe acordo com o artigo 18 § 1° Não sendo o vício sanado no prazo máximo de trinta dias, pode o consumidor exigir, alternativamente e à sua escolha:\n\n        I - a substituição do produto por outro da mesma espécie, em perfeitas condições de uso;\n\n        II - a restituição imediata da quantia paga, monetariamente atualizada, sem prejuízo de eventuais perdas e danos;\n\n        III - o abatimento proporcional do preço.\n\n§ 4° Tendo o consumidor optado pela alternativa do inciso I do § 1° deste artigo, e não sendo possível a substituição do bem, poderá haver substituição por outro de espécie, marca ou modelo diversos, mediante complementação ou restituição de eventual diferença de preço, sem prejuízo do disposto nos incisos II e III do § 1° deste artigo.",
+    "questions": [
+      "Optei pela substituição de um produto com vício de fabricação por um novo, mas não há mais disponibilidade do mesmo, tenho direito a outro similar?",
+      "Optei pela substituição de um produto com defeito de fabricação por um novo, mas não há mais disponibilidade do mesmo, tenho direito a outro similar?",
+      "O que fazer se a garantia não resolver optei pela substituição de um produto com vício de fabricação por um novo, mas não há mais disponibilidade do mesmo, tenho direito a outro similar?",
+      "Posso exigir cumprimento da oferta em caso de optei pela substituição de um produto com vício de fabricação por um novo, mas não há mais disponibilidade do mesmo, tenho direito a outro similar?",
+      "A empresa pode negar garantia por optei pela substituição de um produto com vício de fabricação por um novo, mas não há mais disponibilidade do mesmo, tenho direito a outro similar?",
+      "Tenho uma dúvida sobre optei pela substituição de um produto com vício de fabricação por um novo, mas não há mais disponibilidade do mesmo, tenho direito a outro similar.",
+      "Perdi o prazo para reclamar sobre optei pela substituição de um produto com vício de fabricação por um novo, mas não há mais disponibilidade do mesmo, tenho direito a outro similar?",
+      "A garantia legal cobre optei pela substituição de um produto com vício de fabricação por um novo, mas não há mais disponibilidade do mesmo, tenho direito a outro similar?",
+      "Como devo proceder em caso de optei pela substituição de um produto com vício de fabricação por um novo, mas não há mais disponibilidade do mesmo, tenho direito a outro similar?",
+      "Preciso de nota fiscal para garantia em caso de optei pela substituição de um produto com vício de fabricação por um novo, mas não há mais disponibilidade do mesmo, tenho direito a outro similar?"
+    ]
+  },
+  {
+    "intent": "lojas_tem_obrigacao_de_trocar_produtos_sem_defeito",
+    "answer": "Não. Apesar de ser uma prática comum no mercado não há nenhuma regulamentação sobre a prática, cabendo a cada fornecedor estabelecer suas próprias regras. (Art. 49 do CDC. O consumidor pode desistir do contrato, no prazo de 7 dias a contar de sua assinatura ou do ato de recebimento do produto ou serviço, sempre que a contratação de fornecimento de produtos e serviços ocorrer fora do estabelecimento comercial, especialmente por telefone ou a domicílio.)",
+    "questions": [
+      "Lojas têm obrigação de trocar produtos sem defeito?",
+      "Comprei e me arrependi por lojas têm obrigação de trocar produtos sem defeito; posso cancelar?",
+      "Quais são meus direitos sobre lojas têm obrigação de trocar produtos sem defeito?",
+      "Posso reclamar se tiver problema com lojas têm obrigação de trocar produtos sem defeito?",
+      "empresas têm obrigação de trocar items sem defeito?",
+      "Posso trocar produto comprado presencialmente por lojas têm obrigação de trocar produtos sem defeito?",
+      "A empresa pode agir assim no contrato em caso de lojas têm obrigação de trocar produtos sem defeito?",
+      "Qual é o prazo em caso de lojas têm obrigação de trocar produtos sem defeito?",
+      "O prazo de 7 dias vale para lojas têm obrigação de trocar produtos sem defeito?",
+      "A multa contratual em caso de lojas têm obrigação de trocar produtos sem defeito é permitida?"
+    ]
+  },
+  {
+    "intent": "posso_realizar_a_portabilidade_do_meu_beneficio_a_qualquer_m",
+    "answer": "Sim, a portabilidade deve ser solicitada apenas pelo titular da conta bancária. Porém caso exista algum tipo de empréstimo pessoal ou uma divida com o banco, sua portabilidade pode não ser concluída, pois é previsto em contrato.",
+    "questions": [
+      "Posso realizar a portabilidade do meu benefício a qualquer momento?",
+      "Oi, pode me ajudar?",
+      "Bom dia",
+      "O consumidor tem direito em caso de realizar a portabilidade do meu benefício a qualquer momento?",
+      "Quais provas ou documentos ajudam em uma reclamação sobre realizar a portabilidade do meu benefício a qualquer momento?",
+      "Quero saber se realizar a portabilidade do meu benefício a qualquer momento permite abrir reclamação.",
+      "O Procon pode me orientar sobre realizar a portabilidade do meu benefício a qualquer momento?",
+      "A empresa pode se recusar a resolver realizar a portabilidade do meu benefício a qualquer momento?",
+      "Quero orientação sobre realizar a portabilidade do meu benefício a qualquer momento.",
+      "O que a lei diz sobre realizar a portabilidade do meu benefício a qualquer momento?"
+    ]
+  },
+  {
+    "intent": "a_divida_prescreve_apos_cinco_anos",
+    "answer": "Não. Dívidas com mais de cinco anos não podem ser cobradas judicialmente, e isso acontece graças ao instituto da prescrição. No entanto, a prescrição não extingue a dívida, ou seja, ela continua existindo para a empresa credora. Isso significa que, embora o devedor não possa mais ser cobrado judicialmente e o nome do devedor não pode mais ser negativado por esse débito, ao empresa credora ainda pode disponibilizar a oportunidade de quitar as pendências.",
+    "questions": [
+      "A divida prescreve após cinco anos?",
+      "O atendimento do Procon pode ajudar com a divida prescreve após cinco anos?",
+      "Como funciona a reclamação no Procon para a divida prescreve após cinco anos?",
+      "Preciso resolver uma situação de a divida prescreve após cinco anos.",
+      "Quero saber se a divida prescreve após cinco anos permite abrir reclamação.",
+      "Existe alguma regra sobre a divida prescreve após cinco anos?",
+      "Posso abrir uma reclamação no Procon sobre a divida prescreve após cinco anos?",
+      "Quais documentos preciso para reclamar sobre a divida prescreve após cinco anos?",
+      "Quais documentos levo ao Procon para a divida prescreve após cinco anos?",
+      "Como devo proceder em caso de a divida prescreve após cinco anos?"
+    ]
+  },
+  {
+    "intent": "qual_e_o_prazo_para_resposta_caso_eu_faco_uma_reclamacao_no",
+    "answer": "Após a abertura da CIP (reclamação) o fornecedor tem um prazo de até 10 dias corridos para apresentar sua resposta no sistema. Caso não houver retorno da parte reclamada ou não for resolvido o problema, agendaremos uma audiência conciliatória.",
+    "questions": [
+      "Qual é o prazo para resposta caso eu faço uma reclamação no Procon?",
+      "Posso reclamar se tiver problema com é o prazo para resposta caso eu faço uma reclamação no Procon?",
+      "Preciso resolver uma situação de é o prazo para resposta caso eu faço uma reclamação no Procon.",
+      "O que o consumidor pode exigir em caso de é o prazo para resposta caso eu faço uma reclamação no Procon?",
+      "Tenho problema com é o prazo para resposta caso eu faço uma reclamação no Procon, quais são meus direitos?",
+      "Gostaria de saber sobre é o prazo para resposta caso eu faço uma reclamação no Procon.",
+      "Como contar o prazo para é o prazo para resposta caso eu faço uma reclamação no Procon?",
+      "A empresa pode alegar erro do sistema em é o prazo para resposta caso eu faço uma reclamação no Procon?",
+      "Em quanto tempo posso reclamar de é o prazo para resposta caso eu faço uma reclamação no Procon?",
+      "O atendimento do Procon pode ajudar com é o prazo para resposta caso eu faço uma reclamação no Procon?"
+    ]
+  },
+  {
+    "intent": "quais_documentos_sao_necessarios_para_abrir_uma_reclamacao",
+    "answer": "Cada caso exige uma análise. No entanto, os documentos que são sempre essenciais são: CNPJ da matriz do fornecedor, comprovantes do problema e documento pessoal do consumidor. Pode ser necessária a solicitação de outros documentos. Por isso, é essencial o comparecimento do consumidor à sede do Procon para a realização de uma análise detalhada do caso.\n\n## Garantias",
+    "questions": [
+      "Quais documentos são necessários para abrir uma reclamação?",
+      "Quais provas ou documentos ajudam em uma reclamação sobre documentos são necessários para abrir uma reclamação?",
+      "Gostaria de saber sobre documentos são necessários para abrir uma reclamação.",
+      "O produto apresentou problema de documentos são necessários para abrir uma reclamação. Tenho garantia?",
+      "Como devo proceder em caso de documentos são necessários para abrir uma reclamação?",
+      "A empresa pode negar garantia por documentos são necessários para abrir uma reclamação?",
+      "O que o consumidor pode exigir em caso de documentos são necessários para abrir uma reclamação?",
+      "Qual o prazo de garantia para documentos são necessários para abrir uma reclamação?",
+      "Posso abrir reclamação no Procon sobre documentos são necessários para abrir uma reclamação?",
+      "Como faço para registrar uma reclamação sobre documentos são necessários para abrir uma reclamação?"
+    ]
+  },
+  {
+    "intent": "quais_sao_os_tipos_de_garantia_existentes",
+    "answer": "Existem três tipos principais de garantia: Garantia Legal, Garantia Contratual e Garantia Estendida\nArt.26. O direito de reclamar pelos vícios aparentes ou de fácil constatação caduca em:\n- trinta dias, tratando-se de fornecimento de serviço e de produtos não duráveis;\n- noventa dias, tratando-se de fornecimento de serviço e de produtos duráveis.\nArt. 50. A garantia contratual é complementar à legal e será conferida mediante termo escrito.",
+    "questions": [
+      "Quais são os tipos de garantia existentes?",
+      "O Procon pode me orientar sobre são os tipos de garantia existentes?",
+      "Como acionar a garantia em caso de são os tipos de garantia existentes?",
+      "Como funciona a reclamação no Procon para são os tipos de garantia existentes?",
+      "Qual é o prazo em caso de são os tipos de garantia existentes?",
+      "A empresa pode se recusar a resolver são os tipos de garantia existentes?",
+      "A empresa pode negar garantia por são os tipos de garantia existentes?",
+      "Qual o prazo de garantia para são os tipos de garantia existentes?",
+      "Como funciona são os tipos de garantia existentes?"
+    ]
+  },
+  {
+    "intent": "o_que_e_garantia_legal",
+    "answer": "A garantia legal é aquela prevista no Código de Defesa do Consumidor (CDC) e independe de contrato ou termo escrito. Ela é de: 30 dias para produtos ou serviços não duráveis (ex: alimentos, serviços de lavanderia). 90 dias para produtos ou serviços duráveis (ex: eletrodomésticos, móveis, eletrônicos).\nArt.26. O direito de reclamar pelos vícios aparentes ou de fácil constatação caduca em:\nI - trinta dias, tratando-se de fornecimento de serviço e de produtos não duráveis;\nII - noventa dias, tratando-se de fornecimento de serviço e de produtos duráveis.",
+    "questions": [
+      "O que é garantia legal?",
+      "A garantia legal cobre é garantia legal?",
+      "Posso reclamar se tiver problema com é garantia legal?",
+      "O consumidor tem direito em caso de é garantia legal?",
+      "Gostaria de saber sobre é garantia legal.",
+      "Perdi o prazo para reclamar sobre é garantia legal?",
+      "Tenho uma dúvida sobre é garantia legal.",
+      "Quando começa a contar o prazo de é garantia legal?",
+      "A empresa pode agir assim no contrato em caso de é garantia legal?",
+      "Como devo proceder em caso de é garantia legal?"
+    ]
+  },
+  {
+    "intent": "a_garantia_legal_comeca_a_contar_quando",
+    "answer": "A contagem inicia a partir da entrega efetiva do produto ou da conclusão do serviço. No caso de defeito oculto (aquele que não é visível de imediato), o prazo começa a contar a partir do momento em que o problema é identificado.\nArt. 26.\n§ 1° Inicia-se a contagem do prazo decadencial a partir da entrega efetiva do produto ou do término da execução dos serviços.\n§ 3° Tratando-se de vício oculto, o prazo decadencial inicia-se no momento em que ficar evidenciado o defeito.",
+    "questions": [
+      "A garantia legal começa a contar quando?",
+      "A empresa pode se recusar a resolver a garantia legal começa a contar quando?",
+      "Como funciona a garantia legal começa a contar quando?",
+      "Perdi o prazo para reclamar sobre a garantia legal começa a contar quando?",
+      "A assistência da garantia legal começa a contar quando?",
+      "Como faço para registrar uma reclamação sobre a garantia legal começa a contar quando?",
+      "Quero orientação sobre a garantia legal começa a contar quando.",
+      "O que fazer se a garantia não resolver a garantia legal começa a contar quando?",
+      "Em quanto tempo posso reclamar de a garantia legal começa a contar quando?",
+      "Como acionar a garantia em caso de a garantia legal começa a contar quando?"
+    ]
+  },
+  {
+    "intent": "o_que_e_garantia_contratual",
+    "answer": "É a garantia oferecida pelo fabricante ou fornecedor de forma complementar à garantia legal. Ela vem descrita em termo escrito e pode ter prazo maior (ex: 1 ano, 2 anos).\nImportante: A garantia contratual não substitui a garantia legal; ela é complementar. Ambas têm início no momento da entrega do produto, porém o prazo da garantia contratual soma- se ao da garantia legal.\nArt. 50. A garantia contratual é complementar à legal e será conferida mediante termo escrito.\nParágrafo único. O termo de garantia ou equivalente deve ser padronizado e esclarecer, de maneira adequada em que consiste a mesma garantia, bem como a forma, o prazo e o lugar em que pode ser exercitada e os ônus a cargo do consumidor, devendo ser-lhe entregue, devidamente preenchido pelo fornecedor, no ato do fornecimento, acompanhado de manual de instrução, de instalação e uso do produto em linguagem didática, com ilustrações.",
+    "questions": [
+      "O que é garantia contratual?",
+      "Preciso de ajuda com é garantia contratual.",
+      "Preciso de nota fiscal para garantia em caso de é garantia contratual?",
+      "Posso abrir reclamação no Procon sobre é garantia contratual?",
+      "Como funciona é garantia contratual?",
+      "A empresa pode se recusar a resolver é garantia contratual?",
+      "Como contar o prazo para é garantia contratual?",
+      "O que a lei diz sobre é garantia contratual?",
+      "Como faço para registrar uma reclamação sobre é garantia contratual?",
+      "Tenho uma dúvida sobre é garantia contratual."
+    ]
+  },
+  {
+    "intent": "o_que_e_garantia_estendida",
+    "answer": "É um serviço adicional, normalmente pago, que prolonga o prazo da garantia contratual após o término dela. Ela funciona como um seguro e deve ter contrato específico detalhando cobertura, prazos e condições.\nArt. 39. É vedado ao fornecedor de produtos ou serviços, dentre outras práticas abusivas:\nI - condicionar o fornecimento de produto ou de serviço ao fornecimento de outro produto ou serviço, bem como, sem justa causa, a limites quantitativos;",
+    "questions": [
+      "O que é garantia estendida?",
+      "Como contar o prazo para é garantia estendida?",
+      "O que fazer quando acontece é garantia estendida?",
+      "Como devo proceder em caso de é garantia estendida?",
+      "A garantia legal cobre é garantia estendida?",
+      "Existe alguma regra sobre é garantia estendida?",
+      "Quais são meus direitos sobre é garantia estendida?",
+      "Quero cancelar um contrato por causa de é garantia estendida.",
+      "Quero orientação sobre é garantia estendida.",
+      "A empresa pode negar garantia por é garantia estendida?"
+    ]
+  },
+  {
+    "intent": "o_fornecedor_pode_negar_atendimento_na_garantia",
+    "answer": "Pode haver negativa quando: O defeito foi causado por mau uso; O produto foi alterado por terceiros não autorizados; Houve dano por acidente ou queda. Contudo, o fornecedor deve comprovar o mau uso.\nArt.12\n§ 3° O fabricante, o construtor, o produtor ou importador só não será responsabilizado quando provar:\nIII - a culpa exclusiva do consumidor ou de terceiro.",
+    "questions": [
+      "O fornecedor pode negar atendimento na garantia?",
+      "Posso reclamar se tiver problema com pode negar atendimento na garantia?",
+      "O fornecedor pode negar atendimento na garantia legal?",
+      "Olá, preciso de ajuda",
+      "Qual procedimento para pode negar atendimento na garantia?",
+      "Quais documentos preciso para reclamar sobre pode negar atendimento na garantia?",
+      "Quais provas ou documentos ajudam em uma reclamação sobre pode negar atendimento na garantia?",
+      "Existe alguma regra sobre pode negar atendimento na garantia?",
+      "Preciso resolver uma situação de pode negar atendimento na garantia."
+    ]
+  },
+  {
+    "intent": "o_que_acontece_se_o_problema_nao_for_resolvido_em_30_dias",
+    "answer": "Segundo o Código de Defesa do Consumidor, se o defeito não for solucionado em até 30 dias, o consumidor pode escolher entre: Substituição do produto por outro novo; Devolução do valor pago; Abatimento proporcional do preço.\nArt. 18\n§ 1° Não sendo o vício sanado no prazo máximo de trinta dias, pode o consumidor exigir, alternativamente e à sua escolha:\n- a substituição do produto por outro da mesma espécie, em perfeitas condições de uso;\nII- a restituição imediata da quantia paga, monetariamente atualizada, sem prejuízo de eventuais perdas e danos;\n- o abatimento proporcional do preço.",
+    "questions": [
+      "O que acontece se o problema não for resolvido em 30 dias?",
+      "O que fazer quando acontece acontece se o problema não for resolvido em 30 dias?",
+      "O que fazer se a loja não cumprir a oferta de acontece se o problema não for resolvido em 30 dias?",
+      "Qual é o prazo em caso de acontece se o problema não for resolvido em 30 dias?",
+      "O consumidor tem direito em caso de acontece se o problema não for resolvido em 30 dias?",
+      "Qual procedimento para acontece se o problema não for resolvido em 30 dias?",
+      "Tenho uma dúvida sobre acontece se o problema não for resolvido em 30 dias.",
+      "Tenho problema com acontece se o problema não for resolvido em 30 dias, quais são meus direitos?",
+      "Posso abrir reclamação no Procon sobre acontece se o problema não for resolvido em 30 dias?",
+      "Posso reclamar se tiver problema com acontece se o problema não for resolvido em 30 dias?"
+    ]
+  },
+  {
+    "intent": "preciso_da_nota_fiscal_para_acionar_a_garantia",
+    "answer": "A nota fiscal facilita a comprovação da compra, mas o consumidor pode utilizar outros meios de prova (extrato bancário, fatura do cartão, comprovante de pedido).\nArt. 6º São direitos básicos do consumidor:\nVIII - a facilitação da defesa de seus direitos, inclusive com a inversão do ônus da prova, a seu favor, no processo civil, quando, a critério do juiz, for verossímil a alegação ou quando for ele hipossuficiente, segundo as regras ordinárias de experiências;",
+    "questions": [
+      "Preciso da nota fiscal para acionar a garantia?",
+      "Preciso de ajuda com preciso da nota fiscal para acionar a garantia.",
+      "O consumidor tem direito em caso de preciso da nota fiscal para acionar a garantia?",
+      "Quais provas ou documentos ajudam em uma reclamação sobre preciso da nota fiscal para acionar a garantia?",
+      "Preciso da comprovante fiscal para acionar a garantia?",
+      "O Procon pode me orientar sobre preciso da nota fiscal para acionar a garantia?",
+      "Preciso da nota fiscal para acionar a assistência da garantia?",
+      "Quais documentos preciso para reclamar sobre preciso da nota fiscal para acionar a garantia?",
+      "O que o consumidor pode exigir em caso de preciso da nota fiscal para acionar a garantia?"
+    ]
+  },
+  {
+    "intent": "produtos_usados_tem_garantia",
+    "answer": "Sim. Produtos usados também possuem garantia legal de 90 dias (se duráveis), salvo se houver informação clara e específica sobre alguma limitação previamente informada ao consumidor.\nArt. 24. A garantia legal de adequação do produto ou serviço independe de termo expresso, vedada a exoneração contratual do fornecedor.",
+    "questions": [
+      "Produtos usados têm garantia?",
+      "Perdi o prazo para reclamar sobre produtos usados têm garantia?",
+      "Quais são meus direitos sobre produtos usados têm garantia?",
+      "Tenho problema com produtos usados têm garantia, quais são meus direitos?",
+      "Produtos usados têm assistência da garantia?",
+      "Como contar o prazo para produtos usados têm garantia?",
+      "O consumidor tem direito em caso de produtos usados têm garantia?",
+      "Qual o prazo de garantia para produtos usados têm garantia?",
+      "mercadorias usados têm garantia?",
+      "bem adquiridos usados têm garantia?"
+    ]
+  },
+  {
+    "intent": "servicos_tambem_tem_garantia",
+    "answer": "Sim. Serviços possuem garantia legal: 30 dias (não duráveis) 90 dias (duráveis)\nArt. 26. O direito de reclamar pelos vícios aparentes ou de fácil constatação caduca em:\n- trinta dias, tratando-se de fornecimento de serviço e de produtos não duráveis;\n- noventa dias, tratando-se de fornecimento de serviço e de produtos duráveis.\n\n## Cumprimento à oferta",
+    "questions": [
+      "Serviços também têm garantia?",
+      "Qual é o prazo em caso de serviços também têm garantia?",
+      "O preço anunciado de serviços também têm garantia precisa ser respeitado?",
+      "Quando começa a contar o prazo de serviços também têm garantia?",
+      "A garantia legal cobre serviços também têm garantia?",
+      "Preciso de ajuda com serviços também têm garantia.",
+      "Existe alguma regra sobre serviços também têm garantia?",
+      "Perdi o prazo para reclamar sobre serviços também têm garantia?",
+      "Serviços também têm garantia legal?",
+      "Posso abrir reclamação no Procon sobre serviços também têm garantia?"
+    ]
+  },
+  {
+    "intent": "o_fornecedor_e_obrigado_a_cumprir_o_preco_anunciado",
+    "answer": "Sim.  O  que  é  anunciado  obriga  o  fornecedor.  A  oferta  faz  parte  do  contrato.\nArt. 30. Toda informação ou publicidade, suficientemente precisa, veiculada por qualquer forma ou meio de comunicação com relação a produtos e serviços oferecidos ou apresentados, obriga o fornecedor que a fizer veicular ou dela se utilizar e integra o contrato que vier a ser celebrado.",
+    "questions": [
+      "O fornecedor é obrigado a cumprir o preço anunciado?",
+      "O Procon pode me orientar sobre é obrigado a cumprir o preço anunciado?",
+      "Como proceder para rescindir contrato sobre é obrigado a cumprir o preço anunciado?",
+      "Posso exigir cumprimento da oferta em caso de é obrigado a cumprir o preço anunciado?",
+      "Como faço para registrar uma reclamação sobre é obrigado a cumprir o preço anunciado?",
+      "A empresa pode se recusar a resolver é obrigado a cumprir o preço anunciado?",
+      "A empresa pode alegar erro do sistema em é obrigado a cumprir o preço anunciado?",
+      "Tenho problema com é obrigado a cumprir o preço anunciado, quais são meus direitos?",
+      "Posso reclamar se tiver problema com é obrigado a cumprir o preço anunciado?"
+    ]
+  },
+  {
+    "intent": "se_o_produto_esta_com_um_preco_na_prateleira_e_outro_no_caix",
+    "answer": "Vale o menor preço. O consumidor tem direito à informação clara e correta. Se houver divergência, aplica-se o valor mais vantajoso ao consumidor.\nArt. 30. Toda informação ou publicidade, suficientemente precisa, veiculada por qualquer forma ou meio de comunicação com relação a produtos e serviços oferecidos ou apresentados, obriga o fornecedor que a fizer veicular ou dela se utilizar e integra o contrato que vier a ser celebrado.",
+    "questions": [
+      "Se o produto está com um preço na prateleira e outro no caixa, qual vale?",
+      "A loja é obrigada a cumprir oferta sobre se o produto está com um preço na prateleira e outro no caixa, qual vale?",
+      "Preciso de ajuda com se o produto está com um preço na prateleira e outro no caixa, qual vale.",
+      "Quero cancelar um contrato por causa de se o produto está com um preço na prateleira e outro no caixa, qual vale.",
+      "Se o bem adquirido está com um preço na prateleira e outro no caixa, qual vale?",
+      "O consumidor tem direito em caso de se o produto está com um preço na prateleira e outro no caixa, qual vale?",
+      "O que fazer se a loja não cumprir a oferta de se o produto está com um preço na prateleira e outro no caixa, qual vale?",
+      "Tenho uma dúvida sobre se o produto está com um preço na prateleira e outro no caixa, qual vale.",
+      "Posso pedir cópia ou revisão do contrato sobre se o produto está com um preço na prateleira e outro no caixa, qual vale?",
+      "Se o mercadoria está com um preço na prateleira e outro no caixa, qual vale?"
+    ]
+  },
+  {
+    "intent": "se_a_loja_nao_quiser_vender_pelo_preco_anunciado_o_que_o_con",
+    "answer": "Pode escolher entre:\nExigir o cumprimento;\nAceitar outro produto equivalente;\nCancelar e receber o dinheiro de volta.\nArt. 35. Se o fornecedor de produtos ou serviços recusar cumprimento à oferta, apresentação ou publicidade, o consumidor poderá, alternativamente e à sua livre escolha:\n- exigir o cumprimento forçado da obrigação, nos termos da oferta, apresentação ou publicidade;\n- aceitar outro produto ou prestação de serviço equivalente;\n- rescindir o contrato, com direito à restituição de quantia eventualmente antecipada, monetariamente atualizada, e a perdas e danos.",
+    "questions": [
+      "Se a loja não quiser vender pelo preço anunciado, o que o consumidor pode fazer?",
+      "Gostaria de saber sobre se a loja não quiser vender pelo preço anunciado, o que o consumidor pode fazer.",
+      "O consumidor tem direito em caso de se a loja não quiser vender pelo preço anunciado, o que o consumidor pode fazer?",
+      "Posso pedir cópia ou revisão do contrato sobre se a loja não quiser vender pelo preço anunciado, o que o consumidor pode fazer?",
+      "A empresa pode agir assim no contrato em caso de se a loja não quiser vender pelo preço anunciado, o que o consumidor pode fazer?",
+      "O Procon atende casos de se a loja não quiser vender pelo preço anunciado, o que o consumidor pode fazer?",
+      "A loja é obrigada a cumprir oferta sobre se a loja não quiser vender pelo preço anunciado, o que o consumidor pode fazer?",
+      "Se a fornecedor não quiser vender pelo preço anunciado, o que o consumidor pode fazer?",
+      "O que fazer quando acontece se a loja não quiser vender pelo preço anunciado, o que o consumidor pode fazer?",
+      "Como devo proceder em caso de se a loja não quiser vender pelo preço anunciado, o que o consumidor pode fazer?"
+    ]
+  },
+  {
+    "intent": "a_loja_pode_dizer_que_foi_erro_do_sistema_e_nao_cumprir",
+    "answer": "Em regra, não.\nExplicação:\nO risco do negócio é do fornecedor. Ele é responsável pelas informações que divulga.\nArt. 30. Toda informação ou publicidade, suficientemente precisa, veiculada por qualquer forma ou meio de comunicação com relação a produtos e serviços oferecidos ou apresentados, obriga o fornecedor que a fizer veicular ou dela se utilizar e integra o contrato que vier a ser celebrado.\nPor que a expressão “em regra”?\nPorque há uma exceção reconhecida pela jurisprudência:\nErro grosseiro e evidente.\nSe o preço for claramente irreal, desproporcional e facilmente perceptível como erro, pode- se afastar a obrigatoriedade de cumprimento.",
+    "questions": [
+      "A loja pode dizer que “foi erro do sistema” e não cumprir?",
+      "A estabelecimento pode dizer que “foi erro do sistema” e não cumprir?",
+      "Gostaria de saber sobre pode dizer que “foi erro do sistema” e não cumprir.",
+      "A empresa pode se recusar a resolver pode dizer que “foi erro do sistema” e não cumprir?",
+      "Tudo bem?",
+      "Posso abrir reclamação no Procon sobre pode dizer que “foi erro do sistema” e não cumprir?",
+      "Boa noite",
+      "Quero saber se pode dizer que “foi erro do sistema” e não cumprir permite abrir reclamação.",
+      "Bom dia"
+    ]
+  },
+  {
+    "intent": "se_nao_houver_informacao_de_estoque_limitado_a_loja_pode_neg",
+    "answer": "Não. A limitação deve ser informada de forma clara. Art. 39. É vedado ao fornecedor de produtos ou serviços, dentre outras práticas abusivas:\nII - recusar atendimento às demandas dos consumidores, na exata medida de suas disponibilidades de estoque, e, ainda, de conformidade com os usos e costumes;\n\n## Troca de item comprado presencialmente",
+    "questions": [
+      "Se não houver informação de “estoque limitado”, a loja pode negar dizendo que acabou?",
+      "A loja é obrigada a trocar em caso de se não houver informação de “estoque limitado”, a loja pode negar dizendo que acabou?",
+      "A empresa pode alegar erro do sistema em se não houver informação de “estoque limitado”, a loja pode negar dizendo que acabou?",
+      "O que o consumidor pode exigir em caso de se não houver informação de “estoque limitado”, a loja pode negar dizendo que acabou?",
+      "Se não houver informação de “estoque limitado”, a empresa pode negar dizendo que acabou?",
+      "O consumidor tem direito em caso de se não houver informação de “estoque limitado”, a loja pode negar dizendo que acabou?",
+      "Posso cancelar uma compra presencial por causa de se não houver informação de “estoque limitado”, a loja pode negar dizendo que acabou?",
+      "Comprei em loja física e tive se não houver informação de “estoque limitado”, a loja pode negar dizendo que acabou; quais são meus direitos?",
+      "O Procon pode me orientar sobre se não houver informação de “estoque limitado”, a loja pode negar dizendo que acabou?"
+    ]
+  },
+  {
+    "intent": "comprei_um_item_presencialmente_entretanto_menos_de_24h_depo",
+    "answer": "Sim, o Código de Defesa do Consumidor traz em sua composição o direito de arrependimento apenas em compra feita de modo online. No caso de compras presenciais, o consumidor pôde avaliar o produto antes de comprar, então, o fornecedor não tem por obrigação realizar a troca ou cancelamento.\nRessalta-se que, no caso de compra em que o item é um presente, fica a critério da loja o direito de troca.",
+    "questions": [
+      "Comprei um item presencialmente, entretanto, menos de 24H depois retornei a loja e solicitei o cancelamento/troca do produto, por questões pessoais. Porém, a loja não aceitou realizar a troca nem o cancelamento da compra. Essa prática está correta?",
+      "Oi",
+      "Como faço para registrar uma reclamação sobre um item presencialmente, entretanto, menos de 24H depois retornei a loja e solicitei o cancelamento/troca do produto, por questões pessoais. Porém, a loja não aceitou realizar a troca nem o cancelamento da compra. Essa prática está correta?",
+      "Oi, pode me ajudar?",
+      "Comprei um item presencialmente, entretanto, menos de 24H depois retornei a loja e solicitei o cancelamento/troca do item, por questões pessoais. Porém, a loja não aceitou realizar a troca nem o cancelamento da compra. Essa prática está correta?",
+      "Comprei um item presencialmente, entretanto, menos de 24H depois retornei a loja e solicitei o cancelamento/troca do bem adquirido, por questões pessoais. Porém, a loja não aceitou realizar a troca nem o cancelamento da compra. Essa prática está correta?",
+      "Tenho problema com um item presencialmente, entretanto, menos de 24H depois retornei a loja e solicitei o cancelamento/troca do produto, por questões pessoais. Porém, a loja não aceitou realizar a troca nem o cancelamento da compra. Essa prática está correta, quais são meus direitos?",
+      "Preciso resolver uma situação de um item presencialmente, entretanto, menos de 24H depois retornei a loja e solicitei o cancelamento/troca do produto, por questões pessoais. Porém, a loja não aceitou realizar a troca nem o cancelamento da compra. Essa prática está correta.",
+      "Comprei um item presencialmente, entretanto, menos de 24H depois retornei a empresa e solicitei o cancelamento/troca do produto, por questões pessoais. Porém, a empresa não aceitou realizar a troca nem o cancelamento da compra. Essa prática está correta?",
+      "O que a lei diz sobre um item presencialmente, entretanto, menos de 24H depois retornei a loja e solicitei o cancelamento/troca do produto, por questões pessoais. Porém, a loja não aceitou realizar a troca nem o cancelamento da compra. Essa prática está correta?"
+    ]
+  },
+  {
+    "intent": "comprei_um_veiculo_usado_e_em_menos_de_90_dias_ele_apresento",
+    "answer": "Não, neste caso será possível solicitar o cumprimento da garantia, conforme Art. 18 do CDC, entretanto, não será possível requerer o cancelamento da compra ou troca do veículo, considerando que se trata de um semi-novo.",
+    "questions": [
+      "Comprei um veículo usado e em menos de 90 dias ele apresentou um vício oculto. Contatei a loja, que fez o reparo da peça que apresentou vício, porém, cerca de um mês depois o veículo apresentou o mesmo vício. É possível solicitar a troca do veículo ou cancelamento da compra?",
+      "Como devo proceder em caso de um veículo usado e em menos de 90 dias ele apresentou um vício oculto. Contatei a loja, que fez o reparo da peça que apresentou vício, porém, cerca de um mês depois o veículo apresentou o mesmo vício. É possível solicitar a troca do veículo ou cancelamento da compra?",
+      "O Procon pode me orientar sobre um veículo usado e em menos de 90 dias ele apresentou um vício oculto. Contatei a loja, que fez o reparo da peça que apresentou vício, porém, cerca de um mês depois o veículo apresentou o mesmo vício. É possível solicitar a troca do veículo ou cancelamento da compra?",
+      "Preciso de ajuda com um veículo usado e em menos de 90 dias ele apresentou um vício oculto. Contatei a loja, que fez o reparo da peça que apresentou vício, porém, cerca de um mês depois o veículo apresentou o mesmo vício. É possível solicitar a troca do veículo ou cancelamento da compra.",
+      "Bom dia",
+      "Comprei um veículo usado e em menos de 90 dias ele apresentou um vício oculto. Contatei a fornecedor, que fez o reparo da peça que apresentou vício, porém, cerca de um mês depois o veículo apresentou o mesmo vício. É possível solicitar a troca do veículo ou cancelamento da compra?",
+      "Existe alguma regra sobre um veículo usado e em menos de 90 dias ele apresentou um vício oculto. Contatei a loja, que fez o reparo da peça que apresentou vício, porém, cerca de um mês depois o veículo apresentou o mesmo vício. É possível solicitar a troca do veículo ou cancelamento da compra?",
+      "Oi",
+      "Quais são meus direitos sobre um veículo usado e em menos de 90 dias ele apresentou um vício oculto. Contatei a loja, que fez o reparo da peça que apresentou vício, porém, cerca de um mês depois o veículo apresentou o mesmo vício. É possível solicitar a troca do veículo ou cancelamento da compra?",
+      "Comprei um veículo usado e em menos de 90 dias ele apresentou um vício oculto. Contatei a estabelecimento, que fez o reparo da peça que apresentou vício, porém, cerca de um mês depois o veículo apresentou o mesmo vício. É possível solicitar a troca do veículo ou cancelamento da compra?"
+    ]
+  },
+  {
+    "intent": "comprei_um_veiculo_novo_em_determinada_loja_procede_que_40_d",
+    "answer": "A primeira opção é o cumprimento da garantia, conforme Art. 18 e 26 do CDC, solicitado junto ao fornecedor. Posteriormente, caso o vício não seja sanado, o consumidor pode optar pelo cancelamento da compra ou troca do produto, conforme Art. 20 do CDC.",
+    "questions": [
+      "Comprei um veículo novo em determinada loja, procede que 40 dias após a compra, o mesmo apresentou um vício oculto. Neste caso, quais medidas posso tomar?",
+      "Como faço para registrar uma reclamação sobre um veículo novo em determinada loja, procede que 40 dias após a compra, o mesmo apresentou um vício oculto. Neste caso, quais medidas posso tomar?",
+      "Existe alguma regra sobre um veículo novo em determinada loja, procede que 40 dias após a compra, o mesmo apresentou um vício oculto. Neste caso, quais medidas posso tomar?",
+      "Preciso de nota fiscal para garantia em caso de um veículo novo em determinada loja, procede que 40 dias após a compra, o mesmo apresentou um vício oculto. Neste caso, quais medidas posso tomar?",
+      "Como resolver um problema relacionado a um veículo novo em determinada loja, procede que 40 dias após a compra, o mesmo apresentou um vício oculto. Neste caso, quais medidas posso tomar?",
+      "Preciso resolver uma situação de um veículo novo em determinada loja, procede que 40 dias após a compra, o mesmo apresentou um vício oculto. Neste caso, quais medidas posso tomar.",
+      "O Procon pode me orientar sobre um veículo novo em determinada loja, procede que 40 dias após a compra, o mesmo apresentou um vício oculto. Neste caso, quais medidas posso tomar?",
+      "Comprei um veículo novo em determinada loja, procede que 40 dias após a compra, o mesmo apresentou um problema de fabricação oculto. Neste caso, quais medidas posso tomar?",
+      "Qual procedimento para um veículo novo em determinada loja, procede que 40 dias após a compra, o mesmo apresentou um vício oculto. Neste caso, quais medidas posso tomar?",
+      "O que o consumidor pode exigir em caso de um veículo novo em determinada loja, procede que 40 dias após a compra, o mesmo apresentou um vício oculto. Neste caso, quais medidas posso tomar?"
+    ]
+  },
+  {
+    "intent": "comprei_determinado_produto_em_uma_loja_no_ato_da_compra_fui",
+    "answer": "O recebimento da nota fiscal é um direito do consumidor, sendo um direito à informação, garantido pelo Art. 6º, III do CDC. Diante da situação, o PROCON poderá solicitar esclarecimento e o envio da documentação junto ao fornecedor.",
+    "questions": [
+      "Comprei determinado produto em uma loja. No ato da compra, fui informada que em até 7 dias receberia a nota fiscal. Procede que, o envio da nota não foi realizado, e mesmo após contatar a loja, o fornecedor se negou a emitir a nota. Que medidas posso tomar?",
+      "Tenho uma dúvida sobre determinado produto em uma loja. No ato da compra, fui informada que em até 7 dias receberia a nota fiscal. Procede que, o envio da nota não foi realizado, e mesmo após contatar a loja, o fornecedor se negou a emitir a nota. Que medidas posso tomar.",
+      "Tudo bem?",
+      "Como faço para registrar uma reclamação sobre determinado produto em uma loja. No ato da compra, fui informada que em até 7 dias receberia a nota fiscal. Procede que, o envio da nota não foi realizado, e mesmo após contatar a loja, o fornecedor se negou a emitir a nota. Que medidas posso tomar?",
+      "Boa tarde",
+      "Comprei determinado produto em uma empresa. No ato da compra, fui informada que em até 7 dias receberia a nota fiscal. Procede que, o envio da nota não foi realizado, e mesmo após contatar a empresa, o fornecedor se negou a emitir a nota. Que medidas posso tomar?",
+      "Comprei determinado mercadoria em uma estabelecimento. No ato da compra, fui informada que em até 7 dias receberia a nota fiscal. Procede que, o envio da nota não foi realizado, e mesmo após contatar a estabelecimento, o fornecedor se negou a emitir a nota. Que medidas posso tomar?",
+      "Preciso de ajuda com determinado produto em uma loja. No ato da compra, fui informada que em até 7 dias receberia a nota fiscal. Procede que, o envio da nota não foi realizado, e mesmo após contatar a loja, o fornecedor se negou a emitir a nota. Que medidas posso tomar.",
+      "Oi, pode me ajudar?"
+    ]
+  },
+  {
+    "intent": "direito_imobiliario_nao_amparado_pelo_procon_cdc",
+    "answer": "Em casos que envolvam o direito imobiliário, o mesmo será regido pela LEI No 8.245, DE 18  DE OUTUBRO DE 1991., conhecida como Lei do Inquilinato. Neste caso, o PROCON não poderá intervir ou orientar o consumidor, pois o mesmo deverá ser orientado pela legislação específica.",
+    "questions": [
+      "Direito imobiliário não amparado pelo PROCON/CDC",
+      "Quero orientação sobre direito imobiliário não amparado pelo PROCON/CDC.",
+      "O consumidor tem direito em caso de direito imobiliário não amparado pelo PROCON/CDC?",
+      "O que o consumidor pode exigir em caso de direito imobiliário não amparado pelo PROCON/CDC?",
+      "A empresa pode se recusar a resolver direito imobiliário não amparado pelo PROCON/CDC?",
+      "Existe alguma regra sobre direito imobiliário não amparado pelo PROCON/CDC?",
+      "Posso abrir reclamação no Procon sobre direito imobiliário não amparado pelo PROCON/CDC?",
+      "Quais provas ou documentos ajudam em uma reclamação sobre direito imobiliário não amparado pelo PROCON/CDC?",
+      "Direito imobiliário não amparado pelo órgão de defesa do consumidor/CDC",
+      "Boa noite"
+    ]
+  },
+  {
+    "intent": "ola",
+    "answer": "Olá, tudo bem?",
+    "questions": [
+      "Olá",
+      "Preciso resolver uma situação de ola.",
+      "Como funciona ola?",
+      "Como faço para registrar uma reclamação sobre ola?",
+      "Quais são meus direitos sobre ola?",
+      "Quero orientação sobre ola.",
+      "O que fazer quando acontece ola?",
+      "Posso abrir reclamação no Procon sobre ola?",
+      "Preciso de ajuda com ola."
+    ]
+  },
+  {
+    "intent": "oi",
+    "answer": "Olá, tudo bem?",
+    "questions": [
+      "Oi",
+      "Gostaria de saber sobre oi.",
+      "Tenho uma dúvida sobre oi.",
+      "Como funciona oi?",
+      "Preciso de ajuda com oi.",
+      "O que fazer quando acontece oi?",
+      "Quais provas ou documentos ajudam em uma reclamação sobre oi?",
+      "Posso reclamar se tiver problema com oi?",
+      "Quais são meus direitos sobre oi?",
+      "Como resolver um problema relacionado a oi?"
+    ]
+  },
+  {
+    "intent": "bom_dia",
+    "answer": "Olá, tudo bem?",
+    "questions": [
+      "Bom dia",
+      "Quais provas ou documentos ajudam em uma reclamação sobre bom dia?",
+      "O que fazer quando acontece bom dia?",
+      "Oi",
+      "Olá, preciso de ajuda",
+      "Oi, pode me ajudar?",
+      "Como resolver um problema relacionado a bom dia?",
+      "Boa tarde",
+      "Quais são meus direitos sobre bom dia?"
+    ]
+  },
+  {
+    "intent": "boa_tarde",
+    "answer": "Olá, tudo bem?",
+    "questions": [
+      "Boa tarde",
+      "Bom dia",
+      "Como devo proceder em caso de boa tarde?",
+      "Tenho uma dúvida sobre boa tarde.",
+      "Posso reclamar se tiver problema com boa tarde?",
+      "Como resolver um problema relacionado a boa tarde?",
+      "A empresa pode se recusar a resolver boa tarde?",
+      "Quero orientação sobre boa tarde.",
+      "Olá",
+      "Oi"
+    ]
+  },
+  {
+    "intent": "boa_noite",
+    "answer": "Olá, tudo bem?",
+    "questions": [
+      "Boa noite",
+      "O que o consumidor pode exigir em caso de boa noite?",
+      "Preciso de ajuda com boa noite.",
+      "Gostaria de saber sobre boa noite.",
+      "Posso reclamar se tiver problema com boa noite?",
+      "O que a lei diz sobre boa noite?",
+      "Quais são meus direitos sobre boa noite?",
+      "O consumidor tem direito em caso de boa noite?",
+      "Olá, preciso de ajuda"
+    ]
+  }
+]
