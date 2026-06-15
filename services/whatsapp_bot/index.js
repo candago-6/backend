@@ -173,6 +173,12 @@ client.on('message_create', async (msg) => {
             return;
         }
 
+        if (msg.body === '#fallback') {
+            await axios.post(`${MANAGER_URL}/conversations/${conv.id}/update-status?status=waiting_human`);
+            await botSend(msg.to, '🔁 *Atendimento marcado como pendente para um atendente humano.*');
+            return;
+        }
+
         if (!msg.body.startsWith('!') && !msg.body.startsWith('#')) {
             if (conv.status === 'waiting_human' || conv.status === 'open' || conv.status === 'confirming_closure') {
                 console.log(`[Handover] SUCESSO! Mudando usuário ${user.id} para human_handover.`);
