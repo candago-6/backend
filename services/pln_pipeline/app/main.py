@@ -540,8 +540,8 @@ def distilbert_answer(payload: PreprocessingRequest) -> ClassResponseOnly:
 
     try:
         pipeline = get_distilbert_pipeline()
-        class_response = pipeline.chat(payload.raw_text)
+        class_response_text, is_fallback = pipeline.chat(payload.raw_text)
     except Exception as exc:
         raise HTTPException(status_code=500, detail=str(exc)) from exc
 
-    return ClassResponseOnly(class_response=class_response)
+    return ClassResponseOnly(class_response=class_response_text, is_fallback=is_fallback)

@@ -117,13 +117,14 @@ class DistilBertPipeline:
         answer = self._intent_to_answer[intent]
         return intent, answer, confidence
 
-    def chat(self, question: str) -> str:
+    def chat(self, question: str) -> tuple[str, bool]:
         _, answer, confidence = self.predict(question)
         if confidence < self.config.confidence_threshold:
             return (
                 "Desculpe, nao encontrei uma resposta "
                 f"(confianca={confidence:.2%} < "
                 f"threshold={self.config.confidence_threshold:.0%}). "
-                "Tente reformular sua pergunta."
+                "Tente reformular sua pergunta.",
+                True,
             )
-        return answer
+        return answer, False
