@@ -48,7 +48,8 @@ COPY package.json ./
 RUN npm install
 
 COPY . .
+RUN chmod +x entrypoint.sh
 
 EXPOSE 8003
 
-CMD ["npm", "start"]
+ENTRYPOINT ["./entrypoint.sh"]
