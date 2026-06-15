@@ -15,6 +15,7 @@ from app.models.rag_remote import RemoteRAGConfig, RemoteRAGPipeline
 from app.models.w2vec_pipe import W2VPipeline
 from app.models.schemas import (
     ClassResponseOnly,
+    FaqDatasetEntry,
     ItemSimilarity,
     PreprocessingRequest,
     PreprocessingResponse,
@@ -545,3 +546,43 @@ def distilbert_answer(payload: PreprocessingRequest) -> ClassResponseOnly:
         raise HTTPException(status_code=500, detail=str(exc)) from exc
 
     return ClassResponseOnly(class_response=class_response_text, is_fallback=is_fallback)
+
+
+# FAQ Dataset Live-Enrichment Endpoint
+FAQ_DATASET_PATH = Path(__file__).resolve().parent.parent / "training" / "datasets" / "faq_dataset_v4.json"
+
+
+@app.post("/api/faq-dataset/entries", response_model=FaqDatasetEntry)
+def add_faq_dataset_entry(entry: FaqDatasetEntry) -> FaqDatasetEntry:
+    """Append or merge a FAQ entry into the live dataset file.
+
+    If an entry with the same *intent* already exists, the new questions are
+    merged (deduplicated) into the existing entry.  Otherwise a brand-new
+    entry is appended to the dataset array.
+    """
+    if not FAQ_DATASET_PATH.exists():
+        raise HTTPException(status_code=500, detail="FAQ dataset file not found on disk.")
+
+    try:
+        dataset: list[dict] = json.loads(FAQ_DATASET_PATH.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        raise HTTPException(status_code=500, detail="FAQ dataset JSON is corrupt.") from exc
+
+    # Check for existing intent to merge
+    existing = next((e for e in dataset if e.get("intent") == entry.intent), None)
+
+    if existing:
+        current_questions: set[str] = set(existing.get("questions", []))
+        new_questions = [q for q in entry.questions if q not in current_questions]
+        existing["questions"].extend(new_questions)
+        # Update the answer to the latest version
+        existing["answer"] = entry.answer
+    else:
+        dataset.append(entry.model_dump())
+
+    FAQ_DATASET_PATH.write_text(
+        json.dumps(dataset, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+
+    return entry
