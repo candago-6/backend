@@ -10,7 +10,7 @@ class DistilBertConfig:
     model_path: Path
     dataset_path: Path
     max_length: int = 96
-    confidence_threshold: float = 0.20
+    confidence_threshold: float = 0.60
     temperature: float = 1.5
 
     def __post_init__(self) -> None:
@@ -120,10 +120,10 @@ class DistilBertPipeline:
     def chat(self, question: str) -> tuple[str, bool]:
         _, answer, confidence = self.predict(question)
         if confidence < self.config.confidence_threshold:
+            print(f"(confianca={confidence:.2%} < "
+                f"threshold={self.config.confidence_threshold:.0%}). ")
             return (
-                "Desculpe, nao encontrei uma resposta "
-                f"(confianca={confidence:.2%} < "
-                f"threshold={self.config.confidence_threshold:.0%}). "
+                "Desculpe, não encontrei uma resposta. "
                 "Tente reformular sua pergunta.",
                 True,
             )
