@@ -49,7 +49,7 @@ DEFAULT_REMOTE_RAG_CACHE_DIR = (
 )
 DEFAULT_DISTILBERT_MODEL_PATH = Path(__file__).resolve().parent / "faq_model"
 DEFAULT_DISTILBERT_DATASET_PATH = (
-    Path(__file__).resolve().parent / "lm_datasets" / "distilbert_dataset.json"
+    Path(__file__).resolve().parent / "lm_datasets" / "faq_dataset_v4.json"
 )
 
 KNN_MIN_TOP_SIMILARITY = 0.18
@@ -268,6 +268,15 @@ def get_rag_remote_pipeline() -> RemoteRAGPipeline:
         config = RemoteRAGConfig(
             pdf_path=DEFAULT_FAQ_PDF_PATH,
             cache_dir=DEFAULT_REMOTE_RAG_CACHE_DIR,
+            embedding_model=os.getenv(
+                "RAG_EMBEDDING_MODEL",
+                "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2",
+            ),
+            generation_model=os.getenv("GEMINI_MODEL", "gemini-2.5-flash"),
+            generation_base_url=os.getenv(
+                "GEMINI_BASE_URL",
+                "https://generativelanguage.googleapis.com/v1beta/openai/",
+            ),
         )
         REMOTE_RAG_PIPELINE = RemoteRAGPipeline(config)
     return REMOTE_RAG_PIPELINE
