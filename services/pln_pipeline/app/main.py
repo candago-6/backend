@@ -47,9 +47,9 @@ DEFAULT_RAG_CACHE_DIR = (
 DEFAULT_REMOTE_RAG_CACHE_DIR = (
     Path(__file__).resolve().parent / "utils" / "faq_fonte_rag_remote_index"
 )
-DEFAULT_DISTILBERT_MODEL_PATH = Path(__file__).resolve().parent / "faq_model"
+DEFAULT_DISTILBERT_MODEL_PATH = Path(__file__).resolve().parent / "faq_model_v5"
 DEFAULT_DISTILBERT_DATASET_PATH = (
-    Path(__file__).resolve().parent / "lm_datasets" / "faq_dataset_v4.json"
+    Path(__file__).resolve().parent / "lm_datasets" / "faq_dataset_v5.json"
 )
 
 KNN_MIN_TOP_SIMILARITY = 0.18
