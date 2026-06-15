@@ -10,7 +10,7 @@ class DistilBertConfig:
     model_path: Path
     dataset_path: Path
     max_length: int = 96
-    confidence_threshold: float = 0.60
+    confidence_threshold: float = 0.62
     temperature: float = 1.5
 
     def __post_init__(self) -> None:

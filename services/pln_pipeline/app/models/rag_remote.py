@@ -339,7 +339,7 @@ class RemoteRAGPipeline:
             "Responda em portugues de forma objetiva. "
             "Use apenas o contexto fornecido. "
             "Se nao houver informacao suficiente, responda: "
-            '"Não encontrei essa informação em minha base dados..."'
+            '"Não encontrei essa informação em minha base dados. Redirecionando para atendimento humano..."'
         )
         user_input = (
             f"CONTEXTO:\n{context}\n\n"

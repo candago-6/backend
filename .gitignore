@@ -3,3 +3,5 @@ node_modules/
 .wwebjs_cache/
 .env
 venv
+faq_model_v4
+faq_model_v5
