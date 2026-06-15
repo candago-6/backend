@@ -79,21 +79,6 @@ environment:
   - FILTER_KEYWORD=SuaKeywordAqui
 ```
 
-## Health checks
-
-- `http://localhost:8001/api/health` → PLN Pipeline
-- `http://localhost:8002/api/v1/health` → Service Manager (Gateway)
-- `http://localhost:8003/api/v1/health` → WhatsApp Bot
-
-Exemplo de resposta:
-
-```json
-{
-    "status": "ok",
-    "service": "pln-pipeline"
-}
-```
-
 ## Endpoints do Gateway (service-manager)
 
 ### `POST /api/v1/process-message?keyword={keyword}`
@@ -127,6 +112,7 @@ Recebe uma mensagem do WhatsApp, aplica o filtro de keyword e orquestra o proces
 | `POST` | `/api/w2vec/knn` | Word2Vec com KNN |
 | `POST` | `/api/rag` | Resposta via LLM com RAG local (PDF) |
 | `POST` | `/api/rag_remote` | Resposta via LLM com RAG remoto |
+| `POST` | `/api/distilbert` | Resposta via IA Local com FineTuning |
 
 ## Estrutura do projeto
 
