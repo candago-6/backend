@@ -16,8 +16,10 @@ import numpy as np
 class RemoteRAGConfig:
     pdf_path: Path
     cache_dir: Path
-    embedding_model: str = "text-embedding-3-small"
-    generation_model: str = "gpt-4.1-mini"
+    embedding_model: str = "sentence-transformers/paraphrase-multilingual-MiniLM-L12-v2"
+    generation_model: str = "gemini-2.5-flash"
+    generation_base_url: str = "https://generativelanguage.googleapis.com/v1beta/openai/"
+    generation_api_key_env: str = "GEMINI_API_KEY"
     top_k: int = 8
     min_score: float = 0.2
     max_context_chars: int = 8000
@@ -268,7 +270,8 @@ class RemoteRAGPipeline:
         self.index = None
         self.chunks: list[RAGChunk] = []
         self._prepared = False
-        self._client = None
+        self._generation_client = None
+        self._embedding_model = None
 
     def prepare(self) -> None:
         if self._prepared:
@@ -278,7 +281,8 @@ class RemoteRAGPipeline:
             raise ValueError(f"PDF not found: {self.config.pdf_path}")
 
         self.config.cache_dir.mkdir(parents=True, exist_ok=True)
-        self._client = self._build_client()
+        self._generation_client = self._build_generation_client()
+        self._embedding_model = self._build_embedding_model()
 
         fingerprint = make_fingerprint(self.config.pdf_path, self.config)
         cached = load_cached_index(self.config.cache_dir, fingerprint)
@@ -343,14 +347,16 @@ class RemoteRAGPipeline:
             "RESPOSTA:"
         )
 
-        resp = self._client.responses.create(
+        resp = self._generation_client.chat.completions.create(
             model=self.config.generation_model,
-            instructions=instructions,
-            input=user_input,
+            messages=[
+                {"role": "system", "content": instructions},
+                {"role": "user", "content": user_input},
+            ],
             temperature=0.0,
         )
 
-        answer = clean_answer(resp.output_text or "")
+        answer = clean_answer(resp.choices[0].message.content or "")
         if not answer:
             fallback = fallback_answer_from_hits(hits)
             if fallback:
@@ -358,47 +364,53 @@ class RemoteRAGPipeline:
 
         return answer, hits
 
-    def _build_client(self):
+    def _build_generation_client(self):
         from openai import OpenAI
 
-        api_key = os.getenv("OPENAI_API_KEY")
+        api_key = os.getenv(self.config.generation_api_key_env)
         if not api_key:
-            raise ValueError("OPENAI_API_KEY is not set. Configure it in the .env file.")
-        return OpenAI(api_key=api_key)
+            raise ValueError(
+                f"{self.config.generation_api_key_env} is not set. "
+                "Configure it in the .env file."
+            )
+        return OpenAI(
+            api_key=api_key,
+            base_url=self.config.generation_base_url,
+        )
+
+    def _build_embedding_model(self):
+        from sentence_transformers import SentenceTransformer
+
+        return SentenceTransformer(self.config.embedding_model, device="cpu")
 
     def _encode_chunks(self, chunks: list[RAGChunk]) -> np.ndarray:
         if not chunks:
-            return np.zeros((0, 1), dtype=np.float32)
+            dim = self._embedding_model.get_sentence_embedding_dimension()
+            return np.zeros((0, dim), dtype=np.float32)
 
         texts = [normalize_text(chunk.text) for chunk in chunks]
-        embeddings = self._embed_texts(texts)
-        return embeddings
+        return self._embed_texts(texts)
 
     def _encode_query(self, question: str) -> np.ndarray:
         text = normalize_text(question)
         return self._embed_texts([text])
 
-    def _embed_texts(self, texts: list[str], batch_size: int = 128) -> np.ndarray:
-        vectors: list[list[float]] = []
-        for i in range(0, len(texts), batch_size):
-            batch = texts[i : i + batch_size]
-            resp = self._client.embeddings.create(
-                model=self.config.embedding_model,
-                input=batch,
-            )
-            vectors.extend([item.embedding for item in resp.data])
-
-        embeddings = np.array(vectors, dtype=np.float32)
-
-        import faiss
-
-        faiss.normalize_L2(embeddings)
-        return embeddings
+    def _embed_texts(self, texts: list[str]) -> np.ndarray:
+        embeddings = self._embedding_model.encode(
+            texts,
+            convert_to_numpy=True,
+            normalize_embeddings=True,
+        )
+        return embeddings.astype(np.float32)
 
     def _build_faiss_index(self, embeddings: np.ndarray):
         import faiss
 
-        dim = int(embeddings.shape[1]) if embeddings.size else 1
+        dim = (
+            int(embeddings.shape[1])
+            if embeddings.size
+            else int(self._embedding_model.get_sentence_embedding_dimension())
+        )
         index = faiss.IndexFlatIP(dim)
         if embeddings.size:
             index.add(embeddings)
