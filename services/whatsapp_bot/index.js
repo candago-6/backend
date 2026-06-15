@@ -283,7 +283,11 @@ client.on('message', async (msg) => {
             if (isFallback && c.failed_attempts === 1) {
                 try {
                     const rag = await axios.post('http://pln-pipeline:8001/api/rag_remote', { question: msg.body, top_k: 3 }, { timeout: 45000 });
-                    if (rag.data.answer && !rag.data.answer.includes("não encontrei")) {
+                    const ragAnswer = (rag.data.answer || '').toLowerCase();
+                    // Cobre as duas variantes que o pipeline retorna quando não acha
+                    // resposta: "Nao encontrei..." (sem chunks) e "Não encontrei..." (LLM).
+                    const ragMissed = ragAnswer.includes('nao encontrei') || ragAnswer.includes('não encontrei');
+                    if (rag.data.answer && !ragMissed) {
                         reply = "*[IA Avançada - Contingência]* " + rag.data.answer;
                         isFallback = false;
                     }
