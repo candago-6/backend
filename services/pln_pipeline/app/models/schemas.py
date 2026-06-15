@@ -33,6 +33,7 @@ class PreprocessingSummaryResponse(BaseModel):
 
 class ClassResponseOnly(BaseModel):
     class_response: str
+    is_fallback: bool = False
 
 
 class RAGRequest(BaseModel):

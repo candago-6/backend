@@ -53,7 +53,7 @@ services:
     ports:
       - "8003:8003"
     environment:
-      PLN_URL: http://pln-pipeline:8001/api/fasttext/knn
+      PLN_URL: http://pln-pipeline:8001/api/distilbert
       MANAGER_URL: http://service-manager:8002/api/v1
       BOT_SECRET: ${BOT_SECRET:-dev-bot-secret-change-me}
     volumes:

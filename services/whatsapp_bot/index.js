@@ -276,9 +276,9 @@ client.on('message', async (msg) => {
 
             if (isFallback && c.failed_attempts === 1) {
                 try {
-                    const rag = await axios.post(PLN_URL.replace('/fasttext/knn', '/rag'), { question: msg.body, top_k: 3 }, { timeout: 45000 });
+                    const rag = await axios.post('http://pln-pipeline:8001/api/rag_remote', { question: msg.body, top_k: 3 }, { timeout: 45000 });
                     if (rag.data.answer && !rag.data.answer.includes("não encontrei")) {
-                        reply = "*[IA Avançada]* " + rag.data.answer;
+                        reply = "*[IA Avançada - Contingência]* " + rag.data.answer;
                         isFallback = false;
                     }
                 } catch (e) {}
