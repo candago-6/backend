@@ -39,6 +39,7 @@ services:
       ADMIN_PASSWORD: ${ADMIN_PASSWORD:-admin123}
       BOT_URL: ${BOT_URL:-http://whatsapp-bot:8003}
       BOT_SECRET: ${BOT_SECRET:-dev-bot-secret-change-me}
+      PLN_URL: ${PLN_URL:-http://pln-pipeline:8001}
     depends_on:
       - db
     networks:

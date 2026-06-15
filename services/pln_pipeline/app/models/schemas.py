@@ -56,3 +56,9 @@ class RAGSource(BaseModel):
 class RAGResponse(BaseModel):
     answer: str
     sources: list[RAGSource]
+
+
+class FaqDatasetEntry(BaseModel):
+    intent: str = Field(..., min_length=1, description="Slug identifier for the intent")
+    answer: str = Field(..., min_length=1, description="Bot answer for this intent")
+    questions: list[str] = Field(..., min_length=1, description="User questions that map to this intent")

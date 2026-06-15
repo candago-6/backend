@@ -1,4 +1,6 @@
 import os
+import re
+import unicodedata
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 from typing import Literal, Optional
@@ -34,6 +36,7 @@ class AgentMessageInput(BaseModel):
 
 BOT_URL = os.getenv("BOT_URL", "http://whatsapp-bot:8003")
 BOT_SECRET = os.getenv("BOT_SECRET", "dev-bot-secret-change-me")
+PLN_URL = os.getenv("PLN_URL", "http://pln-pipeline:8001")
 
 
 def _chat_id(user: User) -> str:
@@ -50,6 +53,51 @@ def send_whatsapp_message(chat_id: str, text: str) -> None:
         timeout=15.0,
     )
     resp.raise_for_status()
+
+
+def _make_intent_slug(text: str, max_length: int = 60) -> str:
+    """Generate a snake_case slug from free-form text, stripping accents."""
+    # Remove accents
+    nfkd = unicodedata.normalize("NFKD", text)
+    ascii_text = nfkd.encode("ascii", "ignore").decode("ascii").lower()
+    # Keep only word characters and spaces
+    ascii_text = re.sub(r"[^\w\s]", "", ascii_text)
+    slug = "_".join(ascii_text.split())
+    return slug[:max_length].rstrip("_")
+
+
+def _enrich_faq_dataset(conversation_id: int, session: Session) -> None:
+    """Extract user questions and bot answers from the conversation and send
+    them to the PLN pipeline to enrich the FAQ dataset."""
+    messages = session.exec(
+        select(Message)
+        .where(Message.conversation_id == conversation_id)
+        .order_by(Message.timestamp)
+    ).all()
+
+    user_questions = [m.content for m in messages if m.role == "user"]
+    bot_answers = [m.content for m in messages if m.role == "bot"]
+
+    if not user_questions or not bot_answers:
+        return
+
+    # Use the first bot answer as the canonical answer
+    answer = bot_answers[0]
+    intent = _make_intent_slug(user_questions[0])
+
+    if not intent:
+        return
+
+    try:
+        resp = httpx.post(
+            f"{PLN_URL}/api/faq-dataset/entries",
+            json={"intent": intent, "answer": answer, "questions": user_questions},
+            timeout=15.0,
+        )
+        resp.raise_for_status()
+    except httpx.HTTPError as exc:
+        # Best-effort: do not break the feedback flow if PLN is unreachable.
+        print(f"[enrich_faq] failed to push FAQ entry: {exc}")
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -421,12 +469,18 @@ def create_feedback(feedback: Feedback, session: Session = Depends(get_session))
         session.add(existing_feedback)
         session.commit()
         session.refresh(existing_feedback)
-        return existing_feedback
+        saved = existing_feedback
     else:
         session.add(feedback)
         session.commit()
         session.refresh(feedback)
-        return feedback
+        saved = feedback
+
+    # Enrich the FAQ dataset with positive feedback conversations
+    if saved.rating > 3:
+        _enrich_faq_dataset(saved.conversation_id, session)
+
+    return saved
 
 
 # Message Evaluation Endpoints
