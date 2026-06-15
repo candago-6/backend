@@ -30,6 +30,7 @@ def create_db_and_tables():
                 session.execute(text("ALTER TABLE conversation ADD COLUMN IF NOT EXISTS patience_msg_sent BOOLEAN DEFAULT FALSE"))
                 session.execute(text("ALTER TABLE conversation ADD COLUMN IF NOT EXISTS is_onboarded BOOLEAN DEFAULT FALSE"))
                 session.execute(text("ALTER TABLE conversation ADD COLUMN IF NOT EXISTS updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP"))
+                session.execute(text('ALTER TABLE conversation ADD COLUMN IF NOT EXISTS assigned_admin_id VARCHAR REFERENCES admin_users(id)'))
                 session.commit()
             
             print("Database tables created and migrated successfully!")
