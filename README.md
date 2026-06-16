@@ -94,6 +94,75 @@ Exemplo de resposta:
 }
 ```
 
+## Como rodar os testes
+
+### Service Manager
+
+A suíte de CRUD dos usuários administrativos fica em `services/service_manager/tests`.
+Ela usa SQLite em memória e sobrescreve as dependências da API, então não precisa subir o Postgres.
+
+Se estiver em qualquer subpasta do repositório, volte para a raiz antes de rodar:
+
+```bash
+cd "$(git rev-parse --show-toplevel)"
+docker compose build service-manager
+docker compose run --rm --no-deps -v "$PWD/services/service_manager/tests:/app/tests" service-manager pytest /app/tests
+```
+
+Ou rode de qualquer subpasta usando o caminho da raiz do Git diretamente:
+
+```bash
+docker compose build service-manager
+docker compose run --rm --no-deps -v "$(git rev-parse --show-toplevel)/services/service_manager/tests:/app/tests" service-manager pytest /app/tests
+```
+
+Resultado esperado:
+
+```text
+8 passed
+```
+
+### PLN Pipeline
+
+Os scripts de teste ficam em `services/pln_pipeline/app/tests`.
+Para os testes que chamam endpoints HTTP, suba o serviço antes:
+
+```bash
+docker compose up --build pln-pipeline
+```
+
+Em outro terminal, rode os scripts a partir da pasta `backend`:
+
+```bash
+docker compose exec pln-pipeline python -m unittest app.tests.test_retraining_dataset
+```
+
+```bash
+docker compose exec pln-pipeline python -m unittest app.tests.test_rag_remote
+```
+
+```bash
+docker compose exec pln-pipeline python app/tests/pln_knn_smoke_test.py --route /api/fasttext/knn --limit 10
+```
+
+```bash
+docker compose exec pln-pipeline python app/tests/pln_knn_smoke_test.py --route /api/w2vec/knn --limit 10
+```
+
+```bash
+docker compose exec pln-pipeline python app/tests/pln_distilbert_knn_comparison_test.py --knn-route /api/fasttext/knn --questions-per-intent 1 --limit 20
+```
+
+```bash
+docker compose exec pln-pipeline python app/tests/pln_distilbert_knn_comparison_test.py --knn-route /api/w2vec/knn --questions-per-intent 1 --limit 20
+```
+
+Também é possível apontar os scripts para outra URL usando `--base-url`, por exemplo:
+
+```bash
+python services/pln_pipeline/app/tests/pln_knn_smoke_test.py --base-url http://localhost:8001 --route /api/fasttext/knn --limit 10
+```
+
 ## Endpoints do Gateway (service-manager)
 
 ### `POST /api/v1/process-message?keyword={keyword}`
@@ -127,6 +196,31 @@ Recebe uma mensagem do WhatsApp, aplica o filtro de keyword e orquestra o proces
 | `POST` | `/api/w2vec/knn` | Word2Vec com KNN |
 | `POST` | `/api/rag` | Resposta via LLM com RAG local (PDF) |
 | `POST` | `/api/rag_remote` | Resposta via LLM com RAG remoto |
+| `POST` | `/api/retraining-dataset` | Recebe `question` e `answer` do Frontend e popula o dataset de re-treinamento |
+
+### `POST /api/retraining-dataset`
+
+Recebe pares revisados pelo Frontend para alimentar o dataset usado em re-treinamento.
+
+**Request body:**
+```json
+{
+    "question": "Como cancelar uma cobrança indevida no cartão?",
+    "answer": "Procure o fornecedor e registre reclamação com os comprovantes."
+}
+```
+
+**Resposta:**
+```json
+{
+    "message": "Registro salvo no dataset de re-treinamento.",
+    "total_records": 1,
+    "record": {
+        "question": "Como cancelar uma cobrança indevida no cartão?",
+        "answer": "Procure o fornecedor e registre reclamação com os comprovantes."
+    }
+}
+```
 
 ## Estrutura do projeto
 

@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 
 
 class PreprocessingRequest(BaseModel):
@@ -56,3 +56,27 @@ class RAGSource(BaseModel):
 class RAGResponse(BaseModel):
     answer: str
     sources: list[RAGSource]
+
+
+class RetrainingDatasetRequest(BaseModel):
+    question: str = Field(..., min_length=1, description="Question sent by the frontend")
+    answer: str = Field(..., min_length=1, description="Expected answer for retraining")
+
+    @field_validator("question", "answer")
+    @classmethod
+    def reject_blank_text(cls, value: str) -> str:
+        value = value.strip()
+        if not value:
+            raise ValueError("Field cannot be blank")
+        return value
+
+
+class RetrainingDatasetRecord(BaseModel):
+    question: str
+    answer: str
+
+
+class RetrainingDatasetResponse(BaseModel):
+    message: str
+    total_records: int
+    record: RetrainingDatasetRecord

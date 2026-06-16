@@ -22,6 +22,8 @@ from app.models.schemas import (
     RAGRequest,
     RAGResponse,
     RAGSource,
+    RetrainingDatasetRequest,
+    RetrainingDatasetResponse,
 )
 
 app = FastAPI(title="PLN Pipeline Service", version="0.1.0")
@@ -50,6 +52,12 @@ DEFAULT_REMOTE_RAG_CACHE_DIR = (
 DEFAULT_DISTILBERT_MODEL_PATH = Path(__file__).resolve().parent / "faq_model_v5"
 DEFAULT_DISTILBERT_DATASET_PATH = (
     Path(__file__).resolve().parent / "lm_datasets" / "faq_dataset_v5.json"
+)
+DEFAULT_RETRAINING_DATASET_PATH = (
+    Path(__file__).resolve().parent / "lm_datasets" / "retraining_dataset.json"
+)
+RETRAINING_DATASET_PATH = Path(
+    os.getenv("RETRAINING_DATASET_PATH", str(DEFAULT_RETRAINING_DATASET_PATH))
 )
 
 KNN_MIN_TOP_SIMILARITY = 0.18
@@ -251,6 +259,46 @@ def truncate_snippet(text: str, max_chars: int = 300) -> str:
     return trimmed + "..."
 
 
+def load_retraining_dataset(dataset_path: Path) -> list[dict[str, str]]:
+    if not dataset_path.exists():
+        return []
+
+    try:
+        data = json.loads(dataset_path.read_text(encoding="utf-8"))
+    except json.JSONDecodeError as exc:
+        raise ValueError("Retraining dataset JSON is invalid.") from exc
+
+    if not isinstance(data, list):
+        raise ValueError("Retraining dataset must be a JSON list.")
+
+    records: list[dict[str, str]] = []
+    for entry in data:
+        if not isinstance(entry, dict):
+            continue
+        question = str(entry.get("question") or "").strip()
+        answer = str(entry.get("answer") or "").strip()
+        if question and answer:
+            records.append({"question": question, "answer": answer})
+    return records
+
+
+def save_retraining_record(
+    payload: RetrainingDatasetRequest,
+    dataset_path: Path | None = None,
+) -> tuple[dict[str, str], int]:
+    dataset_path = dataset_path or RETRAINING_DATASET_PATH
+    records = load_retraining_dataset(dataset_path)
+    record = {"question": payload.question, "answer": payload.answer}
+    records.append(record)
+
+    dataset_path.parent.mkdir(parents=True, exist_ok=True)
+    dataset_path.write_text(
+        json.dumps(records, ensure_ascii=False, indent=2) + "\n",
+        encoding="utf-8",
+    )
+    return record, len(records)
+
+
 def get_rag_pipeline() -> RAGPipeline:
     global RAG_PIPELINE
     if RAG_PIPELINE is None:
@@ -299,6 +347,22 @@ def get_distilbert_pipeline() -> DistilBertPipeline:
 @app.get("/api/health")
 def health_check() -> dict[str, str]:
     return {"status": "ok", "service": "pln-pipeline"}
+
+
+@app.post("/api/retraining-dataset", response_model=RetrainingDatasetResponse)
+def create_retraining_dataset_record(
+    payload: RetrainingDatasetRequest,
+) -> RetrainingDatasetResponse:
+    try:
+        record, total_records = save_retraining_record(payload)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    return RetrainingDatasetResponse(
+        message="Registro salvo no dataset de re-treinamento.",
+        total_records=total_records,
+        record=record,
+    )
 
 
 @app.post("/api/w2vec", response_model=PreprocessingResponse)
