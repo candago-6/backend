@@ -1,0 +1,22 @@
+# Unused model checkpoint (main.py references faq_model_v5 only)
+app/faq_model_v4/
+
+# Tests, incl. the checked-in virtualenv
+app/tests/
+
+# Secrets: keys are injected via docker-compose environment instead
+app/.env
+
+# Python bytecode
+**/__pycache__/
+**/*.pyc
+
+# Superseded training datasets (main.py uses faq_dataset_v5.json only)
+app/lm_datasets/distilbert_dataset*.json
+app/lm_datasets/faq_dataset_v2.json
+app/lm_datasets/faq_dataset_v3.json
+app/lm_datasets/faq_dataset_v4.json
+
+# Superseded corpora / label maps
+app/utils/duvidas_frequentes_clean_v2.txt
+app/utils/class_responses_old.json

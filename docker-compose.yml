@@ -20,6 +20,11 @@ services:
       dockerfile: Dockerfile
     ports:
       - "8001:8001"
+    # app/.env is excluded from the image (.dockerignore) so the API keys are not
+    # baked into a layer; compose injects them at runtime instead.
+    env_file:
+      - path: ./services/pln_pipeline/app/.env
+        required: false
     networks:
       - assistente-whatsapp-net
 

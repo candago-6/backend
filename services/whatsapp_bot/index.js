@@ -14,11 +14,10 @@ const BOT_SECRET = process.env.BOT_SECRET || 'dev-bot-secret-change-me';
 let latestQR = null;
 const pendingBotMessages = new Set();
 
+// Sends into the chat the message came from. Deliberately not msg.reply(): that
+// needs msg.id._serialized, which is undefined on LID-addressed messages.
 async function botReply(msg, text) {
-    pendingBotMessages.add(text);
-    const reply = await msg.reply(text);
-    setTimeout(() => pendingBotMessages.delete(text), 5000);
-    return reply;
+    return botSend(msg.from, text);
 }
 
 async function botSend(chatId, text) {
@@ -49,6 +48,35 @@ app.get('/qr', async (req, res) => {
     res.send(pngBuffer);
 });
 app.listen(PORT, () => console.log(`Bot na porta ${PORT}. QR: http://localhost:${PORT}/qr`));
+
+// O WhatsApp migrou as conversas 1:1 para endereçamento LID, então as mensagens
+// recebidas chegam com `from` no formato <lid>@lid. O whatsapp-web.js 1.34.7 não
+// trata LID em getChat()/getContact(): getChatModel() estoura um erro minificado
+// ("r") nessas conversas. Resolvemos o LID para o JID de telefone aqui e evitamos
+// as duas chamadas. Enviar mensagem continua funcionando porque sendMessage usa
+// getChat com getAsModel:false, que não passa por getChatModel.
+const lidCache = new Map();
+async function lidToPhoneJid(id) {
+    if (!id || !id.endsWith('@lid')) return id;
+    if (lidCache.has(id)) return lidCache.get(id);
+
+    let resolved = id;
+    try {
+        const pn = await client.pupPage.evaluate((lid) => {
+            const wid = window.require('WAWebWidFactory').createWidFromWidLike(lid);
+            return window.require('WAWebLidMigrationUtils').toPn(wid)?._serialized ?? null;
+        }, id);
+        if (pn) resolved = pn;
+        else console.warn('[lidToPhoneJid] sem telefone para', id);
+    } catch (e) {
+        console.error('[lidToPhoneJid]', e?.message || e);
+    }
+
+    lidCache.set(id, resolved);
+    return resolved;
+}
+
+const isGroupId = (id) => typeof id === 'string' && id.endsWith('@g.us');
 
 // BUSCA UNIFICADA: Tenta achar o usuário por Telefone ou por WhatsApp ID (LID/JID)
 async function findUser(phone, whatsappId) {
@@ -129,7 +157,7 @@ async function startMonitor() {
                     await axios.post(`${MANAGER_URL}/conversations/${conv.id}/close`);
                 }
             }
-        } catch (e) {}
+        } catch (e) { console.error('[Monitor]', e?.stack || e?.message || e); }
     }, 60000);
 }
 
@@ -151,11 +179,9 @@ process.on('unhandledRejection', (err) => console.error('[unhandledRejection]', 
 client.on('message_create', async (msg) => {
     if (!msg.fromMe) return;
     try {
-        const chat = await msg.getChat();
-        if (chat.isGroup) return;
+        if (isGroupId(msg.to)) return;
 
-        const contact = await client.getContactById(msg.to);
-        const whatsappId = contact.id._serialized;
+        const whatsappId = await lidToPhoneJid(msg.to);
         // Extrai apenas os números do ID (antes do @) para garantir que temos o telefone real
         const phone = whatsappId.split('@')[0].replace(/\D/g, '');
 
@@ -186,18 +212,17 @@ client.on('message_create', async (msg) => {
                 await saveMessage(conv.id, 'bot', `[Atendimento Manual] ${msg.body}`);
             }
         }
-    } catch (e) {}
+    } catch (e) { console.error('[message_create]', e?.stack || e?.message || e); }
 });
 
 // 2. EVENTO: CLIENTE FALANDO
 client.on('message', async (msg) => {
   try {
-    const chat = await msg.getChat();
-    if (chat.isGroup) return;
+    if (isGroupId(msg.from)) return;
 
-    const contact = await msg.getContact();
-    const whatsappId = contact.id._serialized;
+    const whatsappId = await lidToPhoneJid(msg.author || msg.from);
     const phone = whatsappId.split('@')[0].replace(/\D/g, '');
+    console.log('[msg in]', msg.from, '->', whatsappId, 'type=', msg.type, 'body=', JSON.stringify(String(msg.body ?? '').slice(0, 60)));
 
     const user = await findUser(phone, whatsappId);
     const conv = user ? await findActiveConversation(user.id) : null;
@@ -262,8 +287,11 @@ client.on('message', async (msg) => {
     }
 
     if (msg.body.toLowerCase().includes('procon')) {
+        console.log('[procon] gatilho ok, resolvendo usuario', phone);
         const u = await getOrCreateUser(phone, whatsappId);
+        console.log('[procon] user', u?.id);
         const c = await getOrCreateConversation(u.id);
+        console.log('[procon] conversa', c?.id, 'onboarded=', c?.is_onboarded);
 
         if (!c.is_onboarded) {
             onboardingState.set(msg.from, { step: 'name' });
@@ -300,7 +328,17 @@ client.on('message', async (msg) => {
         }
     }
   } catch (e) {
-    console.error('[message handler]', e?.message || e);
+    console.error('[message handler]', {
+        message: e?.message,
+        stack: e?.stack,
+        from: msg?.from,
+        to: msg?.to,
+        author: msg?.author,
+        fromMe: msg?.fromMe,
+        type: msg?.type,
+        deviceType: msg?.deviceType,
+        id: msg?.id?._serialized,
+    });
   }
 });
 

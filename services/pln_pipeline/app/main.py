@@ -10,7 +10,6 @@ import numpy as np
 
 from app.models.distilbert import DistilBertConfig, DistilBertPipeline
 from app.models.fastText_pipe import FastTextPipeline
-from app.models.rag_pipeline import RAGConfig, RAGPipeline
 from app.models.rag_remote import RemoteRAGConfig, RemoteRAGPipeline
 from app.models.w2vec_pipe import W2VPipeline
 from app.models.schemas import (
@@ -43,9 +42,6 @@ DEFAULT_ITEM_RESPONSES_PATH = (
     Path(__file__).resolve().parent / "utils" / "item_responses.json"
 )
 DEFAULT_FAQ_PDF_PATH = Path(__file__).resolve().parent / "utils" / "faq_fonte.pdf"
-DEFAULT_RAG_CACHE_DIR = (
-    Path(__file__).resolve().parent / "utils" / "faq_fonte_rag_index"
-)
 DEFAULT_REMOTE_RAG_CACHE_DIR = (
     Path(__file__).resolve().parent / "utils" / "faq_fonte_rag_remote_index"
 )
@@ -64,7 +60,6 @@ KNN_MIN_TOP_SIMILARITY = 0.18
 KNN_MIN_TOP_MARGIN = 0.001
 KNN_MIN_CLASS_VOTE_RATIO = 1.0 / 3.0
 
-RAG_PIPELINE: RAGPipeline | None = None
 REMOTE_RAG_PIPELINE: RemoteRAGPipeline | None = None
 DISTILBERT_PIPELINE: DistilBertPipeline | None = None
 
@@ -297,17 +292,6 @@ def save_retraining_record(
         encoding="utf-8",
     )
     return record, len(records)
-
-
-def get_rag_pipeline() -> RAGPipeline:
-    global RAG_PIPELINE
-    if RAG_PIPELINE is None:
-        config = RAGConfig(
-            pdf_path=DEFAULT_FAQ_PDF_PATH,
-            cache_dir=DEFAULT_RAG_CACHE_DIR,
-        )
-        RAG_PIPELINE = RAGPipeline(config)
-    return RAG_PIPELINE
 
 
 def get_rag_remote_pipeline() -> RemoteRAGPipeline:
@@ -545,30 +529,6 @@ def preprocessing_fasttext_knn(
         class_response=class_response,
         is_fallback=is_fallback,
     )
-
-
-@app.post("/api/rag", response_model=RAGResponse)
-def rag_answer(payload: RAGRequest) -> RAGResponse:
-    if not payload.question.strip():
-        raise HTTPException(status_code=400, detail="Question is empty.")
-
-    try:
-        pipeline = get_rag_pipeline()
-        answer, hits = pipeline.ask(payload.question, top_k=payload.top_k)
-    except Exception as exc:
-        raise HTTPException(status_code=500, detail=str(exc)) from exc
-
-    sources = [
-        RAGSource(
-            source=hit.chunk.source,
-            page=hit.chunk.page,
-            score=hit.score,
-            snippet=truncate_snippet(hit.chunk.text),
-        )
-        for hit in hits
-    ]
-
-    return RAGResponse(answer=answer, sources=sources)
 
 
 @app.post("/api/rag_remote", response_model=RAGResponse)

@@ -44,8 +44,11 @@ RUN apt-get update && apt-get install -y \
     chromium \
     && rm -rf /var/lib/apt/lists/*
 
-COPY package.json ./
-RUN npm install
+# The lockfile is copied so the image is reproducible: whatsapp-web.js breaks
+# hard when it drifts out of step with WhatsApp Web, so the version must be
+# exactly what was tested, not whatever the range resolves to on rebuild day.
+COPY package.json package-lock.json ./
+RUN npm ci
 
 COPY . .
 RUN chmod +x entrypoint.sh
