@@ -61,6 +61,10 @@ services:
       PLN_URL: http://pln-pipeline:8001/api/distilbert
       MANAGER_URL: http://service-manager:8002/api/v1
       BOT_SECRET: ${BOT_SECRET:-dev-bot-secret-change-me}
+      # development: só responde quem escrever a palavra-chave (TRIGGER_KEYWORD,
+      # padrão "procon"), para o bot não responder contatos pessoais durante os
+      # testes. production: número dedicado, qualquer mensagem inicia atendimento.
+      BOT_MODE: ${BOT_MODE:-development}
     volumes:
       - wa_session:/app/.wwebjs_auth
     # Chromium needs time to flush its profile on shutdown; a SIGKILL here

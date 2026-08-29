@@ -13,6 +13,14 @@ const PLN_URL = process.env.PLN_URL || 'http://pln-pipeline:8001/api/fasttext/kn
 const MANAGER_URL = process.env.MANAGER_URL || 'http://service-manager:8002/api/v1';
 const BOT_SECRET = process.env.BOT_SECRET || 'dev-bot-secret-change-me';
 
+// A palavra-chave é uma trava de desenvolvimento, não uma regra de produto:
+// enquanto o bot roda num celular pessoal ele não pode responder todo mundo que
+// manda mensagem. Em produção o número é exclusivo do atendimento, então qualquer
+// mensagem já inicia a conversa. Para desligar a trava: BOT_MODE=production.
+const BOT_MODE = process.env.BOT_MODE || 'development';
+const IS_PRODUCTION = BOT_MODE === 'production';
+const TRIGGER_KEYWORD = (process.env.TRIGGER_KEYWORD || 'procon').toLowerCase();
+
 let latestQR = null;
 const pendingBotMessages = new Set();
 
@@ -49,7 +57,7 @@ app.get('/qr', async (req, res) => {
     res.setHeader('Content-Type', 'image/png');
     res.send(pngBuffer);
 });
-app.listen(PORT, () => console.log(`Bot na porta ${PORT}. QR: http://localhost:${PORT}/qr`));
+app.listen(PORT, () => console.log(`Bot na porta ${PORT} [modo: ${BOT_MODE}${IS_PRODUCTION ? '' : `, palavra-chave: ${TRIGGER_KEYWORD}`}]. QR: http://localhost:${PORT}/qr`));
 
 // O WhatsApp migrou as conversas 1:1 para endereçamento LID, então as mensagens
 // recebidas chegam com `from` no formato <lid>@lid. O whatsapp-web.js 1.34.7 não
@@ -77,6 +85,15 @@ async function lidToPhoneJid(id) {
     lidCache.set(id, resolved);
     return resolved;
 }
+
+// O RAG sinaliza "sem resposta" de duas formas: a determinística
+// "Nao encontrei essa informacao no documento." (rag_remote.py:311,334) e a que o
+// modelo gera, "Não encontrei essa informação em minha base dados..."
+// (rag_remote.py:342). O teste anterior — includes("não encontrei") — não pegava
+// nenhuma das duas: a primeira não tem acento, a segunda começa com N maiúsculo.
+// Por isso toda resposta vazia do RAG virava resposta boa e cancelava o handoff.
+const semAcento = (s) => String(s ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
+const ragSemResposta = (answer) => semAcento(answer).includes('nao encontrei');
 
 // Grupos, canais e status não são atendimento 1:1 e nunca devem entrar no fluxo.
 const isIgnorableChat = (id) =>
@@ -300,7 +317,7 @@ client.on('message', async (msg) => {
                 await axios.put(`${MANAGER_URL}/users/${u.id}`, { name: onboarding.name, cpf: onboarding.cpf });
                 await axios.post(`${MANAGER_URL}/conversations/${c.id}/mark-onboarded`);
                 onboardingState.delete(msg.from);
-                await botReply(msg, `Dados confirmados! Seu protocolo é: ${c.protocol}\n\nComo posso ajudar? (mencione "procon")`);
+                await botReply(msg, `Dados confirmados! Seu protocolo é: ${c.protocol}\n\nComo posso ajudar?`);
             } else if (resp.includes('não') || resp.includes('nao')) {
                 onboarding.step = 'name';
                 await botReply(msg, 'Entendido. Vamos recomeçar.\n\nQual o seu nome completo?');
@@ -333,12 +350,16 @@ client.on('message', async (msg) => {
         }
     }
 
-    if (msg.body.toLowerCase().includes('procon')) {
-        console.log('[procon] gatilho ok, resolvendo usuario', phone);
+    // Em produção qualquer mensagem é atendimento. Em desenvolvimento a palavra-chave
+    // só é exigida para *iniciar*: com uma conversa já aberta a pessoa não precisa
+    // repetir "procon" a cada pergunta.
+    const deveAtender = IS_PRODUCTION || Boolean(conv) || msg.body.toLowerCase().includes(TRIGGER_KEYWORD);
+    if (deveAtender) {
+        console.log('[atendimento] resolvendo usuario', phone);
         const u = await getOrCreateUser(phone, whatsappId);
-        console.log('[procon] user', u?.id);
+        console.log('[atendimento] user', u?.id);
         const c = await getOrCreateConversation(u.id);
-        console.log('[procon] conversa', c?.id, 'onboarded=', c?.is_onboarded);
+        console.log('[atendimento] conversa', c?.id, 'onboarded=', c?.is_onboarded);
 
         if (!c.is_onboarded) {
             onboardingState.set(msg.from, { step: 'name' });
@@ -358,7 +379,7 @@ client.on('message', async (msg) => {
             if (isFallback && c.failed_attempts === 1) {
                 try {
                     const rag = await axios.post('http://pln-pipeline:8001/api/rag_remote', { question: msg.body, top_k: 3 }, { timeout: 45000 });
-                    if (rag.data.answer && !rag.data.answer.includes("não encontrei")) {
+                    if (rag.data.answer && !ragSemResposta(rag.data.answer)) {
                         reply = "*[IA Avançada - Contingência]* " + rag.data.answer;
                         isFallback = false;
                     }
@@ -373,6 +394,8 @@ client.on('message', async (msg) => {
 
             await botReply(msg, reply);
         }
+    } else {
+        console.log('[ignorado] sem palavra-chave e sem conversa ativa:', whatsappId);
     }
   } catch (e) {
     console.error('[message handler]', {
