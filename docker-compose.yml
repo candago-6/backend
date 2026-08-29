@@ -63,6 +63,9 @@ services:
       BOT_SECRET: ${BOT_SECRET:-dev-bot-secret-change-me}
     volumes:
       - wa_session:/app/.wwebjs_auth
+    # Chromium needs time to flush its profile on shutdown; a SIGKILL here
+    # corrupts the saved session and forces a new QR scan.
+    stop_grace_period: 30s
     networks:
       - assistente-whatsapp-net
 

@@ -1,3 +1,5 @@
+const fs = require('fs');
+const path = require('path');
 const { Client, LocalAuth } = require('whatsapp-web.js');
 const qrcode = require('qrcode-terminal');
 const QRCode = require('qrcode');
@@ -76,7 +78,12 @@ async function lidToPhoneJid(id) {
     return resolved;
 }
 
-const isGroupId = (id) => typeof id === 'string' && id.endsWith('@g.us');
+// Grupos, canais e status não são atendimento 1:1 e nunca devem entrar no fluxo.
+const isIgnorableChat = (id) =>
+    typeof id !== 'string' ||
+    id.endsWith('@g.us') ||
+    id.endsWith('@newsletter') ||
+    id.endsWith('@broadcast');
 
 // BUSCA UNIFICADA: Tenta achar o usuário por Telefone ou por WhatsApp ID (LID/JID)
 async function findUser(phone, whatsappId) {
@@ -133,7 +140,12 @@ async function saveFeedback(conversationId, rating) {
 const onboardingState = new Map();
 const isValidCpf = (v) => v.replace(/\D/g, '').length === 11;
 
+// O whatsapp-web.js pode emitir 'ready' várias vezes na mesma sessão; sem esta
+// trava cada emissão criava mais um setInterval e o polling se multiplicava.
+let monitorStarted = false;
 async function startMonitor() {
+    if (monitorStarted) return;
+    monitorStarted = true;
     console.log('[Monitor] Vigilante iniciado.');
     setInterval(async () => {
         try {
@@ -168,9 +180,43 @@ const client = new Client({
     protocolTimeout: 120000,
 });
 
+const AUTH_DIR = path.join(process.cwd(), '.wwebjs_auth');
+
+// Apaga as credenciais salvas, mas preserva o próprio diretório: ele é o ponto de
+// montagem do volume wa_session e não pode ser removido.
+function wipeSession() {
+    try {
+        for (const entry of fs.readdirSync(AUTH_DIR)) {
+            fs.rmSync(path.join(AUTH_DIR, entry), { recursive: true, force: true });
+        }
+        console.log('[Client] sessao local apagada.');
+    } catch (e) {
+        console.error('[wipeSession]', e?.message || e);
+    }
+}
+
+// Depois de um disconnect o whatsapp-web.js tenta reinjetar na mesma página e
+// falha com "onQRChangedEvent already exists", deixando o cliente morto: nenhum
+// evento 'qr' novo é emitido e /qr nunca mais serve um código. Em vez de tentar
+// recuperar no mesmo processo, saímos e deixamos o restart do compose devolver um
+// Chromium limpo.
+let restarting = false;
+let shuttingDown = false;
+async function restartProcess(reason, wipe) {
+    if (restarting || shuttingDown) return;
+    restarting = true;
+    console.error(`[Client] reiniciando processo (${reason})`);
+    try { await client.destroy(); } catch (e) { console.error('[restart] destroy:', e?.message || e); }
+    // LOGOUT significa que o WhatsApp matou a sessão de vez: restaurar as
+    // credenciais salvas só entra em loop, então elas precisam ir embora.
+    if (wipe) wipeSession();
+    process.exit(1);
+}
+
 client.on('qr', (qr) => { latestQR = qr; qrcode.generate(qr, { small: true }); });
 client.on('ready', () => { latestQR = null; console.log('Bot pronto!'); startMonitor(); });
-client.on('disconnected', (reason) => console.error('[Client] desconectado:', reason));
+client.on('disconnected', (reason) => restartProcess(`desconectado: ${reason}`, String(reason) === 'LOGOUT'));
+client.on('auth_failure', (m) => restartProcess(`falha de autenticacao: ${m}`, true));
 
 // A single Chromium/CDP hiccup must not take the whole bot down.
 process.on('unhandledRejection', (err) => console.error('[unhandledRejection]', err));
@@ -179,7 +225,7 @@ process.on('unhandledRejection', (err) => console.error('[unhandledRejection]', 
 client.on('message_create', async (msg) => {
     if (!msg.fromMe) return;
     try {
-        if (isGroupId(msg.to)) return;
+        if (isIgnorableChat(msg.to)) return;
 
         const whatsappId = await lidToPhoneJid(msg.to);
         // Extrai apenas os números do ID (antes do @) para garantir que temos o telefone real
@@ -218,11 +264,12 @@ client.on('message_create', async (msg) => {
 // 2. EVENTO: CLIENTE FALANDO
 client.on('message', async (msg) => {
   try {
-    if (isGroupId(msg.from)) return;
+    if (isIgnorableChat(msg.from)) return;
 
     const whatsappId = await lidToPhoneJid(msg.author || msg.from);
     const phone = whatsappId.split('@')[0].replace(/\D/g, '');
-    console.log('[msg in]', msg.from, '->', whatsappId, 'type=', msg.type, 'body=', JSON.stringify(String(msg.body ?? '').slice(0, 60)));
+    // Sem o conteúdo da mensagem: os logs do container não são lugar para conversa alheia.
+    console.log('[msg in]', msg.from, '->', whatsappId, 'type=', msg.type);
 
     const user = await findUser(phone, whatsappId);
     const conv = user ? await findActiveConversation(user.id) : null;
@@ -341,5 +388,17 @@ client.on('message', async (msg) => {
     });
   }
 });
+
+// Sem isso o Chromium morre no SIGKILL e deixa o perfil sujo, o que invalida a
+// sessão e obriga a ler o QR de novo a cada restart.
+for (const signal of ['SIGTERM', 'SIGINT']) {
+    process.on(signal, async () => {
+        if (shuttingDown) return;
+        shuttingDown = true;
+        console.log(`[${signal}] encerrando o cliente...`);
+        try { await client.destroy(); } catch (e) { console.error('[shutdown]', e?.message || e); }
+        process.exit(0);
+    });
+}
 
 client.initialize();
