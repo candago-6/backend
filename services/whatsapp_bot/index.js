@@ -176,7 +176,10 @@ async function startMonitor() {
                 const u = (await axios.get(`${MANAGER_URL}/users/${conv.user_id}`)).data;
                 const chatId = u.whatsapp_id || `${u.phone}@c.us`;
 
-                if (conv.status === 'open' && diff >= 1) {
+                // 5 min de silêncio, não 1: quem está digitando uma dúvida real
+                // leva mais de um minuto e não pode receber "seu atendimento acabou?"
+                // no meio da frase.
+                if (conv.status === 'open' && diff >= 5) {
                     await botSend(chatId, 'Vi que você não mandou mais nada. Seu atendimento acabou?\n\n(Responda *Sim* para encerrar e avaliar)');
                     await axios.post(`${MANAGER_URL}/conversations/${conv.id}/update-status?status=confirming_closure`);
                 } else if (conv.status === 'waiting_human' && diff >= 3 && !conv.patience_msg_sent) {
