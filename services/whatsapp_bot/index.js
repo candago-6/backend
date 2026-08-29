@@ -95,6 +95,17 @@ async function lidToPhoneJid(id) {
 const semAcento = (s) => String(s ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
 const ragSemResposta = (answer) => semAcento(answer).includes('nao encontrei');
 
+// Com \b para nao casar "assim"/"simples" com sim, nem "naopode" com nao.
+const dizSim = (t) => /\bsim\b/.test(semAcento(t));
+const dizNao = (t) => /\bnao\b/.test(semAcento(t));
+
+// Vai junto de toda resposta dos modelos. Sem esta pergunta a conversa fica em
+// 'open' esperando o Vigilante, e a mensagem de despedida do proprio usuario
+// ("Obrigado") era tratada como pergunta nova e ia parar nos modelos.
+// Texto puro em vez de Buttons: os botoes do whatsapp-web.js nao renderizam
+// de forma confiavel nos clientes atuais.
+const PERGUNTA_VERIFICACAO = '\n\n---\n_Resolvi o seu problema?_ Responda *Sim* ou *Não*.';
+
 // Grupos, canais e status não são atendimento 1:1 e nunca devem entrar no fluxo.
 const isIgnorableChat = (id) =>
     typeof id !== 'string' ||
@@ -333,12 +344,16 @@ client.on('message', async (msg) => {
 
     if (conv) {
         if (conv.status === 'confirming_closure') {
-            if (msg.body.toLowerCase().includes('sim')) {
+            if (dizSim(msg.body)) {
                 await axios.post(`${MANAGER_URL}/conversations/${conv.id}/update-status?status=awaiting_feedback`);
                 await botReply(msg, 'Entendido! Para encerrar, envie uma nota de 1 a 5 para o meu atendimento.');
-            } else {
+            } else if (dizNao(msg.body)) {
                 await axios.post(`${MANAGER_URL}/conversations/${conv.id}/update-status?status=open`);
-                await botReply(msg, 'Certo! Como posso continuar te ajudando?');
+                await botReply(msg, 'Certo! Pode mandar a sua próxima dúvida.');
+            } else {
+                // Nem sim nem nao: re-pergunta em vez de mandar aos modelos. É o que
+                // impede uma despedida ("Obrigado") de virar uma pergunta nova.
+                await botReply(msg, 'Por favor, responda apenas *Sim* ou *Não*.');
             }
             return;
         }
@@ -395,7 +410,11 @@ client.on('message', async (msg) => {
                 if (updated.data.status === 'waiting_human') return await botReply(msg, 'Estou te transferindo para um atendente humano. Aguarde.');
             } else { await axios.post(`${MANAGER_URL}/conversations/${c.id}/reset-failures`); }
 
-            await botReply(msg, reply);
+            // A pergunta vai anexada à resposta (uma mensagem só) e a conversa fica
+            // em confirming_closure: a próxima mensagem é lida como Sim/Não, não
+            // como pergunta nova. O 'reply' salvo no banco fica sem este anexo.
+            await botReply(msg, reply + PERGUNTA_VERIFICACAO);
+            await axios.post(`${MANAGER_URL}/conversations/${c.id}/update-status?status=confirming_closure`);
         }
     } else {
         console.log('[ignorado] sem palavra-chave e sem conversa ativa:', whatsappId);
