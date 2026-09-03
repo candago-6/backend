@@ -317,8 +317,10 @@ def get_rag_remote_pipeline() -> RemoteRAGPipeline:
 def get_distilbert_pipeline() -> DistilBertPipeline:
     global DISTILBERT_PIPELINE
     if DISTILBERT_PIPELINE is None:
-        model_path = Path(
-            os.getenv("DISTILBERT_MODEL_PATH", str(DEFAULT_DISTILBERT_MODEL_PATH))
+        # Accepts either a local directory or a Hugging Face repo id, since the
+        # ~517MB weights live on the hub rather than in the repository.
+        model_path = os.getenv(
+            "DISTILBERT_MODEL_PATH", str(DEFAULT_DISTILBERT_MODEL_PATH)
         )
         config = DistilBertConfig(
             model_path=model_path,

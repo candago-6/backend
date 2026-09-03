@@ -5,16 +5,29 @@ import json
 from pathlib import Path
 
 
+def is_hub_repo_id(value: Path | str) -> bool:
+    """True for a Hugging Face repo id such as "candago-6/faq-model-v5"."""
+    text = str(value)
+    return (
+        not Path(text).exists()
+        and text.count("/") == 1
+        and not text.startswith((".", "/", "~"))
+    )
+
+
 @dataclass
 class DistilBertConfig:
-    model_path: Path
+    model_path: Path | str
     dataset_path: Path
     max_length: int = 96
     confidence_threshold: float = 0.62
     temperature: float = 1.5
 
     def __post_init__(self) -> None:
-        self.model_path = Path(self.model_path)
+        # A hub repo id is handed to from_pretrained verbatim; only a local
+        # directory is resolved on disk.
+        if not is_hub_repo_id(self.model_path):
+            self.model_path = Path(self.model_path)
         self.dataset_path = Path(self.dataset_path)
 
 
@@ -31,7 +44,7 @@ class DistilBertPipeline:
         if self._model is not None:
             return
 
-        if not self.config.model_path.exists():
+        if isinstance(self.config.model_path, Path) and not self.config.model_path.exists():
             raise ValueError(
                 f"DistilBERT model directory not found: {self.config.model_path}"
             )
