@@ -5,11 +5,11 @@ model is distributed through the hub instead. Run once per new model version:
 
     pip install huggingface_hub
     hf auth login                 # or export HF_TOKEN=hf_...
-    python services/pln_pipeline/training/publish_model.py candago-6/faq-model-v5
+    python services/pln_pipeline/training/publish_model.py caiquefrd/faq-model-v5
 
 Then point the service at it:
 
-    DISTILBERT_MODEL_PATH=candago-6/faq-model-v5
+    DISTILBERT_MODEL_PATH=caiquefrd/faq-model-v5
 """
 
 from __future__ import annotations
@@ -30,7 +30,7 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
         "repo_id",
-        help='Target repository on the hub, e.g. "candago-6/faq-model-v5".',
+        help='Target repository on the hub, e.g. "caiquefrd/faq-model-v5".',
     )
     parser.add_argument(
         "--model-dir",

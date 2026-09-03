@@ -6,7 +6,7 @@ from pathlib import Path
 
 
 def is_hub_repo_id(value: Path | str) -> bool:
-    """True for a Hugging Face repo id such as "candago-6/faq-model-v5"."""
+    """True for a Hugging Face repo id such as "caiquefrd/faq-model-v5"."""
     text = str(value)
     return (
         not Path(text).exists()
