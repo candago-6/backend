@@ -42,6 +42,9 @@ const TRIGGER_KEYWORD = (process.env.TRIGGER_KEYWORD || 'procon').toLowerCase();
 const RAG_FALLBACK_ENABLED = flagAtivada(process.env.RAG_FALLBACK_ENABLED);
 
 let latestQR = null;
+// Sessao pareada e pronta. Junto com latestQR, diz em qual dos tres estados o
+// bot esta: iniciando, aguardando leitura do QR, ou conectado.
+let sessaoPronta = false;
 const pendingBotMessages = new Set();
 
 // Sends into the chat the message came from. Deliberately not msg.reply(): that
@@ -77,6 +80,14 @@ app.post('/send', async (req, res) => {
 // A porta 8003 nao e publicada no host (docker-compose.yml): o caminho normal de
 // pareamento e o QR que o qrcode-terminal imprime em
 // `docker compose logs -f whatsapp-bot`.
+// Estado do pareamento, para o painel mostrar o que esta acontecendo em vez de
+// so falhar quando nao ha QR. Mesma trava de /qr e /send.
+app.get('/status', (req, res) => {
+    if (!isAuthorized(req, BOT_SECRET)) return res.status(401).json({ error: 'unauthorized' });
+    const estado = sessaoPronta ? 'conectado' : (latestQR ? 'aguardando_leitura' : 'iniciando');
+    res.json({ estado, conectado: sessaoPronta, qrPendente: latestQR !== null });
+});
+
 app.get('/qr', async (req, res) => {
     if (!isAuthorized(req, BOT_SECRET)) return res.status(401).json({ error: 'unauthorized' });
     if (!latestQR) return res.status(404).send('<h2>Aguarde o QR Code...</h2>');
@@ -255,8 +266,8 @@ async function restartProcess(reason, wipe) {
     process.exit(1);
 }
 
-client.on('qr', (qr) => { latestQR = qr; qrcode.generate(qr, { small: true }); });
-client.on('ready', () => { latestQR = null; console.log('Bot pronto!'); startMonitor(); });
+client.on('qr', (qr) => { latestQR = qr; sessaoPronta = false; qrcode.generate(qr, { small: true }); });
+client.on('ready', () => { latestQR = null; sessaoPronta = true; console.log('Bot pronto!'); startMonitor(); });
 client.on('disconnected', (reason) => restartProcess(`desconectado: ${reason}`, String(reason) === 'LOGOUT'));
 client.on('auth_failure', (m) => restartProcess(`falha de autenticacao: ${m}`, true));
 

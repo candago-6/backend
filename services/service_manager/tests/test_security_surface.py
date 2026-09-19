@@ -14,6 +14,9 @@ Três níveis de acesso:
   admin            leituras em bloco (todos os consumidores, todas as mensagens,
                    todas as notas) e as ações de atendente. O bot nunca chama
                    nenhuma delas, então o segredo dele não abre essas portas.
+  super admin      o pareamento do WhatsApp (/api/v1/bot/**). Restrito à conta de
+                   ADMIN_EMAIL: quem lê o QR conecta o próprio aparelho na conta
+                   de atendimento. Ver test_bot_connection.py.
 """
 
 import pytest
@@ -60,6 +63,12 @@ SO_ADMIN_LEITURA = [
     ("GET", "/api/v1/feedback", {}),
 ]
 
+# Pareamento do WhatsApp: mais estrito ainda, restrito a uma única conta.
+SO_SUPER_ADMIN = [
+    ("GET", "/api/v1/bot/qr", {}),
+    ("GET", "/api/v1/bot/status", {}),
+]
+
 # Ações de atendente e gestão de usuários.
 SO_ADMIN_ACAO = [
     ("GET", "/api/v1/message-evaluations", {}),
@@ -73,7 +82,7 @@ SO_ADMIN_ACAO = [
     ("DELETE", "/api/v1/admin-users/qualquer-id", {}),
 ]
 
-TODAS_PROTEGIDAS = ADMIN_OU_BOT + SO_ADMIN_LEITURA + SO_ADMIN_ACAO
+TODAS_PROTEGIDAS = ADMIN_OU_BOT + SO_ADMIN_LEITURA + SO_ADMIN_ACAO + SO_SUPER_ADMIN
 
 
 def _rotas_sem_seguranca() -> set[tuple[str, str]]:
@@ -153,7 +162,7 @@ def test_analista_tambem_passa_nas_rotas_do_atendimento(api, analista, metodo: s
     )
 
 
-@pytest.mark.parametrize("metodo,rota,corpo", SO_ADMIN_LEITURA + SO_ADMIN_ACAO)
+@pytest.mark.parametrize("metodo,rota,corpo", SO_ADMIN_LEITURA + SO_ADMIN_ACAO + SO_SUPER_ADMIN)
 def test_segredo_do_bot_nao_abre_o_que_e_do_painel(api, metodo: str, rota: str, corpo: dict):
     """Least privilege: o bot nunca lê o cadastro inteiro nem age como atendente.
 

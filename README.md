@@ -85,6 +85,32 @@ docker compose cp service-manager:/tmp/qr.png ./qr.png
 No navegador, `GET /qr?secret=<BOT_SECRET>` também funciona (o navegador não tem
 como mandar header) — mas isso exige publicar a porta 8003 temporariamente.
 
+### Pelo painel (recomendado para quem não usa terminal)
+
+O painel tem a página **Conexão**, em `/dashboard/conexao`: mostra o estado do
+pareamento e o QR, que se renova sozinho a cada 20 s.
+
+Ela é restrita a **uma conta**, a de `ADMIN_EMAIL` — não ao cargo de gestor.
+Quem lê aquele QR conecta o próprio aparelho na conta de atendimento, então nem
+todo gestor chega lá. O item só aparece no menu para essa conta, e o backend
+recusa as rotas `/api/v1/bot/status` e `/api/v1/bot/qr` para qualquer outra:
+
+| Quem chama | Resposta |
+|---|---|
+| conta de `ADMIN_EMAIL` | `200` |
+| outro gestor ou analista | `403 Acesso restrito ao administrador do sistema` |
+| sem token | `401` |
+| com o `X-Bot-Secret` | `401` — a credencial do bot serve ao atendimento, não ao pareamento |
+
+O painel precisa saber qual é essa conta para decidir se mostra o menu. Como
+`NEXT_PUBLIC_*` é embutida no build, ela vai como argumento de build no compose
+do frontend (`NEXT_PUBLIC_SUPER_ADMIN_EMAIL`) e **precisa ser o mesmo valor** do
+`ADMIN_EMAIL` daqui. Se divergir, o menu some para quem deveria vê-lo — mas o
+acesso continua correto, porque quem decide é o backend.
+
+A porta 8003 continua fechada: o service-manager busca o QR pela rede interna e
+repassa a imagem já autenticada.
+
 A sessão é salva localmente em `services/whatsapp_bot/.wwebjs_auth` e não precisa ser re-autenticada nas próximas subidas.
 
 ## Variáveis de ambiente
@@ -178,7 +204,7 @@ docker compose run --rm --no-deps -v "$PWD/services/service_manager/tests:/app/t
 Resultado esperado:
 
 ```text
-285 passed, 6 xfailed
+309 passed, 6 xfailed
 ```
 
 Os 6 `xfailed` não são falhas de execução: são bugs conhecidos, cada um com o

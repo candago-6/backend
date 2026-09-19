@@ -6,12 +6,12 @@ from datetime import datetime, timezone
 from typing import Literal, Optional
 
 import httpx
-from fastapi import FastAPI, Depends, HTTPException
+from fastapi import FastAPI, Depends, HTTPException, Response
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from sqlmodel import Session, select
 from .database import create_db_and_tables, engine, get_session
-from .deps import get_current_user, require_admin_or_bot
+from .deps import SUPER_ADMIN_EMAIL, get_current_user, require_admin_or_bot, require_super_admin
 from .models.admin import AdminUser
 from .models.entities import User, Conversation, Message, Feedback, MessageEvaluation
 from .routers import auth, users
@@ -127,6 +127,70 @@ app.include_router(users.router)
 @app.get("/api/v1/health")
 def health_check() -> dict[str, str]:
     return {"status": "ok", "service": "service-manager"}
+
+
+# Conexão do WhatsApp — só para o administrador do sistema
+#
+# O bot não é publicado no host (docker-compose.yml), de propósito: quem alcança
+# GET /qr direto conecta o próprio aparelho na conta de atendimento. Estas duas
+# rotas são a única porta de entrada, e passam pelo login do painel.
+@app.get("/api/v1/bot/status")
+def bot_status(_: AdminUser = Depends(require_super_admin)) -> dict:
+    """Em qual estado está o pareamento: iniciando, aguardando_leitura ou conectado."""
+    try:
+        resp = httpx.get(
+            f"{BOT_URL}/status",
+            headers={"X-Bot-Secret": BOT_SECRET},
+            timeout=10.0,
+        )
+    except httpx.HTTPError as exc:
+        raise HTTPException(status_code=502, detail=f"Bot indisponível: {exc}")
+
+    if resp.status_code == 401:
+        raise HTTPException(
+            status_code=502,
+            detail="O bot recusou a credencial. Confira se BOT_SECRET é o mesmo nos dois serviços.",
+        )
+    if resp.status_code != 200:
+        raise HTTPException(status_code=502, detail=f"Bot respondeu {resp.status_code}.")
+
+    return resp.json()
+
+
+@app.get(
+    "/api/v1/bot/qr",
+    responses={200: {"content": {"image/png": {}}, "description": "QR de pareamento"}},
+)
+def bot_qr(_: AdminUser = Depends(require_super_admin)) -> Response:
+    """Devolve o QR de pareamento como PNG, buscando-o no bot pela rede interna."""
+    try:
+        resp = httpx.get(
+            f"{BOT_URL}/qr",
+            headers={"X-Bot-Secret": BOT_SECRET},
+            timeout=15.0,
+        )
+    except httpx.HTTPError as exc:
+        raise HTTPException(status_code=502, detail=f"Bot indisponível: {exc}")
+
+    if resp.status_code == 404:
+        raise HTTPException(
+            status_code=404,
+            detail="Nenhum QR pendente. O bot já está conectado ou ainda está iniciando.",
+        )
+    if resp.status_code == 401:
+        raise HTTPException(
+            status_code=502,
+            detail="O bot recusou a credencial. Confira se BOT_SECRET é o mesmo nos dois serviços.",
+        )
+    if resp.status_code != 200:
+        raise HTTPException(status_code=502, detail=f"Bot respondeu {resp.status_code}.")
+
+    # no-store: o QR expira em segundos e não pode ser servido de cache.
+    return Response(
+        content=resp.content,
+        media_type="image/png",
+        headers={"Cache-Control": "no-store, max-age=0"},
+    )
 
 
 # User Endpoints

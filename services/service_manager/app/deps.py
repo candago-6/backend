@@ -57,6 +57,26 @@ def require_gestor(current_user: AdminUser = Depends(get_current_user)) -> Admin
     return current_user
 
 
+# O administrador do sistema. É a mesma conta que o seed cria no primeiro boot,
+# então a variável já existe e não há dois lugares para manter em sincronia.
+SUPER_ADMIN_EMAIL = os.getenv("ADMIN_EMAIL", "admin@procon.sp.gov.br")
+
+
+def require_super_admin(current_user: AdminUser = Depends(get_current_user)) -> AdminUser:
+    """Restringe a rota a uma única conta, não a um cargo.
+
+    É mais estrito que `require_gestor`: qualquer gestor pode administrar
+    usuários, mas só o administrador do sistema chega ao pareamento do WhatsApp —
+    quem lê aquele QR conecta o próprio aparelho na conta de atendimento.
+    """
+    if current_user.email.strip().lower() != SUPER_ADMIN_EMAIL.strip().lower():
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Acesso restrito ao administrador do sistema",
+        )
+    return current_user
+
+
 def _admin_do_token(
     credentials: HTTPAuthorizationCredentials | None,
     session: Session,
