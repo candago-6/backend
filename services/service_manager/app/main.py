@@ -9,7 +9,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from sqlmodel import Session, select
 from .database import create_db_and_tables, engine, get_session
-from .deps import get_current_user
+from .deps import get_current_user, require_admin_or_bot
 from .models.admin import AdminUser
 from .models.entities import User, Conversation, Message, Feedback, MessageEvaluation
 from .routers import auth, users
@@ -82,7 +82,7 @@ def health_check() -> dict[str, str]:
 
 
 # User Endpoints
-@app.post("/api/v1/users", response_model=User)
+@app.post("/api/v1/users", response_model=User, dependencies=[Depends(require_admin_or_bot)])
 def create_user(user: User, session: Session = Depends(get_session)):
     # Garante que o CPF esteja criptografado na criação
     if user.cpf:
@@ -93,14 +93,14 @@ def create_user(user: User, session: Session = Depends(get_session)):
     return user
 
 
-@app.get("/api/v1/users", response_model=list[User])
+@app.get("/api/v1/users", response_model=list[User], dependencies=[Depends(get_current_user)])
 def list_users(session: Session = Depends(get_session)):
     users_list = session.exec(select(User)).all()
     # Retornamos os dados como estão no banco (criptografados)
     return users_list
 
 
-@app.get("/api/v1/users/{user_id}", response_model=User)
+@app.get("/api/v1/users/{user_id}", response_model=User, dependencies=[Depends(require_admin_or_bot)])
 def get_user(user_id: int, session: Session = Depends(get_session)):
     user = session.get(User, user_id)
     if not user:
@@ -108,7 +108,7 @@ def get_user(user_id: int, session: Session = Depends(get_session)):
     return user
 
 
-@app.get("/api/v1/users/phone/{phone}", response_model=User)
+@app.get("/api/v1/users/phone/{phone}", response_model=User, dependencies=[Depends(require_admin_or_bot)])
 def get_user_by_phone(phone: str, session: Session = Depends(get_session)):
     statement = select(User).where(User.phone == phone)
     user = session.exec(statement).first()
@@ -117,7 +117,7 @@ def get_user_by_phone(phone: str, session: Session = Depends(get_session)):
     return user
 
 
-@app.get("/api/v1/users/whatsapp-id/{whatsapp_id}", response_model=User)
+@app.get("/api/v1/users/whatsapp-id/{whatsapp_id}", response_model=User, dependencies=[Depends(require_admin_or_bot)])
 def get_user_by_whatsapp_id(whatsapp_id: str, session: Session = Depends(get_session)):
     statement = select(User).where(User.whatsapp_id == whatsapp_id)
     user = session.exec(statement).first()
@@ -126,7 +126,7 @@ def get_user_by_whatsapp_id(whatsapp_id: str, session: Session = Depends(get_ses
     return user
 
 
-@app.put("/api/v1/users/{user_id}", response_model=User)
+@app.put("/api/v1/users/{user_id}", response_model=User, dependencies=[Depends(require_admin_or_bot)])
 def update_user(user_id: int, payload: UserUpdate, session: Session = Depends(get_session)):
     user = session.get(User, user_id)
     if not user:
@@ -149,7 +149,7 @@ def update_user(user_id: int, payload: UserUpdate, session: Session = Depends(ge
 
 
 # Conversation Endpoints
-@app.post("/api/v1/conversations", response_model=Conversation)
+@app.post("/api/v1/conversations", response_model=Conversation, dependencies=[Depends(require_admin_or_bot)])
 def create_conversation(conversation: Conversation, session: Session = Depends(get_session)):
     session.add(conversation)
     session.commit()
@@ -157,12 +157,12 @@ def create_conversation(conversation: Conversation, session: Session = Depends(g
     return conversation
 
 
-@app.get("/api/v1/conversations", response_model=list[Conversation])
+@app.get("/api/v1/conversations", response_model=list[Conversation], dependencies=[Depends(require_admin_or_bot)])
 def list_conversations(session: Session = Depends(get_session)):
     return session.exec(select(Conversation)).all()
 
 
-@app.get("/api/v1/conversations/active/{user_id}", response_model=Conversation)
+@app.get("/api/v1/conversations/active/{user_id}", response_model=Conversation, dependencies=[Depends(require_admin_or_bot)])
 def get_active_conversation(user_id: int, session: Session = Depends(get_session)):
     active_statuses = ["open", "waiting_human", "human_handover", "confirming_closure", "awaiting_feedback"]
     statement = select(Conversation).where(
@@ -175,7 +175,7 @@ def get_active_conversation(user_id: int, session: Session = Depends(get_session
     return conversation
 
 
-@app.get("/api/v1/conversations/{conversation_id}", response_model=Conversation)
+@app.get("/api/v1/conversations/{conversation_id}", response_model=Conversation, dependencies=[Depends(require_admin_or_bot)])
 def get_conversation(conversation_id: int, session: Session = Depends(get_session)):
     conversation = session.get(Conversation, conversation_id)
     if not conversation:
@@ -183,7 +183,7 @@ def get_conversation(conversation_id: int, session: Session = Depends(get_sessio
     return conversation
 
 
-@app.post("/api/v1/conversations/{conversation_id}/close", response_model=Conversation)
+@app.post("/api/v1/conversations/{conversation_id}/close", response_model=Conversation, dependencies=[Depends(require_admin_or_bot)])
 def close_conversation(conversation_id: int, session: Session = Depends(get_session)):
     conversation = session.get(Conversation, conversation_id)
     if not conversation:
@@ -200,7 +200,7 @@ def close_conversation(conversation_id: int, session: Session = Depends(get_sess
     return conversation
 
 
-@app.post("/api/v1/conversations/{conversation_id}/mark-onboarded", response_model=Conversation)
+@app.post("/api/v1/conversations/{conversation_id}/mark-onboarded", response_model=Conversation, dependencies=[Depends(require_admin_or_bot)])
 def mark_onboarded(conversation_id: int, session: Session = Depends(get_session)):
     conversation = session.get(Conversation, conversation_id)
     if not conversation:
@@ -213,7 +213,7 @@ def mark_onboarded(conversation_id: int, session: Session = Depends(get_session)
     return conversation
 
 
-@app.post("/api/v1/conversations/{conversation_id}/mark-patience-sent", response_model=Conversation)
+@app.post("/api/v1/conversations/{conversation_id}/mark-patience-sent", response_model=Conversation, dependencies=[Depends(require_admin_or_bot)])
 def mark_patience_sent(conversation_id: int, session: Session = Depends(get_session)):
     conversation = session.get(Conversation, conversation_id)
     if not conversation:
@@ -226,7 +226,7 @@ def mark_patience_sent(conversation_id: int, session: Session = Depends(get_sess
     return conversation
 
 
-@app.post("/api/v1/conversations/{conversation_id}/update-status", response_model=Conversation)
+@app.post("/api/v1/conversations/{conversation_id}/update-status", response_model=Conversation, dependencies=[Depends(require_admin_or_bot)])
 def update_conversation_status(conversation_id: int, status: str, session: Session = Depends(get_session)):
     conversation = session.get(Conversation, conversation_id)
     if not conversation:
@@ -242,7 +242,7 @@ def update_conversation_status(conversation_id: int, status: str, session: Sessi
     return conversation
 
 
-@app.post("/api/v1/conversations/{conversation_id}/increment-failures", response_model=Conversation)
+@app.post("/api/v1/conversations/{conversation_id}/increment-failures", response_model=Conversation, dependencies=[Depends(require_admin_or_bot)])
 def increment_failures(conversation_id: int, session: Session = Depends(get_session)):
     conversation = session.get(Conversation, conversation_id)
     if not conversation:
@@ -258,7 +258,7 @@ def increment_failures(conversation_id: int, session: Session = Depends(get_sess
     return conversation
 
 
-@app.post("/api/v1/conversations/{conversation_id}/reset-failures", response_model=Conversation)
+@app.post("/api/v1/conversations/{conversation_id}/reset-failures", response_model=Conversation, dependencies=[Depends(require_admin_or_bot)])
 def reset_failures(conversation_id: int, session: Session = Depends(get_session)):
     conversation = session.get(Conversation, conversation_id)
     if not conversation:
@@ -379,12 +379,12 @@ def release_conversation(
     return conversation
 
 
-@app.get("/api/v1/messages", response_model=list[Message])
+@app.get("/api/v1/messages", response_model=list[Message], dependencies=[Depends(get_current_user)])
 def list_messages(session: Session = Depends(get_session)):
     return session.exec(select(Message)).all()
 
 
-@app.post("/api/v1/messages", response_model=Message)
+@app.post("/api/v1/messages", response_model=Message, dependencies=[Depends(require_admin_or_bot)])
 def create_message(message: Message, session: Session = Depends(get_session)):
     session.add(message)
     
@@ -401,11 +401,11 @@ def create_message(message: Message, session: Session = Depends(get_session)):
 
 
 # Feedback Endpoints
-@app.get("/api/v1/feedback", response_model=list[Feedback])
+@app.get("/api/v1/feedback", response_model=list[Feedback], dependencies=[Depends(get_current_user)])
 def list_feedback(session: Session = Depends(get_session)):
     return session.exec(select(Feedback)).all()
 
-@app.post("/api/v1/feedback", response_model=Feedback)
+@app.post("/api/v1/feedback", response_model=Feedback, dependencies=[Depends(require_admin_or_bot)])
 def create_feedback(feedback: Feedback, session: Session = Depends(get_session)):
     conversation = session.get(Conversation, feedback.conversation_id)
     if not conversation:

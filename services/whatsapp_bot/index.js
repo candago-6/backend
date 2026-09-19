@@ -5,6 +5,8 @@ const qrcode = require('qrcode-terminal');
 const QRCode = require('qrcode');
 const express = require('express');
 const axios = require('axios');
+const { isAuthorized } = require('./lib/auth');
+const { flagAtivada } = require('./lib/config');
 
 const app = express();
 app.use(express.json());
@@ -13,6 +15,16 @@ const PLN_URL = process.env.PLN_URL || 'http://pln-pipeline:8001/api/fasttext/kn
 const MANAGER_URL = process.env.MANAGER_URL || 'http://service-manager:8002/api/v1';
 const BOT_SECRET = process.env.BOT_SECRET || 'dev-bot-secret-change-me';
 
+// Cliente do service-manager. O X-Bot-Secret vai como header padrao porque as
+// rotas de atendimento exigem credencial (o bot nao tem login). E uma instancia
+// separada de proposito: o `axios` solto continua atendendo o pln-pipeline, que
+// nao deve receber o segredo.
+const manager = axios.create({
+    baseURL: MANAGER_URL,
+    headers: { 'X-Bot-Secret': BOT_SECRET },
+    timeout: 15000,
+});
+
 // A palavra-chave é uma trava de desenvolvimento, não uma regra de produto:
 // enquanto o bot roda num celular pessoal ele não pode responder todo mundo que
 // manda mensagem. Em produção o número é exclusivo do atendimento, então qualquer
@@ -20,6 +32,14 @@ const BOT_SECRET = process.env.BOT_SECRET || 'dev-bot-secret-change-me';
 const BOT_MODE = process.env.BOT_MODE || 'development';
 const IS_PRODUCTION = BOT_MODE === 'production';
 const TRIGGER_KEYWORD = (process.env.TRIGGER_KEYWORD || 'procon').toLowerCase();
+
+// Contingencia por RAG, que o cliente ve como "IA Avancada": quando o DistilBERT
+// nao entende, uma LLM remota tenta responder a partir do FAQ antes de a conversa
+// contar mais uma falha. Desligada por padrao a pedido do cliente. Com ela
+// desligada, toda resposta nao entendida conta falha e a terceira manda a conversa
+// para a fila humana — ou seja, mais atendimentos chegam ao analista.
+// Para reativar: RAG_FALLBACK_ENABLED=true no docker-compose.yml.
+const RAG_FALLBACK_ENABLED = flagAtivada(process.env.RAG_FALLBACK_ENABLED);
 
 let latestQR = null;
 const pendingBotMessages = new Set();
@@ -41,7 +61,7 @@ app.get('/api/v1/health', (req, res) => res.json({ status: 'ok', service: 'whats
 
 // Outbound send: used by service_manager when an analyst replies from the dashboard (live handover).
 app.post('/send', async (req, res) => {
-    if (req.headers['x-bot-secret'] !== BOT_SECRET) return res.status(401).json({ error: 'unauthorized' });
+    if (!isAuthorized(req, BOT_SECRET)) return res.status(401).json({ error: 'unauthorized' });
     const { chatId, text } = req.body || {};
     if (!chatId || !text) return res.status(400).json({ error: 'chatId and text required' });
     try {
@@ -51,13 +71,20 @@ app.post('/send', async (req, res) => {
         res.status(500).json({ error: 'send failed', detail: String(e) });
     }
 });
+// O QR e a credencial de pareamento: quem o le conecta o proprio aparelho a conta
+// de atendimento, le todas as conversas e responde como se fosse o Procon. Por
+// isso exige o mesmo segredo de /send. No navegador, use ?secret=<BOT_SECRET>.
+// A porta 8003 nao e publicada no host (docker-compose.yml): o caminho normal de
+// pareamento e o QR que o qrcode-terminal imprime em
+// `docker compose logs -f whatsapp-bot`.
 app.get('/qr', async (req, res) => {
+    if (!isAuthorized(req, BOT_SECRET)) return res.status(401).json({ error: 'unauthorized' });
     if (!latestQR) return res.status(404).send('<h2>Aguarde o QR Code...</h2>');
     const pngBuffer = await QRCode.toBuffer(latestQR, { scale: 8 });
     res.setHeader('Content-Type', 'image/png');
     res.send(pngBuffer);
 });
-app.listen(PORT, () => console.log(`Bot na porta ${PORT} [modo: ${BOT_MODE}${IS_PRODUCTION ? '' : `, palavra-chave: ${TRIGGER_KEYWORD}`}]. QR: http://localhost:${PORT}/qr`));
+app.listen(PORT, () => console.log(`Bot na porta ${PORT} [modo: ${BOT_MODE}${IS_PRODUCTION ? '' : `, palavra-chave: ${TRIGGER_KEYWORD}`}, IA avancada: ${RAG_FALLBACK_ENABLED ? 'ligada' : 'desligada'}]. QR: neste log, ou GET /qr com X-Bot-Secret.`));
 
 // O WhatsApp migrou as conversas 1:1 para endereçamento LID, então as mensagens
 // recebidas chegam com `from` no formato <lid>@lid. O whatsapp-web.js 1.34.7 não
@@ -86,39 +113,24 @@ async function lidToPhoneJid(id) {
     return resolved;
 }
 
-// O RAG sinaliza "sem resposta" de duas formas: a determinística
-// "Nao encontrei essa informacao no documento." (rag_remote.py:311,334) e a que o
-// modelo gera, "Não encontrei essa informação em minha base dados..."
-// (rag_remote.py:342). O teste anterior — includes("não encontrei") — não pegava
-// nenhuma das duas: a primeira não tem acento, a segunda começa com N maiúsculo.
-// Por isso toda resposta vazia do RAG virava resposta boa e cancelava o handoff.
-const semAcento = (s) => String(s ?? '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase();
-const ragSemResposta = (answer) => semAcento(answer).includes('nao encontrei');
-
-// Com \b para nao casar "assim"/"simples" com sim, nem "naopode" com nao.
-const dizSim = (t) => /\bsim\b/.test(semAcento(t));
-const dizNao = (t) => /\bnao\b/.test(semAcento(t));
-
-// Vai junto de toda resposta dos modelos. Sem esta pergunta a conversa fica em
-// 'open' esperando o Vigilante, e a mensagem de despedida do proprio usuario
-// ("Obrigado") era tratada como pergunta nova e ia parar nos modelos.
-// Texto puro em vez de Buttons: os botoes do whatsapp-web.js nao renderizam
-// de forma confiavel nos clientes atuais.
-const PERGUNTA_VERIFICACAO = '\n\n---\n_Resolvi o seu problema?_ Responda *Sim* ou *Não*.';
-
-// Grupos, canais e status não são atendimento 1:1 e nunca devem entrar no fluxo.
-const isIgnorableChat = (id) =>
-    typeof id !== 'string' ||
-    id.endsWith('@g.us') ||
-    id.endsWith('@newsletter') ||
-    id.endsWith('@broadcast');
+// Predicados puros (sim/nao, filtro de chat, CPF, texto da verificacao) ficam em
+// lib/predicates.js para serem testaveis sem subir o Chromium: npm test
+const {
+    semAcento,
+    ragSemResposta,
+    dizSim,
+    dizNao,
+    PERGUNTA_VERIFICACAO,
+    isIgnorableChat,
+    isValidCpf,
+} = require('./lib/predicates');
 
 // BUSCA UNIFICADA: Tenta achar o usuário por Telefone ou por WhatsApp ID (LID/JID)
 async function findUser(phone, whatsappId) {
     try {
         // 1. Tenta pelo Telefone
         if (phone) {
-            const r = await axios.get(`${MANAGER_URL}/users/phone/${phone}`);
+            const r = await manager.get(`/users/phone/${phone}`);
             if (r.data) return r.data;
         }
     } catch (e) {}
@@ -126,7 +138,7 @@ async function findUser(phone, whatsappId) {
     try {
         // 2. Tenta pelo WhatsApp ID (LID)
         if (whatsappId) {
-            const r = await axios.get(`${MANAGER_URL}/users/whatsapp-id/${whatsappId}`);
+            const r = await manager.get(`/users/whatsapp-id/${whatsappId}`);
             if (r.data) return r.data;
         }
     } catch (e) {}
@@ -135,7 +147,7 @@ async function findUser(phone, whatsappId) {
 }
 
 async function findActiveConversation(userId) {
-    try { return (await axios.get(`${MANAGER_URL}/conversations/active/${userId}`)).data; } catch (e) { return null; }
+    try { return (await manager.get(`/conversations/active/${userId}`)).data; } catch (e) { return null; }
 }
 
 async function getOrCreateUser(phone, whatsappId) {
@@ -143,30 +155,29 @@ async function getOrCreateUser(phone, whatsappId) {
     if (user) {
         // Se achou mas o whatsappId ou phone estava faltando, atualiza
         if ((whatsappId && user.whatsapp_id !== whatsappId) || (phone && user.phone !== phone)) {
-            const updated = await axios.put(`${MANAGER_URL}/users/${user.id}`, { phone, whatsapp_id: whatsappId });
+            const updated = await manager.put(`/users/${user.id}`, { phone, whatsapp_id: whatsappId });
             return updated.data;
         }
         return user;
     }
-    return (await axios.post(`${MANAGER_URL}/users`, { name: "Cliente WhatsApp", phone, whatsapp_id: whatsappId, cpf: "" })).data;
+    return (await manager.post(`/users`, { name: "Cliente WhatsApp", phone, whatsapp_id: whatsappId, cpf: "" })).data;
 }
 
 async function getOrCreateConversation(userId) {
     const conv = await findActiveConversation(userId);
     if (conv) return conv;
-    return (await axios.post(`${MANAGER_URL}/conversations`, { user_id: userId, protocol: `PROCON-${Date.now()}`, status: "open" })).data;
+    return (await manager.post(`/conversations`, { user_id: userId, protocol: `PROCON-${Date.now()}`, status: "open" })).data;
 }
 
 async function saveMessage(conversationId, role, content) {
-    try { await axios.post(`${MANAGER_URL}/messages`, { conversation_id: conversationId, role, content }); } catch (e) {}
+    try { await manager.post(`/messages`, { conversation_id: conversationId, role, content }); } catch (e) {}
 }
 
 async function saveFeedback(conversationId, rating) {
-    try { await axios.post(`${MANAGER_URL}/feedback`, { conversation_id: conversationId, rating, is_best_answer: rating >= 4 }); return true; } catch (e) { return false; }
+    try { await manager.post(`/feedback`, { conversation_id: conversationId, rating, is_best_answer: rating >= 4 }); return true; } catch (e) { return false; }
 }
 
 const onboardingState = new Map();
-const isValidCpf = (v) => v.replace(/\D/g, '').length === 11;
 
 // O whatsapp-web.js pode emitir 'ready' várias vezes na mesma sessão; sem esta
 // trava cada emissão criava mais um setInterval e o polling se multiplicava.
@@ -177,14 +188,14 @@ async function startMonitor() {
     console.log('[Monitor] Vigilante iniciado.');
     setInterval(async () => {
         try {
-            const r = await axios.get(`${MANAGER_URL}/conversations`);
+            const r = await manager.get(`/conversations`);
             const now = new Date();
             for (const conv of r.data) {
                 if (!['open', 'waiting_human', 'confirming_closure'].includes(conv.status)) continue;
                 const diff = (now - new Date(conv.updated_at)) / (1000 * 60);
                 if (diff > 720) continue; 
 
-                const u = (await axios.get(`${MANAGER_URL}/users/${conv.user_id}`)).data;
+                const u = (await manager.get(`/users/${conv.user_id}`)).data;
                 const chatId = u.whatsapp_id || `${u.phone}@c.us`;
 
                 // 5 min de silêncio, não 1: quem está digitando uma dúvida real
@@ -192,12 +203,12 @@ async function startMonitor() {
                 // no meio da frase.
                 if (conv.status === 'open' && diff >= 5) {
                     await botSend(chatId, 'Vi que você não mandou mais nada. Seu atendimento acabou?\n\n(Responda *Sim* para encerrar e avaliar)');
-                    await axios.post(`${MANAGER_URL}/conversations/${conv.id}/update-status?status=confirming_closure`);
+                    await manager.post(`/conversations/${conv.id}/update-status?status=confirming_closure`);
                 } else if (conv.status === 'waiting_human' && diff >= 3 && !conv.patience_msg_sent) {
                     await botSend(chatId, 'Nossa fila está um pouco cheia no momento, agradecemos sua paciência! Logo um atendente falará com você.');
-                    await axios.post(`${MANAGER_URL}/conversations/${conv.id}/mark-patience-sent`);
+                    await manager.post(`/conversations/${conv.id}/mark-patience-sent`);
                 } else if (conv.status === 'confirming_closure' && diff >= 5) {
-                    await axios.post(`${MANAGER_URL}/conversations/${conv.id}/close`);
+                    await manager.post(`/conversations/${conv.id}/close`);
                 }
             }
         } catch (e) { console.error('[Monitor]', e?.stack || e?.message || e); }
@@ -271,13 +282,13 @@ client.on('message_create', async (msg) => {
         if (!conv) return;
 
         if (msg.body === '#finalizar') {
-            await axios.post(`${MANAGER_URL}/conversations/${conv.id}/close`);
+            await manager.post(`/conversations/${conv.id}/close`);
             await botSend(msg.to, '✅ *Atendimento encerrado com sucesso.*');
             return;
         }
 
         if (msg.body === '#fallback') {
-            await axios.post(`${MANAGER_URL}/conversations/${conv.id}/update-status?status=waiting_human`);
+            await manager.post(`/conversations/${conv.id}/update-status?status=waiting_human`);
             await botSend(msg.to, '🔁 *Atendimento marcado como pendente para um atendente humano.*');
             return;
         }
@@ -285,7 +296,7 @@ client.on('message_create', async (msg) => {
         if (!msg.body.startsWith('!') && !msg.body.startsWith('#')) {
             if (conv.status === 'waiting_human' || conv.status === 'open' || conv.status === 'confirming_closure') {
                 console.log(`[Handover] SUCESSO! Mudando usuário ${user.id} para human_handover.`);
-                await axios.post(`${MANAGER_URL}/conversations/${conv.id}/update-status?status=human_handover`);
+                await manager.post(`/conversations/${conv.id}/update-status?status=human_handover`);
                 await saveMessage(conv.id, 'bot', `[Atendimento Manual] ${msg.body}`);
             }
         }
@@ -328,8 +339,8 @@ client.on('message', async (msg) => {
         } else if (onboarding.step === 'confirm') {
             const resp = msg.body.toLowerCase();
             if (resp.includes('sim')) {
-                await axios.put(`${MANAGER_URL}/users/${u.id}`, { name: onboarding.name, cpf: onboarding.cpf });
-                await axios.post(`${MANAGER_URL}/conversations/${c.id}/mark-onboarded`);
+                await manager.put(`/users/${u.id}`, { name: onboarding.name, cpf: onboarding.cpf });
+                await manager.post(`/conversations/${c.id}/mark-onboarded`);
                 onboardingState.delete(msg.from);
                 await botReply(msg, `Dados confirmados! Seu protocolo é: ${c.protocol}\n\nComo posso ajudar?`);
             } else if (resp.includes('não') || resp.includes('nao')) {
@@ -345,10 +356,10 @@ client.on('message', async (msg) => {
     if (conv) {
         if (conv.status === 'confirming_closure') {
             if (dizSim(msg.body)) {
-                await axios.post(`${MANAGER_URL}/conversations/${conv.id}/update-status?status=awaiting_feedback`);
+                await manager.post(`/conversations/${conv.id}/update-status?status=awaiting_feedback`);
                 await botReply(msg, 'Entendido! Para encerrar, envie uma nota de 1 a 5 para o meu atendimento.');
             } else if (dizNao(msg.body)) {
-                await axios.post(`${MANAGER_URL}/conversations/${conv.id}/update-status?status=open`);
+                await manager.post(`/conversations/${conv.id}/update-status?status=open`);
                 await botReply(msg, 'Certo! Pode mandar a sua próxima dúvida.');
             } else {
                 // Nem sim nem nao: re-pergunta em vez de mandar aos modelos. É o que
@@ -361,7 +372,7 @@ client.on('message', async (msg) => {
             const rating = parseInt(msg.body.trim());
             if (rating >= 1 && rating <= 5) {
                 await saveFeedback(conv.id, rating);
-                await axios.post(`${MANAGER_URL}/conversations/${conv.id}/close`);
+                await manager.post(`/conversations/${conv.id}/close`);
                 await botReply(msg, 'Muito obrigado! Atendimento encerrado.');
             } else { await botReply(msg, 'Envie apenas o número de 1 a 5.'); }
             return;
@@ -394,7 +405,7 @@ client.on('message', async (msg) => {
             let reply = pln.data.class_response;
             let isFallback = pln.data.is_fallback;
 
-            if (isFallback && c.failed_attempts === 1) {
+            if (RAG_FALLBACK_ENABLED && isFallback && c.failed_attempts === 1) {
                 try {
                     const rag = await axios.post('http://pln-pipeline:8001/api/rag_remote', { question: msg.body, top_k: 3 }, { timeout: 45000 });
                     if (rag.data.answer && !ragSemResposta(rag.data.answer)) {
@@ -406,15 +417,15 @@ client.on('message', async (msg) => {
 
             await saveMessage(c.id, 'bot', reply);
             if (isFallback) {
-                const updated = await axios.post(`${MANAGER_URL}/conversations/${c.id}/increment-failures`);
+                const updated = await manager.post(`/conversations/${c.id}/increment-failures`);
                 if (updated.data.status === 'waiting_human') return await botReply(msg, 'Estou te transferindo para um atendente humano. Aguarde.');
-            } else { await axios.post(`${MANAGER_URL}/conversations/${c.id}/reset-failures`); }
+            } else { await manager.post(`/conversations/${c.id}/reset-failures`); }
 
             // A pergunta vai anexada à resposta (uma mensagem só) e a conversa fica
             // em confirming_closure: a próxima mensagem é lida como Sim/Não, não
             // como pergunta nova. O 'reply' salvo no banco fica sem este anexo.
             await botReply(msg, reply + PERGUNTA_VERIFICACAO);
-            await axios.post(`${MANAGER_URL}/conversations/${c.id}/update-status?status=confirming_closure`);
+            await manager.post(`/conversations/${c.id}/update-status?status=confirming_closure`);
         }
     } else {
         console.log('[ignorado] sem palavra-chave e sem conversa ativa:', whatsappId);

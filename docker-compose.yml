@@ -18,8 +18,12 @@ services:
     build:
       context: ./services/pln_pipeline
       dockerfile: Dockerfile
-    ports:
-      - "8001:8001"
+    # Sem porta no host: quem chama o PLN e o whatsapp-bot, de dentro da rede do
+    # compose. Publicar 8001 deixava /api/rag_remote aberto para qualquer um na
+    # maquina — e cada chamada dele gasta credito da API do Gemini.
+    # Para depurar de fora: docker compose exec pln-pipeline curl localhost:8001/api/health
+    expose:
+      - "8001"
     # app/.env is excluded from the image (.dockerignore) so the API keys are not
     # baked into a layer; compose injects them at runtime instead.
     env_file:
@@ -34,8 +38,13 @@ services:
     build:
       context: ./services/service_manager
       dockerfile: Dockerfile
+    # Unica porta que precisa sair da rede do compose: o painel roda no navegador
+    # do usuario e chama esta API direto (NEXT_PUBLIC_API_URL). Em producao ela
+    # deve ficar atras de um proxy reverso com TLS — ate la, API_BIND limita a
+    # quais interfaces ela responde (ex.: API_BIND=127.0.0.1 para so a propria
+    # maquina). Veja C4 no relatorio de auditoria.
     ports:
-      - "8002:8002"
+      - "${API_BIND:-0.0.0.0}:8002:8002"
     environment:
       DATABASE_URL: postgresql://${POSTGRES_USER:-admin}:${POSTGRES_PASSWORD:-admin123}@db:5432/${POSTGRES_DB:-assistente_whatsapp}
       ENCRYPTION_KEY: ${ENCRYPTION_KEY:-v6u6W5q7U5p4S3Y2X1W0V9U8T7S6R5Q4P3O2N1M0L8k=} # Chave Fernet de 32 bytes (44 chars base64)
@@ -55,8 +64,12 @@ services:
     build:
       context: ./services/whatsapp_bot
       dockerfile: Dockerfile
-    ports:
-      - "8003:8003"
+    # Sem porta no host: quem chama o bot e o service-manager (/send), de dentro
+    # da rede do compose. Publicar 8003 deixava GET /qr — o QR de pareamento da
+    # conta de WhatsApp — acessivel a qualquer um na maquina.
+    # Para parear: docker compose logs -f whatsapp-bot (o QR sai no terminal).
+    expose:
+      - "8003"
     environment:
       PLN_URL: http://pln-pipeline:8001/api/distilbert
       MANAGER_URL: http://service-manager:8002/api/v1
@@ -65,6 +78,13 @@ services:
       # padrão "procon"), para o bot não responder contatos pessoais durante os
       # testes. production: número dedicado, qualquer mensagem inicia atendimento.
       BOT_MODE: ${BOT_MODE:-development}
+      # Contingencia por RAG, apresentada ao cliente como "IA Avancada": quando o
+      # DistilBERT nao entende, uma LLM remota tenta responder a partir do FAQ.
+      # Desligada a pedido do cliente. Consequencia operacional: sem ela, toda
+      # resposta nao entendida conta falha e a terceira manda a conversa para a
+      # fila humana — espere mais atendimentos chegando ao analista.
+      # Para reativar, troque para true (ou defina RAG_FALLBACK_ENABLED no .env).
+      RAG_FALLBACK_ENABLED: ${RAG_FALLBACK_ENABLED:-false}
     volumes:
       - wa_session:/app/.wwebjs_auth
     # Chromium needs time to flush its profile on shutdown; a SIGKILL here
