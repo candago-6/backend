@@ -361,6 +361,7 @@ Recebe uma mensagem do WhatsApp, aplica o filtro de keyword e orquestra o proces
 | `POST` | `/api/w2vec` | Vetorização Word2Vec + similaridade + resposta |
 | `POST` | `/api/w2vec/knn` | Word2Vec com KNN |
 | `POST` | `/api/rag_remote` | Resposta via LLM com RAG remoto |
+| `POST` | `/api/distilbert` | Resposta via IA Local com FineTuning |
 | `POST` | `/api/retraining-dataset` | Recebe `question` e `answer` do Frontend e popula o dataset de re-treinamento |
 
 ### `POST /api/retraining-dataset`
