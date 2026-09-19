@@ -22,11 +22,17 @@ Pipeline de PLN orquestrado por um Gateway para responder dúvidas de consumidor
 
 ## Serviços
 
-| Serviço | Diretório | Porta | Tecnologia |
-|---|---|---|---|
-| `pln-pipeline` | `services/pln_pipeline` | `8001` | Python / FastAPI |
-| `service-manager` | `services/service_manager` | `8002` | Python / FastAPI |
-| `whatsapp-bot` | `services/whatsapp_bot` | `8003` | Node.js / Express |
+| Serviço | Diretório | Porta | Publicada no host? | Tecnologia |
+|---|---|---|---|---|
+| `pln-pipeline` | `services/pln_pipeline` | `8001` | não | Python / FastAPI |
+| `service-manager` | `services/service_manager` | `8002` | **sim** | Python / FastAPI |
+| `whatsapp-bot` | `services/whatsapp_bot` | `8003` | não | Node.js / Express |
+
+Só o `service-manager` tem porta no host, porque o painel roda no navegador do
+usuário e chama a API direto. Os outros dois conversam apenas pela rede interna do
+compose: publicar `8001` deixava `/api/rag_remote` (que gasta crédito do Gemini)
+aberto na máquina, e publicar `8003` deixava o QR de pareamento do WhatsApp
+acessível a qualquer um.
 
 ## Pré-requisitos
 
@@ -57,9 +63,27 @@ docker compose down
 
 Ao subir pela primeira vez, o `whatsapp-bot` exibirá um QR Code no terminal. Escaneie-o com o WhatsApp do número que será o assistente:
 
+```bash
+docker compose logs -f whatsapp-bot
+```
+
 1. Abra o WhatsApp no celular
 2. Vá em **Dispositivos conectados → Conectar dispositivo**
 3. Escaneie o QR Code exibido no log do container `whatsapp_bot`
+
+Se o QR do terminal não escanear bem, dá para pegá-lo como PNG — mas a rota exige
+o `BOT_SECRET`, porque quem lê esse QR conecta o próprio aparelho na conta de
+atendimento:
+
+```bash
+# de dentro da rede do compose (a porta 8003 não é publicada)
+docker compose exec service-manager \
+    python -c "import httpx,os; open('/tmp/qr.png','wb').write(httpx.get('http://whatsapp-bot:8003/qr', headers={'X-Bot-Secret': os.environ['BOT_SECRET']}).content)"
+docker compose cp service-manager:/tmp/qr.png ./qr.png
+```
+
+No navegador, `GET /qr?secret=<BOT_SECRET>` também funciona (o navegador não tem
+como mandar header) — mas isso exige publicar a porta 8003 temporariamente.
 
 A sessão é salva localmente em `services/whatsapp_bot/.wwebjs_auth` e não precisa ser re-autenticada nas próximas subidas.
 
@@ -71,6 +95,38 @@ As variáveis são configuradas no `docker-compose.yml`, no serviço `whatsapp-b
 |---|---|---|
 | `GATEWAY_URL` | `http://service_manager:8002/api/v1/process-message` | URL do Gateway (service-manager) |
 | `FILTER_KEYWORD` | `Procon` | Keyword que a mensagem deve conter para ser processada. Mensagens sem essa keyword são ignoradas. |
+| `BOT_SECRET` | `dev-bot-secret-change-me` | Segredo exigido em `POST /send` e `GET /qr`. **Trocar em produção.** |
+| `API_BIND` | `0.0.0.0` | Interface em que a porta 8002 do `service-manager` responde. Use `127.0.0.1` para limitar à própria máquina enquanto não houver proxy reverso com TLS. |
+| `RAG_FALLBACK_ENABLED` | `false` | Liga a contingência por RAG (a "IA Avançada"). **Desligada a pedido do cliente.** |
+
+### A contingência por RAG ("IA Avançada")
+
+Quando o DistilBERT não entende a pergunta, existe um segundo caminho: uma LLM
+remota tenta responder a partir do FAQ, e a resposta chega ao cliente prefixada
+com `*[IA Avançada - Contingência]*`.
+
+Ela está **desligada**. Para reativar, troque no `docker-compose.yml` (ou defina
+no `.env`):
+
+```yaml
+RAG_FALLBACK_ENABLED: "true"
+```
+
+Só um valor afirmativo explícito liga (`true`, `1`, `yes`, `on`, `sim`). Qualquer
+outra coisa — inclusive um valor mal digitado como `ture` — deixa desligado, de
+propósito: um erro de digitação não pode reativar sozinho algo que o cliente
+pediu para não usar.
+
+**Consequência operacional de manter desligada:** a contingência era o que
+recuperava uma pergunta não entendida antes de ela virar falha. Sem ela, toda
+resposta não entendida conta uma falha e a terceira manda a conversa para a fila
+humana. Espere mais atendimentos chegando ao analista.
+
+O estado aparece no log de subida do bot:
+
+```text
+Bot na porta 8003 [modo: development, palavra-chave: procon, IA avancada: desligada]
+```
 
 Para alterar a keyword sem rebuild, edite o `docker-compose.yml`:
 
@@ -81,9 +137,18 @@ environment:
 
 ## Health checks
 
-- `http://localhost:8001/api/health` → PLN Pipeline
-- `http://localhost:8002/api/v1/health` → Service Manager (Gateway)
-- `http://localhost:8003/api/v1/health` → WhatsApp Bot
+Do host, só o `service-manager` responde:
+
+```bash
+curl http://localhost:8002/api/v1/health
+```
+
+Os outros dois são alcançáveis de dentro da rede do compose:
+
+```bash
+docker compose exec pln-pipeline  python -c "import httpx; print(httpx.get('http://localhost:8001/api/health').json())"
+docker compose exec whatsapp-bot  node -e "fetch('http://localhost:8003/api/v1/health').then(r=>r.json()).then(console.log)"
+```
 
 Exemplo de resposta:
 
@@ -96,72 +161,173 @@ Exemplo de resposta:
 
 ## Como rodar os testes
 
-### Service Manager
+Todos os comandos abaixo saem da pasta `backend`.
 
-A suíte de CRUD dos usuários administrativos fica em `services/service_manager/tests`.
-Ela usa SQLite em memória e sobrescreve as dependências da API, então não precisa subir o Postgres.
+### Service Manager (pytest)
 
-Se estiver em qualquer subpasta do repositório, volte para a raiz antes de rodar:
-
-```bash
-cd "$(git rev-parse --show-toplevel)"
-docker compose build service-manager
-docker compose run --rm --no-deps -v "$PWD/services/service_manager/tests:/app/tests" service-manager pytest /app/tests
-```
-
-Ou rode de qualquer subpasta usando o caminho da raiz do Git diretamente:
+Suíte principal: login, cadastro/permissão de analista, consumidores, máquina de
+estados da conversa, handover ao vivo, mensagens, avaliações e o inventário de
+autenticação das rotas. Roda em SQLite na memória, sem Postgres e sem nenhum
+container no ar além do próprio.
 
 ```bash
 docker compose build service-manager
-docker compose run --rm --no-deps -v "$(git rev-parse --show-toplevel)/services/service_manager/tests:/app/tests" service-manager pytest /app/tests
+docker compose run --rm --no-deps -v "$PWD/services/service_manager/tests:/app/tests" service-manager pytest /app/tests -q
 ```
 
 Resultado esperado:
 
 ```text
-8 passed
+285 passed, 6 xfailed
 ```
 
-### PLN Pipeline
+Os 6 `xfailed` não são falhas de execução: são bugs conhecidos, cada um com o
+motivo escrito no próprio teste. Quando o bug for corrigido, o teste vira
+`XPASS` e o marcador `@pytest.mark.xfail` deve ser removido.
 
-Os scripts de teste ficam em `services/pln_pipeline/app/tests`.
-Para os testes que chamam endpoints HTTP, suba o serviço antes:
+Para ver o que cada um documenta:
 
 ```bash
-docker compose up --build pln-pipeline
+docker compose run --rm --no-deps -v "$PWD/services/service_manager/tests:/app/tests" service-manager pytest /app/tests -q -rx
 ```
 
-Em outro terminal, rode os scripts a partir da pasta `backend`:
+### Smoke test ponta a ponta (stack no ar)
+
+Cobre o que a suíte em SQLite não alcança: Postgres real, migração das tabelas,
+seed do admin, CORS e a ligação service-manager → whatsapp-bot. Não envia nada no
+WhatsApp (usa um número inexistente de propósito).
 
 ```bash
-docker compose exec pln-pipeline python -m unittest app.tests.test_retraining_dataset
+docker compose up -d
+docker compose run --rm --no-deps -v "$PWD/services/service_manager/tests:/app/tests" service-manager \
+    python /app/tests/e2e_smoke.py --api http://service-manager:8002 \
+    --pln http://pln-pipeline:8001 --bot http://whatsapp-bot:8003
 ```
 
-```bash
-docker compose exec pln-pipeline python -m unittest app.tests.test_rag_remote
-```
+Ou, de fora dos containers (precisa de `httpx` instalado):
 
 ```bash
+python services/service_manager/tests/e2e_smoke.py
+```
+
+Ele imprime, no fim, o SQL para apagar os registros que criou.
+
+### PLN Pipeline (unittest)
+
+`app/tests/` está no `.dockerignore`, então os testes **não** vão para a imagem:
+é preciso montar a pasta na hora de rodar.
+
+```bash
+docker compose run --rm --no-deps -v "$PWD/services/pln_pipeline/app/tests:/app/app/tests" pln-pipeline \
+    python -m unittest app.tests.test_api_routes
+```
+
+Resultado esperado: `Ran 52 tests ... OK`.
+
+Cobre as rotas `/api/health`, `/api/distilbert`, `/api/rag_remote`,
+`/api/retraining-dataset` e as quatro de vetorização, além das regras de limiar
+do KNN e dos auxiliares do RAG. DistilBERT e Gemini são substituídos por dublês,
+então não há download de modelo nem chamada paga.
+
+Os scripts antigos, que precisam do serviço no ar, continuam valendo:
+
+```bash
+docker compose up -d pln-pipeline
+docker compose run --rm --no-deps -v "$PWD/services/pln_pipeline/app/tests:/app/app/tests" pln-pipeline \
+    python -m unittest app.tests.test_retraining_dataset
+docker compose run --rm --no-deps -v "$PWD/services/pln_pipeline/app/tests:/app/app/tests" pln-pipeline \
+    python -m unittest app.tests.test_rag_remote
 docker compose exec pln-pipeline python app/tests/pln_knn_smoke_test.py --route /api/fasttext/knn --limit 10
 ```
 
-```bash
-docker compose exec pln-pipeline python app/tests/pln_knn_smoke_test.py --route /api/w2vec/knn --limit 10
-```
+### WhatsApp Bot (node:test)
+
+Os predicados que decidem o rumo da conversa (sim/não, filtro de grupo e canal,
+CPF, texto da pergunta de verificação) ficam em `lib/predicates.js` e têm teste
+sem Chromium e sem rede:
 
 ```bash
-docker compose exec pln-pipeline python app/tests/pln_distilbert_knn_comparison_test.py --knn-route /api/fasttext/knn --questions-per-intent 1 --limit 20
+docker compose run --rm --no-deps --entrypoint npm whatsapp-bot test
 ```
+
+Ou direto, com Node instalado:
 
 ```bash
-docker compose exec pln-pipeline python app/tests/pln_distilbert_knn_comparison_test.py --knn-route /api/w2vec/knn --questions-per-intent 1 --limit 20
+cd services/whatsapp_bot && npm test
 ```
 
-Também é possível apontar os scripts para outra URL usando `--base-url`, por exemplo:
+Resultado esperado: `pass 35`.
+
+## Dados de teste
+
+### Históricos de conversa mocados
+
+Insere conversas completas, com roteiro escrito, cobrindo todos os status que o
+painel exibe — além de notas de 1 a 5 e avaliações de resposta, para os
+indicadores e o gráfico terem dados.
 
 ```bash
-python services/pln_pipeline/app/tests/pln_knn_smoke_test.py --base-url http://localhost:8001 --route /api/fasttext/knn --limit 10
+docker compose exec service-manager python -m app.seed_mock_conversations
+docker compose exec service-manager python -m app.seed_mock_conversations --reset
+docker compose exec service-manager python -m app.seed_mock_conversations --repeat 3
+docker compose exec service-manager python -m app.seed_mock_conversations --only-reset
 ```
+
+Cria também dois logins de painel (senha `mock12345`):
+`gestora@mock.procon.sp.gov.br` e `analista@mock.procon.sp.gov.br`.
+
+Tudo que ele grava usa o prefixo `PROCON-MOCK-`, telefones `551290012XXX` e
+e-mails `@mock.procon.sp.gov.br`, então `--reset` remove só o que é dele.
+
+**Teste ao vivo:** com `--phone` ele cria, para um número real, uma conversa
+parada em "Aguardando atendente". No painel, em Conversas, é só clicar em
+Atender → Assumir atendimento e responder: a mensagem sai de verdade no WhatsApp
+daquele número.
+
+```bash
+docker compose exec service-manager python -m app.seed_mock_conversations --reset --phone 5512999999999
+```
+
+O número vai completo: **DDI 55 + DDD + número**, 12 ou 13 dígitos. O script recusa
+qualquer outro formato antes de gravar, porque um número malformado não falha na
+hora — o atendimento aparece no painel normalmente e só o envio quebra, com 502.
+
+Só funciona com o bot pareado: sem sessão do WhatsApp não há como a mensagem sair,
+e o painel devolve o mesmo 502. Confira com `docker compose logs whatsapp-bot` —
+se aparecer `Bot pronto!`, está pareado.
+
+### Volume sintético para as métricas
+
+Para encher o dashboard com 14 dias de dados sorteados (outro conjunto, prefixo
+`PROCON-DEMO-`):
+
+```bash
+docker compose exec service-manager python -m app.seed_demo_data
+docker compose exec service-manager python -m app.seed_demo_data --reset
+```
+
+## Autenticação da API
+
+Três níveis, todos no `service-manager`:
+
+| Nível | Credencial | Rotas |
+|---|---|---|
+| aberto | nenhuma | `GET /api/v1/health`, `POST /auth/login` |
+| admin ou bot | JWT do painel **ou** header `X-Bot-Secret` | rotas do atendimento: consumidores por telefone/LID, conversas, troca de status, gravação de mensagem e de nota |
+| admin | JWT do painel | leituras em bloco (`GET /api/v1/users`, `/messages`, `/feedback`), ações de atendente (takeover, agent-message, release, avaliação) e `/api/v1/admin-users` (este, só gestor) |
+
+O `whatsapp-bot` é cliente desta API e não tem login: ele autentica com o mesmo
+`BOT_SECRET` que o `service-manager` já usa para falar com ele em `POST /send`.
+É uma credencial só, nos dois sentidos.
+
+O segredo do bot **não** abre as leituras em bloco. Ele busca consumidor por
+telefone ou LID, um de cada vez; quem lista o cadastro inteiro é o painel. Assim,
+se o segredo vazar, ele não serve para varrer dado pessoal.
+
+Códigos de resposta:
+
+- `401` — credencial ausente ou inválida (o painel trata e volta para o login)
+- `403` — autenticado, mas sem permissão (analista tentando `/api/v1/admin-users`)
 
 ## Endpoints do Gateway (service-manager)
 

@@ -6,7 +6,7 @@ from passlib.context import CryptContext
 
 SECRET_KEY = os.getenv("JWT_SECRET", "dev-secret-change-me")
 ALGORITHM = "HS256"
-TOKEN_EXPIRE_SECONDS = 8 * 60 * 60  # 8h, matches frontend auth cookie
+TOKEN_EXPIRE_SECONDS = 8 * 60 * 60  # 8h de sessão por aba no frontend
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
