@@ -38,6 +38,25 @@ BOT_URL = os.getenv("BOT_URL", "http://whatsapp-bot:8003")
 BOT_SECRET = os.getenv("BOT_SECRET", "dev-bot-secret-change-me")
 PLN_URL = os.getenv("PLN_URL", "http://pln-pipeline:8001")
 
+# Origens do painel, separadas por vírgula (ex.: "http://10.0.0.5:3000,https://painel.sp.gov.br").
+# São várias ao mesmo tempo na prática: localhost para desenvolver, o IP da VM
+# para o cliente e, depois, o domínio. O padrão cobre só o desenvolvimento, então
+# a variável ausente não abre a API sozinha.
+CORS_ORIGINS = os.getenv("CORS_ORIGINS", "http://localhost:3000")
+
+
+def parse_cors_origins(bruto: str) -> list[str]:
+    """Quebra a lista do .env e tira a barra final de cada origem.
+
+    O navegador casa a origem por string exata e envia `http://host:3000` sem
+    barra — uma sobrando no .env derruba o painel inteiro em silêncio. Pelo mesmo
+    motivo trocar http por https aqui não é detalhe: é outra origem.
+
+    `*` não serve de atalho: junto de allow_credentials o próprio navegador
+    recusa a resposta, então liberar tudo quebra tudo.
+    """
+    return [origem.strip().rstrip("/") for origem in bruto.split(",") if origem.strip()]
+
 
 def _chat_id(user: User) -> str:
     """Mirror the bot's chatId resolution: prefer WhatsApp ID, fall back to phone JID."""
@@ -114,7 +133,7 @@ app = FastAPI(title="Service Manager", version="0.1.0", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],
+    allow_origins=parse_cors_origins(CORS_ORIGINS),
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

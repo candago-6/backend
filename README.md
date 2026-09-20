@@ -115,7 +115,7 @@ A sessão é salva localmente em `services/whatsapp_bot/.wwebjs_auth` e não pre
 
 ## Variáveis de ambiente
 
-As variáveis são configuradas no `docker-compose.yml`, no serviço `whatsapp-bot`:
+As variáveis são configuradas no `docker-compose.yml`, nos serviços `whatsapp-bot` e `service-manager`:
 
 | Variável | Padrão | Descrição |
 |---|---|---|
@@ -123,7 +123,35 @@ As variáveis são configuradas no `docker-compose.yml`, no serviço `whatsapp-b
 | `FILTER_KEYWORD` | `Procon` | Keyword que a mensagem deve conter para ser processada. Mensagens sem essa keyword são ignoradas. |
 | `BOT_SECRET` | `dev-bot-secret-change-me` | Segredo exigido em `POST /send` e `GET /qr`. **Trocar em produção.** |
 | `API_BIND` | `0.0.0.0` | Interface em que a porta 8002 do `service-manager` responde. Use `127.0.0.1` para limitar à própria máquina enquanto não houver proxy reverso com TLS. |
+| `CORS_ORIGINS` | `http://localhost:3000` | Origens do painel que o navegador pode usar para chamar a API, separadas por vírgula. Precisa mudar sempre que o painel não for aberto em `localhost`. |
 | `RAG_FALLBACK_ENABLED` | `false` | Liga a contingência por RAG (a "IA Avançada"). **Desligada a pedido do cliente.** |
+
+### O painel em outra máquina (CORS)
+
+O painel roda no navegador do analista e chama a API direto, então `localhost`
+só funciona para quem abre o painel na própria VM. Para o cliente usar da rede,
+duas variáveis mudam juntas — e é sempre o mesmo endereço, só a porta muda:
+
+```bash
+# na máquina do backend, antes do docker compose up
+CORS_ORIGINS=http://10.0.0.5:3000     # de onde o painel é aberto (backend)
+NEXT_PUBLIC_API_URL=http://10.0.0.5:8002   # para onde o painel chama (frontend)
+```
+
+`NEXT_PUBLIC_API_URL` entra na imagem no build, não em runtime: mudou, rebuilda
+o frontend.
+
+Duas armadilhas, as duas silenciosas — o painel abre normalmente e toda chamada
+falha no console do navegador, sem nada no log da API:
+
+- **barra no fim** (`http://10.0.0.5:3000/`) — o `CORS_ORIGINS` tolera e remove;
+  o `NEXT_PUBLIC_API_URL` não, vira `//api/v1/...`.
+- **`https` onde o painel serve `http`** — origens diferentes para o navegador.
+  Quando entrar o proxy reverso com TLS, as duas variáveis mudam junto.
+
+Definir `CORS_ORIGINS` substitui a lista inteira: para continuar desenvolvendo
+contra `localhost` ao mesmo tempo, mantenha as duas
+(`CORS_ORIGINS=http://localhost:3000,http://10.0.0.5:3000`).
 
 ### A contingência por RAG ("IA Avançada")
 

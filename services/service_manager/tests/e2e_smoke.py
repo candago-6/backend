@@ -62,6 +62,11 @@ def main() -> int:
         default=os.environ.get("BOT_SECRET", "dev-bot-secret-change-me"),
         help="Segredo com que o whatsapp-bot autentica nas rotas de atendimento",
     )
+    parser.add_argument(
+        "--painel",
+        default=os.environ.get("CORS_ORIGINS", "http://localhost:3000").split(",")[0].strip().rstrip("/"),
+        help="Origem de onde o painel é aberto; precisa estar em CORS_ORIGINS na API",
+    )
     args = parser.parse_args()
 
     c = httpx.Client(base_url=args.api, timeout=args.timeout)
@@ -254,12 +259,21 @@ def main() -> int:
     secao("8. CORS (origem do painel)")
     r = c.options(
         "/auth/login",
-        headers={"Origin": "http://localhost:3000", "Access-Control-Request-Method": "POST"},
+        headers={"Origin": args.painel, "Access-Control-Request-Method": "POST"},
     )
     checar(
-        "preflight do painel é aceito",
-        r.headers.get("access-control-allow-origin") == "http://localhost:3000",
-        f"allow-origin={r.headers.get('access-control-allow-origin')!r} — em produção a origem do painel precisa entrar na lista",
+        f"preflight de {args.painel} é aceito",
+        r.headers.get("access-control-allow-origin") == args.painel,
+        f"allow-origin={r.headers.get('access-control-allow-origin')!r} — ponha esta origem em CORS_ORIGINS (sem barra no fim) e suba a API de novo",
+    )
+    r = c.options(
+        "/auth/login",
+        headers={"Origin": "http://intruso.example.com", "Access-Control-Request-Method": "POST"},
+    )
+    checar(
+        "origem desconhecida não é aceita",
+        r.headers.get("access-control-allow-origin") is None,
+        "a API respondeu allow-origin para uma origem qualquer — CORS_ORIGINS está com curinga",
     )
 
     # --- 9. superfície de autenticação (C1) ----------------------------------

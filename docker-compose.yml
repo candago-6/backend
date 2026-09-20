@@ -54,6 +54,12 @@ services:
       BOT_URL: ${BOT_URL:-http://whatsapp-bot:8003}
       BOT_SECRET: ${BOT_SECRET:-dev-bot-secret-change-me}
       PLN_URL: ${PLN_URL:-http://pln-pipeline:8001}
+      # Origens do painel autorizadas pelo navegador, separadas por virgula. O
+      # padrao so serve para desenvolvimento: na rede do cliente precisa ser o
+      # mesmo endereco do NEXT_PUBLIC_API_URL do front, trocando 8002 por 3000
+      # (ex.: CORS_ORIGINS=http://10.0.0.5:3000). Sem isso o painel abre e todas
+      # as chamadas falham no preflight. Sem barra no fim.
+      CORS_ORIGINS: ${CORS_ORIGINS:-http://localhost:3000}
     depends_on:
       - db
     networks:
